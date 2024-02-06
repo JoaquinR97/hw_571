@@ -12,6 +12,7 @@
 #include "dhrystone.h"
 
 void debug_printf(const char* str, ...);
+//#define debug_printf printf
 
 #include "util.h"
 
@@ -107,13 +108,6 @@ int main (int argc, char** argv)
   while (!Done) {
     debug_printf("Trying %d runs through Dhrystone:\n", Number_Of_Runs);
 
-    /***************/
-    /* Start timer */
-    /***************/
-
-    setStats(1);
-    Start_Timer();
-
     for (Run_Index = 1; Run_Index <= Number_Of_Runs; ++Run_Index)
     {
 
@@ -160,80 +154,129 @@ int main (int argc, char** argv)
 
     } /* loop "for Run_Index" */
 
-    /**************/
-    /* Stop timer */
-    /**************/
-
-    Stop_Timer();
-    setStats(0);
-
-    User_Time = End_Time - Begin_Time;
-
-    if (User_Time < Too_Small_Time)
-    {
-      printf("Measured time too small to obtain meaningful results\n");
-      Number_Of_Runs = Number_Of_Runs * 10;
-      printf("\n");
-    } else Done = true;
+    Done = true;
   }
 
-  debug_printf("Final values of the variables used in the benchmark:\n");
-  debug_printf("\n");
-  debug_printf("Int_Glob:            %d\n", Int_Glob);
-  debug_printf("        should be:   %d\n", 5);
-  debug_printf("Bool_Glob:           %d\n", Bool_Glob);
-  debug_printf("        should be:   %d\n", 1);
-  debug_printf("Ch_1_Glob:           %c\n", Ch_1_Glob);
-  debug_printf("        should be:   %c\n", 'A');
-  debug_printf("Ch_2_Glob:           %c\n", Ch_2_Glob);
-  debug_printf("        should be:   %c\n", 'B');
-  debug_printf("Arr_1_Glob[8]:       %d\n", Arr_1_Glob[8]);
-  debug_printf("        should be:   %d\n", 7);
-  debug_printf("Arr_2_Glob[8][7]:    %d\n", Arr_2_Glob[8][7]);
-  debug_printf("        should be:   Number_Of_Runs + 10\n");
-  debug_printf("Ptr_Glob->\n");
-  debug_printf("  Ptr_Comp:          %d\n", (long) Ptr_Glob->Ptr_Comp);
-  debug_printf("        should be:   (implementation-dependent)\n");
-  debug_printf("  Discr:             %d\n", Ptr_Glob->Discr);
-  debug_printf("        should be:   %d\n", 0);
-  debug_printf("  Enum_Comp:         %d\n", Ptr_Glob->variant.var_1.Enum_Comp);
-  debug_printf("        should be:   %d\n", 2);
-  debug_printf("  Int_Comp:          %d\n", Ptr_Glob->variant.var_1.Int_Comp);
-  debug_printf("        should be:   %d\n", 17);
-  debug_printf("  Str_Comp:          %s\n", Ptr_Glob->variant.var_1.Str_Comp);
-  debug_printf("        should be:   DHRYSTONE PROGRAM, SOME STRING\n");
-  debug_printf("Next_Ptr_Glob->\n");
-  debug_printf("  Ptr_Comp:          %d\n", (long) Next_Ptr_Glob->Ptr_Comp);
-  debug_printf("        should be:   (implementation-dependent), same as above\n");
-  debug_printf("  Discr:             %d\n", Next_Ptr_Glob->Discr);
-  debug_printf("        should be:   %d\n", 0);
-  debug_printf("  Enum_Comp:         %d\n", Next_Ptr_Glob->variant.var_1.Enum_Comp);
-  debug_printf("        should be:   %d\n", 1);
-  debug_printf("  Int_Comp:          %d\n", Next_Ptr_Glob->variant.var_1.Int_Comp);
-  debug_printf("        should be:   %d\n", 18);
-  debug_printf("  Str_Comp:          %s\n",
-                                Next_Ptr_Glob->variant.var_1.Str_Comp);
-  debug_printf("        should be:   DHRYSTONE PROGRAM, SOME STRING\n");
-  debug_printf("Int_1_Loc:           %d\n", Int_1_Loc);
-  debug_printf("        should be:   %d\n", 5);
-  debug_printf("Int_2_Loc:           %d\n", Int_2_Loc);
-  debug_printf("        should be:   %d\n", 13);
-  debug_printf("Int_3_Loc:           %d\n", Int_3_Loc);
-  debug_printf("        should be:   %d\n", 7);
-  debug_printf("Enum_Loc:            %d\n", Enum_Loc);
-  debug_printf("        should be:   %d\n", 1);
-  debug_printf("Str_1_Loc:           %s\n", Str_1_Loc);
-  debug_printf("        should be:   DHRYSTONE PROGRAM, 1'ST STRING\n");
-  debug_printf("Str_2_Loc:           %s\n", Str_2_Loc);
-  debug_printf("        should be:   DHRYSTONE PROGRAM, 2'ND STRING\n");
-  debug_printf("\n");
+  /* Original checking code */
+  /* debug_printf("Final values of the variables used in the benchmark:\n"); */
+  /* debug_printf("\n"); */
+  /* debug_printf("Int_Glob:            %d\n", Int_Glob); */
+  /* debug_printf("        should be:   %d\n", 5); */
+  /* debug_printf("Bool_Glob:           %d\n", Bool_Glob); */
+  /* debug_printf("        should be:   %d\n", 1); */
+  /* debug_printf("Ch_1_Glob:           %c\n", Ch_1_Glob); */
+  /* debug_printf("        should be:   %c\n", 'A'); */
+  /* debug_printf("Ch_2_Glob:           %c\n", Ch_2_Glob); */
+  /* debug_printf("        should be:   %c\n", 'B'); */
+  /* debug_printf("Arr_1_Glob[8]:       %d\n", Arr_1_Glob[8]); */
+  /* debug_printf("        should be:   %d\n", 7); */
+  /* debug_printf("Arr_2_Glob[8][7]:    %d\n", Arr_2_Glob[8][7]); */
+  /* debug_printf("        should be:   Number_Of_Runs + 10\n"); */
+  /* debug_printf("Ptr_Glob->\n"); */
+  /* debug_printf("  Ptr_Comp:          %d\n", (long) Ptr_Glob->Ptr_Comp); */
+  /* debug_printf("        should be:   (implementation-dependent)\n"); */
+  /* debug_printf("  Discr:             %d\n", Ptr_Glob->Discr); */
+  /* debug_printf("        should be:   %d\n", 0); */
+  /* debug_printf("  Enum_Comp:         %d\n", Ptr_Glob->variant.var_1.Enum_Comp); */
+  /* debug_printf("        should be:   %d\n", 2); */
+  /* debug_printf("  Int_Comp:          %d\n", Ptr_Glob->variant.var_1.Int_Comp); */
+  /* debug_printf("        should be:   %d\n", 17); */
+  /* debug_printf("  Str_Comp:          %s\n", Ptr_Glob->variant.var_1.Str_Comp); */
+  /* debug_printf("        should be:   DHRYSTONE PROGRAM, SOME STRING\n"); */
+  /* debug_printf("Next_Ptr_Glob->\n"); */
+  /* debug_printf("  Ptr_Comp:          %d\n", (long) Next_Ptr_Glob->Ptr_Comp); */
+  /* debug_printf("        should be:   (implementation-dependent), same as above\n"); */
+  /* debug_printf("  Discr:             %d\n", Next_Ptr_Glob->Discr); */
+  /* debug_printf("        should be:   %d\n", 0); */
+  /* debug_printf("  Enum_Comp:         %d\n", Next_Ptr_Glob->variant.var_1.Enum_Comp); */
+  /* debug_printf("        should be:   %d\n", 1); */
+  /* debug_printf("  Int_Comp:          %d\n", Next_Ptr_Glob->variant.var_1.Int_Comp); */
+  /* debug_printf("        should be:   %d\n", 18); */
+  /* debug_printf("  Str_Comp:          %s\n", */
+  /*                               Next_Ptr_Glob->variant.var_1.Str_Comp); */
+  /* debug_printf("        should be:   DHRYSTONE PROGRAM, SOME STRING\n"); */
+  /* debug_printf("Int_1_Loc:           %d\n", Int_1_Loc); */
+  /* debug_printf("        should be:   %d\n", 5); */
+  /* debug_printf("Int_2_Loc:           %d\n", Int_2_Loc); */
+  /* debug_printf("        should be:   %d\n", 13); */
+  /* debug_printf("Int_3_Loc:           %d\n", Int_3_Loc); */
+  /* debug_printf("        should be:   %d\n", 7); */
+  /* debug_printf("Enum_Loc:            %d\n", Enum_Loc); */
+  /* debug_printf("        should be:   %d\n", 1); */
+  /* debug_printf("Str_1_Loc:           %s\n", Str_1_Loc); */
+  /* debug_printf("        should be:   DHRYSTONE PROGRAM, 1'ST STRING\n"); */
+  /* debug_printf("Str_2_Loc:           %s\n", Str_2_Loc); */
+  /* debug_printf("        should be:   DHRYSTONE PROGRAM, 2'ND STRING\n"); */
+  /* debug_printf("\n"); */
+  
+  const unsigned int ALL_CHECKS_PASSED = (1<<22) - 1;
 
+  // Define bit positions for each comparison
+  const unsigned int INT_GLOB_BIT        = (1 << 0);
+  const unsigned int BOOL_GLOB_BIT       = (1 << 1);
+  const unsigned int CH_1_GLOB_BIT       = (1 << 2);
+  const unsigned int CH_2_GLOB_BIT       = (1 << 3);
+  const unsigned int ARR_1_GLOB_BIT      = (1 << 4);
+  const unsigned int ARR_2_GLOB_BIT      = (1 << 5);
+  const unsigned int PTR_COMP_BIT        = (1 << 6);
+  const unsigned int DISCR_BIT           = (1 << 7);
+  const unsigned int ENUM_COMP_BIT       = (1 << 8);
+  const unsigned int INT_COMP_BIT        = (1 << 9);
+  const unsigned int STR_COMP_BIT        = (1 << 10);
+  const unsigned int NEXT_PTR_COMP_BIT   = (1 << 11);
+  const unsigned int NEXT_DISCR_BIT      = (1 << 12);
+  const unsigned int NEXT_ENUM_COMP_BIT  = (1 << 13);
+  const unsigned int NEXT_INT_COMP_BIT   = (1 << 14);
+  const unsigned int NEXT_STR_COMP_BIT   = (1 << 15);
+  const unsigned int INT_1_LOC_BIT       = (1 << 16);
+  const unsigned int INT_2_LOC_BIT       = (1 << 17);
+  const unsigned int INT_3_LOC_BIT       = (1 << 18);
+  const unsigned int ENUM_LOC_BIT        = (1 << 19);
+  const unsigned int STR_1_LOC_BIT       = (1 << 20);
+  const unsigned int STR_2_LOC_BIT       = (1 << 21);
 
-  Microseconds = ((User_Time / Number_Of_Runs) * Mic_secs_Per_Second) / HZ;
-  Dhrystones_Per_Second = (HZ * Number_Of_Runs) / User_Time;
+  unsigned int success_mask = 0; // Initialize success bitmask
 
-  printf("Microseconds for one run through Dhrystone: %ld\n", Microseconds);
-  printf("Dhrystones per Second:                      %ld\n", Dhrystones_Per_Second);
+  // Perform comparisons and set the corresponding bits
+  if (Int_Glob == 5) success_mask |= INT_GLOB_BIT;
+  if (Bool_Glob == 1) success_mask |= BOOL_GLOB_BIT;
+  if (Ch_1_Glob == 'A') success_mask |= CH_1_GLOB_BIT;
+  if (Ch_2_Glob == 'B') success_mask |= CH_2_GLOB_BIT;
+  if (Arr_1_Glob[8] == 7) success_mask |= ARR_1_GLOB_BIT;
+  if (Arr_2_Glob[8][7] == (Number_Of_Runs + 10)) success_mask |= ARR_2_GLOB_BIT;
+  success_mask |= PTR_COMP_BIT;
+  //if ((long)Ptr_Glob->Ptr_Comp == (implementation-dependent)) success_mask |= PTR_COMP_BIT;
+  if (Ptr_Glob->Discr == 0) success_mask |= DISCR_BIT;
+  if (Ptr_Glob->variant.var_1.Enum_Comp == 2) success_mask |= ENUM_COMP_BIT;
+  if (Ptr_Glob->variant.var_1.Int_Comp == 17) success_mask |= INT_COMP_BIT;
+  if (strcmp(Ptr_Glob->variant.var_1.Str_Comp, "DHRYSTONE PROGRAM, SOME STRING") == 0) success_mask |= STR_COMP_BIT;
+  //if ((long)Next_Ptr_Glob->Ptr_Comp == (implementation-dependent)) success_mask |= NEXT_PTR_COMP_BIT;
+  success_mask |= NEXT_PTR_COMP_BIT;
+  if (Next_Ptr_Glob->Discr == 0) success_mask |= NEXT_DISCR_BIT;
+  if (Next_Ptr_Glob->variant.var_1.Enum_Comp == 1) success_mask |= NEXT_ENUM_COMP_BIT;
+  if (Next_Ptr_Glob->variant.var_1.Int_Comp == 18) success_mask |= NEXT_INT_COMP_BIT;
+  if (strcmp(Next_Ptr_Glob->variant.var_1.Str_Comp, "DHRYSTONE PROGRAM, SOME STRING") == 0) success_mask |= NEXT_STR_COMP_BIT;
+  if (Int_1_Loc == 5) success_mask |= INT_1_LOC_BIT;
+  if (Int_2_Loc == 13) success_mask |= INT_2_LOC_BIT;
+  if (Int_3_Loc == 7) success_mask |= INT_3_LOC_BIT;
+  if (Enum_Loc == 1) success_mask |= ENUM_LOC_BIT;
+  if (strcmp(Str_1_Loc, "DHRYSTONE PROGRAM, 1'ST STRING") == 0) success_mask |= STR_1_LOC_BIT;
+  if (strcmp(Str_2_Loc, "DHRYSTONE PROGRAM, 2'ND STRING") == 0) success_mask |= STR_2_LOC_BIT;
+
+  asm volatile (
+                "mv t0, %0\n\t"      // move `success_mask` into register
+                "ecall"              // tell processor to halt
+                :
+                : "r" (success_mask) // input variable
+                : "t0"               // clobbered register
+                );
+  
+  // Print the result
+  if (success_mask == ALL_CHECKS_PASSED) {
+    printf("All comparisons successful.\n");
+  } else {
+    printf("Some comparisons failed.\n");
+  }
 
   return 0;
 }

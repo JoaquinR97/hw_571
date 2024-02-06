@@ -48,8 +48,8 @@ _start:
   li  x31,0
 
   # enable FPU, vector, and accelerator if present
-  li t0, MSTATUS_FS | MSTATUS_XS | MSTATUS_VS
-  csrs mstatus, t0
+  #li t0, MSTATUS_FS | MSTATUS_XS | MSTATUS_VS
+  #csrs mstatus, t0
 
   # make sure XLEN agrees with compilation choice
   li t0, 1
@@ -107,8 +107,8 @@ _start:
 #endif
 
   # initialize trap vector
-  la t0, trap_entry
-  csrw mtvec, t0
+  #la t0, trap_entry
+  #csrw mtvec, t0
 
   # initialize global pointer
 .option push
@@ -120,7 +120,8 @@ _start:
   and tp, tp, -64
 
   # get core id
-  csrr a0, mhartid
+        #csrr a0, mhartid
+  li a0, 0
   # for now, assume only 1 core
   li a1, 1
 1:bgeu a0, a1, 1b
@@ -171,15 +172,15 @@ trap_entry:
   SREG x30, 30*REGBYTES(sp)
   SREG x31, 31*REGBYTES(sp)
 
-  csrr a0, mcause
-  csrr a1, mepc
+  #csrr a0, mcause
+  #csrr a1, mepc
   mv a2, sp
   jal handle_trap
-  csrw mepc, a0
+  #csrw mepc, a0
 
   # Remain in M-mode after eret
-  li t0, MSTATUS_MPP
-  csrs mstatus, t0
+  #li t0, MSTATUS_MPP
+  #csrs mstatus, t0
 
   LREG x1, 1*REGBYTES(sp)
   LREG x2, 2*REGBYTES(sp)
