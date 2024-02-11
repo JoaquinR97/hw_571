@@ -20,11 +20,12 @@ def runCocotbTests(pytestconfig):
     assert hdl_toplevel_lang == "verilog"
     verilog_sources = [proj_path / "divider_unsigned.sv" ]
 
+    toplevel_module = "divu_1iter"
     runr = get_runner(sim)
     runr.build(
         verilog_sources=verilog_sources,
         vhdl_sources=[],
-        hdl_toplevel="divu_1iter",
+        hdl_toplevel=toplevel_module,
         includes=[proj_path],
         build_dir=SIM_BUILD_DIR,
         always=True,
@@ -34,8 +35,8 @@ def runCocotbTests(pytestconfig):
     results_file = runr.test(
         seed=12345,
         waves=True,
-        hdl_toplevel="divu_1iter", 
-        test_module="testbench_1iter",
+        hdl_toplevel=toplevel_module, 
+        test_module=Path(__file__).stem, # use tests from this file
         testcase=pytestconfig.option.tests,
     )
     pass
@@ -80,10 +81,10 @@ async def test_rem_gte_divisor(dut):
 async def test_random1k(dut):
     for i in range(1000):
         await Timer(1, "ns")
-        dividend = random.randint(0,2**31)
-        divisor = random.randint(1,2**31) # NB: no divide-by-zero
-        remainder = random.randint(0,2**31)
-        quotient = random.randint(0,2**31)
+        dividend = random.randrange(0,2**31)
+        divisor = random.randrange(1,2**31) # NB: no divide-by-zero
+        remainder = random.randrange(0,2**31)
+        quotient = random.randrange(0,2**31)
         dut.i_dividend.value = dividend
         dut.i_divisor.value = divisor
         dut.i_remainder.value = remainder

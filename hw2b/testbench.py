@@ -18,11 +18,10 @@ def runCocotbTests(pytestconfig):
     sim = os.getenv("SIM", "verilator")
     proj_path = Path(__file__).resolve().parent
     assert hdl_toplevel_lang == "verilog"
-    verilog_sources = [proj_path / "divider_unsigned.sv" ]
-    toplevel_module = "divider_unsigned"
+    verilog_sources = [proj_path / "cla.sv" ]
+    toplevel_module = "cla"
 
     pointsEarned = 0
-    pointsPossible = 0
     try:
         runr = get_runner(sim)
         runr.build(
@@ -31,14 +30,14 @@ def runCocotbTests(pytestconfig):
             hdl_toplevel=toplevel_module,
             includes=[proj_path],
             build_dir=SIM_BUILD_DIR,
-            always=True, # always build the code
+            always=True,
             build_args=['--assert','-Wall','-Wno-DECLFILENAME','--trace','--trace-fst','--trace-structs']
         ),
 
         runr.test(
             seed=12345,
             waves=True,
-            hdl_toplevel=toplevel_module,
+            hdl_toplevel=toplevel_module, 
             test_module=Path(__file__).stem, # use tests from this file
             testcase=pytestconfig.option.tests,
         )
@@ -64,57 +63,85 @@ if __name__ == "__main__":
 #########################
 
 @cocotb.test()
-async def test_simple0(dut):
+async def test_0_0_0(dut):
     await Timer(1, "ns")
-    dut.i_dividend.value = 4
-    dut.i_divisor.value = 2
+    dut.a.value = 0
+    dut.b.value = 0
+    dut.cin.value = 0
     await Timer(1, "ns")
-    assert 2 == dut.o_quotient.value
-    assert 0 == dut.o_remainder.value
+    assert 0 == dut.sum.value
 
 @cocotb.test()
-async def test_simple1(dut):
+async def test_0_1_0(dut):
     await Timer(1, "ns")
-    dut.i_dividend.value = 4
-    dut.i_divisor.value = 4
+    dut.a.value = 0
+    dut.b.value = 1
+    dut.cin.value = 0
     await Timer(1, "ns")
-    assert 1 == dut.o_quotient.value
-    assert 0 == dut.o_remainder.value
+    assert 1 == dut.sum.value
 
 @cocotb.test()
-async def test_simple2(dut):
+async def test_1_0_0(dut):
     await Timer(1, "ns")
-    dut.i_dividend.value = 10
-    dut.i_divisor.value = 4
+    dut.a.value = 1
+    dut.b.value = 0
+    dut.cin.value = 0
     await Timer(1, "ns")
-    assert 2 == dut.o_quotient.value
-    assert 2 == dut.o_remainder.value
+    assert 1 == dut.sum.value
 
 @cocotb.test()
-async def test_simple3(dut):
+async def test_1_1_0(dut):
     await Timer(1, "ns")
-    dut.i_dividend.value = 2
-    dut.i_divisor.value = 4
+    dut.a.value = 1
+    dut.b.value = 1
+    dut.cin.value = 0
     await Timer(1, "ns")
-    assert 0 == dut.o_quotient.value
-    assert 2 == dut.o_remainder.value
+    assert 2 == dut.sum.value
+
+@cocotb.test()
+async def test_1_1_1(dut):
+    await Timer(1, "ns")
+    dut.a.value = 1
+    dut.b.value = 1
+    dut.cin.value = 1
+    await Timer(1, "ns")
+    assert 3 == dut.sum.value
+
+@cocotb.test()
+async def test_overflow0(dut):
+    await Timer(1, "ns")
+    dut.a.value = 0xFFFF_FFFF
+    dut.b.value = 0
+    dut.cin.value = 1
+    await Timer(1, "ns")
+    assert 0 == dut.sum.value
+
+@cocotb.test()
+async def test_overflow1(dut):
+    await Timer(1, "ns")
+    dut.a.value = 0xAAAA_AAAA # 1's in even positions
+    dut.b.value = 0x5555_5555 # 1's in odd positions
+    dut.cin.value = 1
+    await Timer(1, "ns")
+    assert 0 == dut.sum.value
 
 @cocotb.test()
 async def test_random1k(dut):
     for i in range(1000):
         await Timer(1, "ns")
-        dividend = random.randrange(0,2**32)
-        divisor = random.randrange(1,2**32) # NB: no divide-by-zero
-        dut.i_dividend.value = dividend
-        dut.i_divisor.value = divisor
+        a = random.randrange(-(2**31),2**31)
+        b = random.randrange(-(2**31),2**31)
+        cin = random.randrange(0,2)
+        dut.a.value = a
+        dut.b.value = b
+        dut.cin.value = cin
         await Timer(1, "ns")
 
-        exp_quotient = int(dividend / divisor)
-        exp_remainder = dividend % divisor
+        # truncate to 32b
+        exp_sum = (a + b + cin) & 0x0000_FFFF_FFFF
+        actual_sum = dut.sum.value.integer & 0x0000_FFFF_FFFF
 
-        msg = f'expected {dividend} / {divisor} = {exp_quotient} rem {exp_remainder}\n'
-        msg += f'but was quot={dut.o_quotient.value} rem={dut.o_remainder.value}'
-        assert exp_quotient == dut.o_quotient.value, msg
-        assert exp_remainder == dut.o_remainder.value, msg
+        msg = f'expected {a} + {b} + {cin} = {exp_sum} but was {actual_sum}'
+        assert exp_sum == actual_sum, msg
         pass
     pass
