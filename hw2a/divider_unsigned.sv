@@ -35,9 +35,19 @@ module divu_1iter (
             remainder = remainder - divisor;
         }
         dividend = dividend << 1;
-    }
-    */
+    }*/
 
-    // TODO: your code here
+    wire [31:0] intermediate_remainder;
+    wire [31:0] new_quotient;
+    wire [31:0] new_remainder;
+
+    assign intermediate_remainder = (i_remainder << 1) | ((i_dividend >> 31) & 1'b1);
+
+    assign new_quotient = intermediate_remainder < i_divisor ? i_quotient << 1 : (i_quotient << 1) | 1'b1;
+    assign new_remainder = intermediate_remainder >= i_divisor ? intermediate_remainder - i_divisor : intermediate_remainder;
+
+    assign o_dividend = i_dividend << 1;
+    assign o_quotient = new_quotient;
+    assign o_remainder = new_remainder;
 
 endmodule
