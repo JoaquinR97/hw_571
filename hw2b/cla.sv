@@ -108,10 +108,11 @@ module cla
     wire [7:0] g_4, p_4;
 
     genvar j;
+    parameter int output_c_indices[8] = '{1, 5, 9, 13, 17, 21, 25, 29};
+
     generate
         for (j = 0; j < 8; j = j + 1) begin : gp4_loop_j
-            localparam output_c_index = 4 * j + 1;
-            gp4 gp4_inst(g[4*j +: 4], p[4*j +: 4], c[4*j], g_4[j], p_4[j], c[output_c_index +: 3]);
+            gp4 gp4_inst(g[4*j +: 4], p[4*j +: 4], c[4*j], g_4[j], p_4[j], c[output_c_indices[j] +: 3]);
         end
     endgenerate
 
