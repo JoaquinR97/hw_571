@@ -22,9 +22,25 @@ module RegFile (
     input logic rst
 );
   localparam int NumRegs = 32;
-  logic [`REG_SIZE] regs[NumRegs];
+  logic [`REG_SIZE] reg_outs[NumRegs];
 
   // TODO: your code here
+
+  assign reg_outs[0] = 32'd0; // x0 is always zero
+  assign rs1_data = reg_outs[rs1]; // 1st read port
+  assign rs2_data = reg_outs[rs2]; // 2nd read port
+
+  always_ff @(posedge clk) begin
+    if (rst) begin
+        for (int i = 0; i < NumRegs; i++) begin
+            reg_outs[i] <= 32'd0;
+        end
+    end else begin
+      if (we && rd != 0) begin
+        reg_outs[rd] <= rd_data;
+      end
+    end
+  end
 
 endmodule
 
@@ -188,18 +204,42 @@ module DatapathSingleCycle (
 
   logic illegal_insn;
 
+  // rf values
+  logic [`REG_SIZE] rd_data; // Data to be written to the destination register
+  logic [4:0] rd; // Destination register address
+  logic [4:0] rs1, rs2; // Source register addresses
+  logic [`REG_SIZE] rs1_data, rs2_data; // Data read from the source registers
+  logic write_enable; // Write enable signal
+  logic reset; // Reset signal
+
   always_comb begin
     illegal_insn = 1'b0;
 
     case (insn_opcode)
       OpLui: begin
-        // TODO: start here by implementing lui
+
+        rd = insn_from_imem[11:7]; // RD field
+        rd_data = {insn_from_imem[31:12], 12'b0}; // Immediate shifted left
+        write_enable = 1'b1;
+
       end
       default: begin
         illegal_insn = 1'b1;
       end
     endcase
   end
+
+  RegFile rf (
+    .rd(rd),
+    .rd_data(rd_data),
+    .rs1(rs1),
+    .rs1_data(rs1_data),
+    .rs2(rs2),
+    .rs2_data(rs2_data),
+    .clk(clk),
+    .we(write_enable),
+    .rst(reset)
+  );
 
 endmodule
 
