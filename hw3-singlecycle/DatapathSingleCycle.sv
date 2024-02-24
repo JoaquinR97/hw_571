@@ -22,22 +22,22 @@ module RegFile (
     input logic rst
 );
   localparam int NumRegs = 32;
-  logic [`REG_SIZE] reg_outs[NumRegs];
+  logic [`REG_SIZE] regs[NumRegs];
 
   // TODO: your code here
 
-  assign reg_outs[0] = 32'd0; // x0 is always zero
-  assign rs1_data = reg_outs[rs1]; // 1st read port
-  assign rs2_data = reg_outs[rs2]; // 2nd read port
+  assign regs[0] = 32'd0; // x0 is always zero
+  assign rs1_data = regs[rs1]; // 1st read port
+  assign rs2_data = regs[rs2]; // 2nd read port
 
   always_ff @(posedge clk) begin
     if (rst) begin
         for (int i = 0; i < NumRegs; i++) begin
-            reg_outs[i] <= 32'd0;
+            regs[i] <= 32'd0;
         end
     end else begin
       if (we && rd != 0) begin
-        reg_outs[rd] <= rd_data;
+        regs[rd] <= rd_data;
       end
     end
   end
@@ -212,17 +212,167 @@ module DatapathSingleCycle (
   logic write_enable; // Write enable signal
   logic reset; // Reset signal
 
+  logic [31:0] immediateShiftedLeft;
+  logic [31:0] inputbCLA32;
+  logic [31:0] cla_sum;
+  logic adder_carry_in;
+
+  // Our CLA
+  cla cla_instance(
+      .a(rs1_data), 
+      .b(inputbCLA32), 
+      .cin(adder_carry_in), 
+      .sum(cla_sum)
+  );
+
   always_comb begin
+    adder_carry_in = 1'b0;
     illegal_insn = 1'b0;
+    pcNext = pcCurrent + 4;  // Default next PC value
+
+    rd = 5'b0; // Default to an invalid register address
+    rs1 = 5'b0;
+    rs2 = 5'b0;
+    rd_data = 32'b0;
+    write_enable = 1'b0; // Default to not writing
+    immediateShiftedLeft = 32'b0;
+    inputbCLA32 = 32'b0;
+    halt = 1'b0;
 
     case (insn_opcode)
       OpLui: begin
+        rd = insn_rd; // RD field
+        immediateShiftedLeft = {insn_from_imem[31:12], 12'b0}; // Immediate shifted left
+        write_enable = 1'b1;
+        
+        rd_data = immediateShiftedLeft;
+      end
 
-        rd = insn_from_imem[11:7]; // RD field
-        rd_data = {insn_from_imem[31:12], 12'b0}; // Immediate shifted left
+      OpRegImm: begin
+        write_enable = 1'b1;
+        rd = insn_rd; 
+        rs1 = insn_rs1;
+
+        if (insn_addi) begin
+          inputbCLA32 = imm_i_sext;
+          rd_data = cla_sum;
+        end
+        
+        if (insn_slti) begin
+          rd_data = $signed(rs1_data) < $signed(imm_i_sext) ? 32'b1 : 32'b0;
+        end
+        
+        if (insn_sltiu) begin
+          rd_data = $unsigned(rs1_data) < $unsigned(imm_i_sext) ? 32'b1 : 32'b0;
+        end
+        
+        if (insn_xori) begin
+          rd_data = rs1_data ^ imm_i_sext;
+        end
+
+        if (insn_ori) begin
+          rd_data = rs1_data | imm_i_sext;
+        end
+
+        if (insn_andi) begin
+          rd_data = rs1_data & imm_i_sext;
+        end
+
+        if (insn_slli) begin
+          rd_data = rs1_data << imm_i[4:0];
+        end
+
+        if (insn_srli) begin
+          rd_data = rs1_data >> imm_i[4:0];
+        end
+
+        if (insn_srai) begin
+          rd_data = $signed(rs1_data) >>> imm_i[4:0];
+        end
+      end
+
+      OpRegReg: begin
+        rs1 = insn_rs1;
+        rs2 = insn_rs2;
+        rd = insn_rd;
         write_enable = 1'b1;
 
+        if (insn_add) begin
+          inputbCLA32 = rs2_data;
+          rd_data = cla_sum;
+        end
+
+        if (insn_sub) begin
+          inputbCLA32 = ~rs2_data;  // two's compliment
+          adder_carry_in = 1'b1;   // Set carry in to 1 for two's complement addition
+          rd_data = cla_sum;
+        end
+
+        if (insn_sll) begin
+          rd_data = rs1_data << rs2_data[4:0];
+        end
+
+        if (insn_slt) begin
+          rd_data = $signed(rs1_data) < $signed(rs2_data) ? 32'b1 : 32'b0;
+        end
+
+        if (insn_sltu) begin
+          rd_data = $unsigned(rs1_data) < $unsigned(rs2_data) ? 32'b1 : 32'b0;
+        end
+
+        if (insn_xor) begin
+          rd_data = rs1_data ^ rs2_data;
+        end
+
+        if (insn_srl) begin
+          rd_data = rs1_data >> rs2_data[4:0];
+        end
+
+        if (insn_sra) begin
+          rd_data = $signed(rs1_data) >>> rs2_data[4:0];
+        end
+
+        if (insn_or) begin
+          rd_data = rs1_data | rs2_data;
+        end
+
+        if (insn_and) begin
+          rd_data = rs1_data & rs2_data;
+        end
       end
+
+      OpBranch: begin
+          rs1 = insn_rs1;
+          rs2 = insn_rs2;
+          write_enable = 1'b0;
+
+          // The -4 is because we increment the 4 later in the code
+          if (insn_beq) begin
+              if (rs1_data == rs2_data) pcNext = pcCurrent + (imm_b_sext);
+          end
+          if (insn_bne) begin
+              if (rs1_data != rs2_data) pcNext = pcCurrent + (imm_b_sext);
+          end
+          if (insn_blt) begin
+              if ($signed(rs1_data) < $signed(rs2_data)) pcNext = pcCurrent + (imm_b_sext);
+          end
+          if (insn_bge) begin
+              if ($signed(rs1_data) >= $signed(rs2_data)) pcNext = pcCurrent + (imm_b_sext);
+          end
+          if (insn_bltu) begin
+              if ($unsigned(rs1_data) < $unsigned(rs2_data)) pcNext = pcCurrent + (imm_b_sext);
+          end
+          if (insn_bgeu) begin
+              if ($unsigned(rs1_data) >= $unsigned(rs2_data)) pcNext = pcCurrent + (imm_b_sext);
+          end
+      end
+
+      OpEnviron: begin
+        if (insn_ecall) begin
+          halt = 1'b1;
+        end
+      end
+
       default: begin
         illegal_insn = 1'b1;
       end
@@ -240,6 +390,10 @@ module DatapathSingleCycle (
     .we(write_enable),
     .rst(reset)
   );
+
+//  always_comb begin
+//    pcNext = pcCurrent + 4;  // Increment by 4 for 32-bit instructions
+//  end
 
 endmodule
 
