@@ -225,6 +225,19 @@ module DatapathSingleCycle (
       .sum(cla_sum)
   );
 
+  // Our divider
+  logic [31:0] divider_input_a;
+  logic [31:0] divider_input_b;
+  logic [31:0] divider_quotient;
+  logic [31:0] divider_remainder;
+  
+  divider_unsigned divider_instance(
+      divider_input_a, 
+      divider_input_b, 
+      divider_remainder, 
+      divider_quotient
+  );
+
   always_comb begin
     adder_carry_in = 1'b0;
     illegal_insn = 1'b0;
@@ -239,13 +252,53 @@ module DatapathSingleCycle (
     inputbCLA32 = 32'b0;
     halt = 1'b0;
 
+    // Divider
+    divider_input_a = 32'b0;
+    divider_input_b = 32'b0;
+
+    // Memory
+    addr_to_dmem = 32'b0;
+
     case (insn_opcode)
       OpLui: begin
-        rd = insn_rd; // RD field
-        immediateShiftedLeft = {insn_from_imem[31:12], 12'b0}; // Immediate shifted left
-        write_enable = 1'b1;
-        
-        rd_data = immediateShiftedLeft;
+        if (insn_lui) begin
+          rd = insn_rd; // RD field
+          immediateShiftedLeft = {insn_from_imem[31:12], 12'b0}; // Immediate shifted left
+          write_enable = 1'b1;
+          
+          rd_data = immediateShiftedLeft;
+        end
+      end
+
+      OpAuipc: begin
+        if (insn_auipc) begin
+          write_enable = 1'b1;
+          rd = insn_rd; // RD field
+          immediateShiftedLeft = {insn_from_imem[31:12], 12'b0} + pcCurrent;
+          
+          rd_data = immediateShiftedLeft;
+        end
+      end
+
+      OpJal: begin
+        if (insn_jal) begin
+          write_enable = 1'b1;          
+          rd = insn_rd; // RD field
+          rd_data = pcNext;
+          pcNext = pcCurrent + imm_j_sext;
+        end
+      end
+
+      OpJalr: begin
+        if (insn_jalr) begin
+          write_enable = 1'b1;
+          rd = insn_rd; // RD field
+          rd_data = pcNext;
+
+          rs1 = insn_rs1;
+
+          pcNext = (rs1_data + imm_i_sext) & ~32'b1;
+        end
       end
 
       OpRegImm: begin
@@ -288,6 +341,32 @@ module DatapathSingleCycle (
 
         if (insn_srai) begin
           rd_data = $signed(rs1_data) >>> imm_i[4:0];
+        end
+      end
+
+      OpLoad: begin
+        rd = insn_rd;
+        rs1 = insn_rs1;
+        write_enable = 1'b1;
+
+        // Calculate effective address for memory access
+        addr_to_dmem = rs1_data + imm_i_sext; 
+
+        if (insn_lb) begin
+          // Load byte and sign-extend
+          rd_data = {{24{load_data_from_dmem[7]}}, load_data_from_dmem[7:0]};
+        end
+        if (insn_lh) begin
+          rd_data = {{16{load_data_from_dmem[15]}}, load_data_from_dmem[15:0]};
+        end
+        if (insn_lw) begin
+          rd_data = load_data_from_dmem;
+        end
+        if (insn_lbu) begin
+          rd_data = {{24{1'b0}}, load_data_from_dmem[7:0]};
+        end
+        if (insn_lhu) begin
+          rd_data = {{16{1'b0}}, load_data_from_dmem[15:0]};
         end
       end
 
@@ -339,6 +418,46 @@ module DatapathSingleCycle (
         if (insn_and) begin
           rd_data = rs1_data & rs2_data;
         end
+
+        if (insn_mul) begin
+            rd_data = $signed(rs1_data) * $signed(rs2_data);
+        end
+
+        if (insn_mulh) begin
+            rd_data = $signed(rs1_data) * $signed(rs2_data) >> 32;
+        end
+
+        if (insn_mulhsu) begin
+            rd_data = $signed(rs1_data) * $unsigned(rs2_data) >> 32;
+        end
+
+        if (insn_mulhu) begin
+            rd_data = $unsigned(rs1_data) * $unsigned(rs2_data) >> 32;
+        end
+
+        if (insn_div) begin
+          divider_input_a = $signed(rs1_data);
+          divider_input_b = $signed(rs2_data);
+          rd_data = divider_quotient;
+        end
+
+        if (insn_divu) begin
+          divider_input_a = $unsigned(rs1_data);
+          divider_input_b = $unsigned(rs2_data);
+          rd_data = divider_quotient;
+        end
+
+        if (insn_rem) begin
+          divider_input_a = $signed(rs1_data);
+          divider_input_b = $signed(rs2_data);
+          rd_data = divider_remainder;
+        end
+
+        if (insn_remu) begin
+          divider_input_a = $unsigned(rs1_data);
+          divider_input_b = $unsigned(rs2_data);
+          rd_data = divider_remainder;
+        end
       end
 
       OpBranch: begin
@@ -346,7 +465,6 @@ module DatapathSingleCycle (
           rs2 = insn_rs2;
           write_enable = 1'b0;
 
-          // The -4 is because we increment the 4 later in the code
           if (insn_beq) begin
               if (rs1_data == rs2_data) pcNext = pcCurrent + (imm_b_sext);
           end
@@ -370,6 +488,14 @@ module DatapathSingleCycle (
       OpEnviron: begin
         if (insn_ecall) begin
           halt = 1'b1;
+        end
+      end
+
+      OpMiscMem: begin
+        if (insn_fence) begin
+          // Encoding NOP as ADDI with immediate of zero  
+          inputbCLA32 = 32'b0;
+          rd_data = cla_sum;
         end
       end
 
