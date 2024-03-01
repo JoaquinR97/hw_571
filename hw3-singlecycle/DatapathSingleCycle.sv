@@ -51,10 +51,10 @@ module DatapathSingleCycle (
     output logic [`REG_SIZE] pc_to_imem,
     input wire [`REG_SIZE] insn_from_imem,
     // addr_to_dmem is a read-write port
-    output wire [`REG_SIZE] addr_to_dmem,
+    output logic [`REG_SIZE] addr_to_dmem,
     input logic [`REG_SIZE] load_data_from_dmem,
-    output wire [`REG_SIZE] store_data_to_dmem,
-    output wire [3:0] store_we_to_dmem
+    output logic [`REG_SIZE] store_data_to_dmem,
+    output logic [3:0] store_we_to_dmem
 );
 
   // components of the instruction
@@ -249,6 +249,14 @@ module DatapathSingleCycle (
   // Memory
   logic [`REG_SIZE] effective_addr;
   logic [1:0] lowest_bits_memory_access;
+
+/*  logic [`REG_SIZE] addr_to_dmem_logic;
+  logic [`REG_SIZE] store_data_to_dmem_logic;
+  logic [3:0] store_we_to_dmem_logic;
+
+  store_data_to_dmem = addr_to_dmem_logic;
+  store_we_to_dmem = store_data_to_dmem_logic;
+  addr_to_dmem = store_we_to_dmem_logic; */
 
   always_comb begin
     adder_carry_in = 1'b0;
