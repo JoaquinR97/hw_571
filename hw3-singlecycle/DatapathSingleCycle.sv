@@ -504,8 +504,7 @@ module DatapathSingleCycle (
         end
 
         if (insn_div) begin
-          logic [31:0] abs_a, abs_b;
-          logic sign_result = (rs1_data[31] != rs2_data[31]); // Determine the result sign
+          logic sign_result = (rs1_data[31] != rs2_data[31]); 
 
           // Compute absolute values handling two's complement edge case
           abs_a = rs1_data[31] ? (~rs1_data + 1) : rs1_data;
@@ -514,13 +513,12 @@ module DatapathSingleCycle (
           // Assign absolute values for division
           divider_input_a = abs_a;
           divider_input_b = abs_b;
-          // Wait for division operation to complete if necessary
 
-          // Assuming 'divider_quotient' holds the division result
-          temp_divider_value = divider_quotient; // Capture the division result
-
-          // Apply the sign to the quotient considering the edge case
-          rd_data = sign_result ? (~temp_divider_value + 1) : temp_divider_value;
+          if (sign_result) begin
+            rd_data = ((~divider_quotient) + (1'b1 * (|(~divider_quotient))) + (&divider_quotient * ({32{1'b1}})));
+          end else begin
+            rd_data = divider_quotient;
+          end
         end
 
         if (insn_divu) begin
@@ -530,11 +528,19 @@ module DatapathSingleCycle (
         end
 
         if (insn_rem) begin
-          if (rs2_data == 0) begin
-            rd_data = rs1_data;
+          logic sign_result = rs1_data[31]; 
+
+          // Compute absolute values handling two's complement edge case
+          abs_a = rs1_data[31] ? (~rs1_data + 1) : rs1_data;
+          abs_b = rs2_data[31] ? (~rs2_data + 1) : rs2_data;
+
+          // Assign absolute values for division
+          divider_input_a = abs_a;
+          divider_input_b = abs_b;
+
+          if (sign_result) begin
+            rd_data = ((~divider_remainder) + 1'b1);
           end else begin
-            divider_input_a = $signed(rs1_data);
-            divider_input_b = $signed(rs2_data);
             rd_data = divider_remainder;
           end
         end
