@@ -212,9 +212,9 @@ module DatapathSingleCycle (
   logic write_enable; // Write enable signal
   logic reset; // Reset signal
 
-  logic [31:0] immediateShiftedLeft;
-  logic [31:0] inputbCLA32;
-  logic [31:0] cla_sum;
+  logic [`REG_SIZE] immediateShiftedLeft;
+  logic [`REG_SIZE] inputbCLA32;
+  logic [`REG_SIZE] cla_sum;
   logic adder_carry_in;
 
   // Our CLA
@@ -225,11 +225,19 @@ module DatapathSingleCycle (
       .sum(cla_sum)
   );
 
+  // Multiplication
+  logic [63:0] multiplication;
+  logic signed [63:0] extended_rs1_data;
+  logic [63:0] extended_rs2_data;
+
   // Our divider
-  logic [31:0] divider_input_a;
-  logic [31:0] divider_input_b;
-  logic [31:0] divider_quotient;
-  logic [31:0] divider_remainder;
+  logic [`REG_SIZE] divider_input_a;
+  logic [`REG_SIZE] divider_input_b;
+  logic [`REG_SIZE] divider_quotient;
+  logic [`REG_SIZE] divider_remainder;
+  logic sign_result;
+  logic [`REG_SIZE] temp_divider_value;
+  logic [31:0] abs_a, abs_b;
   
   divider_unsigned divider_instance(
       divider_input_a, 
@@ -237,6 +245,10 @@ module DatapathSingleCycle (
       divider_remainder, 
       divider_quotient
   );
+
+  // Memory
+  logic [`REG_SIZE] effective_addr;
+  logic [1:0] lowest_bits_memory_access;
 
   always_comb begin
     adder_carry_in = 1'b0;
@@ -255,9 +267,22 @@ module DatapathSingleCycle (
     // Divider
     divider_input_a = 32'b0;
     divider_input_b = 32'b0;
+    sign_result = 1'b0;
+    temp_divider_value = 32'b0;
+    abs_a = 32'b0;
+    abs_b = 32'b0;
+    
+    // Multiplication
+    multiplication = 64'b0;
+    extended_rs1_data = 64'b0;
+    extended_rs2_data = 64'b0;
 
     // Memory
+    store_data_to_dmem = 32'b0;
+    store_we_to_dmem = 4'b0;
     addr_to_dmem = 32'b0;
+    effective_addr = 32'b0;
+    lowest_bits_memory_access = 2'b0;
 
     case (insn_opcode)
       OpLui: begin
@@ -349,24 +374,61 @@ module DatapathSingleCycle (
         rs1 = insn_rs1;
         write_enable = 1'b1;
 
-        // Calculate effective address for memory access
-        addr_to_dmem = rs1_data + imm_i_sext; 
+        // Calculate effective address for memory access with alignement
+        effective_addr = (rs1_data + $signed(imm_i_sext)); 
+        lowest_bits_memory_access = effective_addr[1:0]; 
+        addr_to_dmem = effective_addr & ~32'h3; 
 
-        if (insn_lb) begin
-          // Load byte and sign-extend
-          rd_data = {{24{load_data_from_dmem[7]}}, load_data_from_dmem[7:0]};
+        if (insn_lb || insn_lbu) begin
+          case (lowest_bits_memory_access)
+            2'b00: rd_data = insn_lb ? {{24{load_data_from_dmem[7]}}, load_data_from_dmem[7:0]} : {{24{1'b0}}, load_data_from_dmem[7:0]};
+            2'b01: rd_data = insn_lb ? {{24{load_data_from_dmem[15]}}, load_data_from_dmem[15:8]} : {{24{1'b0}}, load_data_from_dmem[15:8]};
+            2'b10: rd_data = insn_lb ? {{24{load_data_from_dmem[23]}}, load_data_from_dmem[23:16]} : {{24{1'b0}}, load_data_from_dmem[23:16]};
+            2'b11: rd_data = insn_lb ? {{24{load_data_from_dmem[31]}}, load_data_from_dmem[31:24]} : {{24{1'b0}}, load_data_from_dmem[31:24]};
+          endcase
         end
-        if (insn_lh) begin
-          rd_data = {{16{load_data_from_dmem[15]}}, load_data_from_dmem[15:0]};
+
+        if (insn_lh || insn_lhu) begin
+          case (lowest_bits_memory_access[1])
+            1'b0: rd_data = insn_lh ? {{16{load_data_from_dmem[15]}}, load_data_from_dmem[15:0]} : {{16{1'b0}}, load_data_from_dmem[15:0]};
+            1'b1: rd_data = insn_lh ? {{16{load_data_from_dmem[31]}}, load_data_from_dmem[31:16]} : {{16{1'b0}}, load_data_from_dmem[31:16]};
+          endcase
         end
+
         if (insn_lw) begin
           rd_data = load_data_from_dmem;
         end
-        if (insn_lbu) begin
-          rd_data = {{24{1'b0}}, load_data_from_dmem[7:0]};
+      end
+
+      OpStore: begin
+        rs1 = insn_rs1;
+        rs2 = insn_rs2;
+
+        effective_addr = rs1_data + $signed(imm_s_sext);
+        lowest_bits_memory_access = effective_addr[1:0]; 
+
+        if (insn_sb) begin
+          store_data_to_dmem = rs2_data << (8 * lowest_bits_memory_access);
+          store_we_to_dmem = 4'b0001 << lowest_bits_memory_access;
+          addr_to_dmem = effective_addr & ~32'h3;
         end
-        if (insn_lhu) begin
-          rd_data = {{16{1'b0}}, load_data_from_dmem[15:0]};
+        if (insn_sh) begin
+          if (lowest_bits_memory_access[1] == 1) begin
+            store_data_to_dmem = rs2_data << 16;
+            store_we_to_dmem = 4'b1100;
+          end 
+
+          if (lowest_bits_memory_access[1] == 0) begin
+            store_data_to_dmem = rs2_data;
+            store_we_to_dmem = 4'b0011;
+          end
+          
+          addr_to_dmem = effective_addr & ~32'h3;
+        end
+        if (insn_sw) begin
+          store_data_to_dmem = rs2_data;
+          store_we_to_dmem = 4'b1111;
+          addr_to_dmem = effective_addr;
         end
       end
 
@@ -420,43 +482,71 @@ module DatapathSingleCycle (
         end
 
         if (insn_mul) begin
-            rd_data = $signed(rs1_data) * $signed(rs2_data);
+          rd_data = $signed(rs1_data) * $signed(rs2_data);
         end
 
         if (insn_mulh) begin
-            rd_data = $signed(rs1_data) * $signed(rs2_data) >> 32;
+          multiplication = $signed(rs1_data) * $signed(rs2_data);
+          rd_data = multiplication[63:32];
         end
 
         if (insn_mulhsu) begin
-            rd_data = $signed(rs1_data) * $unsigned(rs2_data) >> 32;
+          extended_rs1_data = $signed({{32{rs1_data[31]}}, rs1_data});
+          extended_rs2_data = {32'd0, rs2_data};
+
+          multiplication = extended_rs1_data * extended_rs2_data;
+          rd_data = multiplication[63:32];
         end
 
         if (insn_mulhu) begin
-            rd_data = $unsigned(rs1_data) * $unsigned(rs2_data) >> 32;
+          multiplication = $unsigned(rs1_data) * $unsigned(rs2_data);
+          rd_data = multiplication[63:32];
         end
 
         if (insn_div) begin
-          divider_input_a = $signed(rs1_data);
-          divider_input_b = $signed(rs2_data);
-          rd_data = divider_quotient;
+          logic [31:0] abs_a, abs_b;
+          logic sign_result = (rs1_data[31] != rs2_data[31]); // Determine the result sign
+
+          // Compute absolute values handling two's complement edge case
+          abs_a = rs1_data[31] ? (~rs1_data + 1) : rs1_data;
+          abs_b = rs2_data[31] ? (~rs2_data + 1) : rs2_data;
+
+          // Assign absolute values for division
+          divider_input_a = abs_a;
+          divider_input_b = abs_b;
+          // Wait for division operation to complete if necessary
+
+          // Assuming 'divider_quotient' holds the division result
+          temp_divider_value = divider_quotient; // Capture the division result
+
+          // Apply the sign to the quotient considering the edge case
+          rd_data = sign_result ? (~temp_divider_value + 1) : temp_divider_value;
         end
 
         if (insn_divu) begin
-          divider_input_a = $unsigned(rs1_data);
-          divider_input_b = $unsigned(rs2_data);
+          divider_input_a = rs1_data;
+          divider_input_b = rs2_data;
           rd_data = divider_quotient;
         end
 
         if (insn_rem) begin
-          divider_input_a = $signed(rs1_data);
-          divider_input_b = $signed(rs2_data);
-          rd_data = divider_remainder;
+          if (rs2_data == 0) begin
+            rd_data = rs1_data;
+          end else begin
+            divider_input_a = $signed(rs1_data);
+            divider_input_b = $signed(rs2_data);
+            rd_data = divider_remainder;
+          end
         end
 
         if (insn_remu) begin
-          divider_input_a = $unsigned(rs1_data);
-          divider_input_b = $unsigned(rs2_data);
-          rd_data = divider_remainder;
+          if (rs2_data == 0) begin
+            rd_data = rs1_data;
+          end else begin
+            divider_input_a = rs1_data;
+            divider_input_b = rs2_data;
+            rd_data = divider_remainder;
+          end
         end
       end
 
