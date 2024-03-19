@@ -31,6 +31,8 @@ module divider_unsigned_pipelined (
     logic [31:0] stage2_remainder_output[17];
     logic [31:0] stage2_quotient_output[17];
 
+    logic [31:0] divisor_temp;
+
     // Pipeline stage 1
     genvar i;
     generate
@@ -56,7 +58,7 @@ module divider_unsigned_pipelined (
         for (j = 0; j < 16; j = j + 1) begin : stage2
             divu_1iter div_stage2_instance(
                 .i_dividend(stage2_dividend[j]),
-                .i_divisor(i_divisor),
+                .i_divisor(divisor_temp),
                 .i_remainder(stage2_remainder[j]),
                 .i_quotient(stage2_quotient[j]),
                 .o_dividend(stage2_dividend_output[j]),
@@ -64,9 +66,9 @@ module divider_unsigned_pipelined (
                 .o_quotient(stage2_quotient_output[j])
             );
 
-            assign stage2_dividend[i + 1] = stage2_dividend_output[i];
-            assign stage2_remainder[i + 1] = stage2_remainder_output[i];
-            assign stage2_quotient[i + 1] = stage2_quotient_output[i];
+            assign stage2_dividend[j + 1] = stage2_dividend_output[j];
+            assign stage2_remainder[j + 1] = stage2_remainder_output[j];
+            assign stage2_quotient[j + 1] = stage2_quotient_output[j];
         end
     endgenerate
 
@@ -88,13 +90,14 @@ module divider_unsigned_pipelined (
             stage2_dividend_intermediate <= 0;
             stage2_remainder_intermediate <= 0;
             stage2_quotient_intermediate <= 0;
+            divisor_temp <= 0;
 
         end else begin
             // First stage to second stage
             stage2_dividend_intermediate <= stage1_dividend_output[15];
             stage2_remainder_intermediate <= stage1_remainder_output[15];
             stage2_quotient_intermediate <= stage1_quotient_output[15];
-
+            divisor_temp <= i_divisor;
         end
     end
 
@@ -114,9 +117,9 @@ module divu_1iter (
     input  wire [31:0] i_quotient,
     output wire [31:0] o_dividend,
     output wire [31:0] o_remainder,
-    output wire [31:0] o_quotient // cl
+    output wire [31:0] o_quotient 
 );
-    wire [31:0] intermediate_remainder; // cl
+    wire [31:0] intermediate_remainder; 
     wire [31:0] new_quotient;
     wire [31:0] new_remainder;
 
