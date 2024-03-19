@@ -1,0 +1,620 @@
+Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2020.2 (lin64) Build 3064766 Wed Nov 18 09:12:47 MST 2020
+| Date         : Mon Mar 18 22:36:18 2024
+| Host         : big24.seas.upenn.edu running 64-bit openSUSE Leap 15.5
+| Command      : report_timing -file ./vivado_output/post_route_timing_report.txt
+| Design       : RiscvSystem
+| Device       : 7z020-clg484
+| Speed File   : -1  PRODUCTION 1.12 2019-11-22
+------------------------------------------------------------------------------------
+
+Timing Report
+
+Slack (VIOLATED) :        -27.838ns  (required time - arrival time)
+  Source:                 mem/mem_reg_0_0/CLKBWRCLK
+                            (rising edge-triggered cell RAMB36E1 clocked by clk_mem_clk_wiz_0  {rise@19.231ns fall@57.692ns period=76.923ns})
+  Destination:            datapath/divider_instance/stage2_remainder_intermediate_reg[29]/D
+                            (rising edge-triggered cell FDRE clocked by clk_proc_clk_wiz_0  {rise@0.000ns fall@38.462ns period=76.923ns})
+  Path Group:             clk_proc_clk_wiz_0
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            57.692ns  (clk_proc_clk_wiz_0 rise@76.923ns - clk_mem_clk_wiz_0 rise@19.231ns)
+  Data Path Delay:        85.103ns  (logic 49.357ns (57.997%)  route 35.746ns (42.003%))
+  Logic Levels:           194  (CARRY4=153 LUT2=1 LUT3=12 LUT4=17 LUT5=3 LUT6=7 MUXF7=1)
+  Clock Path Skew:        -0.315ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    -1.505ns = ( 75.418 - 76.923 ) 
+    Source Clock Delay      (SCD):    -0.902ns = ( 18.329 - 19.231 ) 
+    Clock Pessimism Removal (CPR):    0.288ns
+  Clock Uncertainty:      0.221ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.189ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk_mem_clk_wiz_0 rise edge)
+                                                     19.231    19.231 r  
+    Y9                                                0.000    19.231 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000    19.231    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         1.490    20.721 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           1.285    22.006    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -7.343    14.663 r  mmcm/mmcm_adv_inst/CLKOUT1
+                         net (fo=2, routed)           1.855    16.518    mmcm/clk_mem_clk_wiz_0
+    BUFGCTRL_X0Y1        BUFGCTRL (Prop_bufgctrl_I0_O)
+                                                      0.101    16.619 r  mmcm/clkout2_buf/O
+                         net (fo=768, routed)         1.709    18.329    mem/clock_mem
+    RAMB36_X2Y0          RAMB36E1                                     r  mem/mem_reg_0_0/CLKBWRCLK
+  -------------------------------------------------------------------    -------------------
+    RAMB36_X2Y0          RAMB36E1 (Prop_ramb36e1_CLKBWRCLK_DOBDO[1])
+                                                      2.454    20.783 r  mem/mem_reg_0_0/DOBDO[1]
+                         net (fo=7, routed)           1.265    22.048    mem/insn_from_imem[1]
+    SLICE_X52Y4          LUT4 (Prop_lut4_I3_O)        0.124    22.172 f  mem/mem[3][0][7]_i_25/O
+                         net (fo=5, routed)           0.821    22.992    mem/mem[3][0][7]_i_25_n_0
+    SLICE_X50Y4          LUT5 (Prop_lut5_I4_O)        0.124    23.116 r  mem/mem[3][0][7]_i_30/O
+                         net (fo=256, routed)         1.010    24.126    datapath/rf/rs2[1]
+    SLICE_X42Y5          LUT6 (Prop_lut6_I2_O)        0.124    24.250 r  datapath/rf/rd_data0_i_297/O
+                         net (fo=1, routed)           0.000    24.250    datapath/rf/rd_data0_i_297_n_0
+    SLICE_X42Y5          MUXF7 (Prop_muxf7_I1_O)      0.247    24.497 r  datapath/rf/rd_data0_i_114/O
+                         net (fo=1, routed)           0.867    25.364    datapath/rf/rd_data0_i_114_n_0
+    SLICE_X42Y11         LUT6 (Prop_lut6_I0_O)        0.298    25.662 r  datapath/rf/rd_data0_i_22/O
+                         net (fo=27, routed)          0.993    26.655    datapath/rf/mem_reg_0_0[10]
+    SLICE_X47Y14         LUT4 (Prop_lut4_I1_O)        0.124    26.779 r  datapath/rf/regs[1][31]_i_95/O
+                         net (fo=1, routed)           0.395    27.175    datapath/rf/regs[1][31]_i_95_n_0
+    SLICE_X45Y14         LUT5 (Prop_lut5_I4_O)        0.124    27.299 f  datapath/rf/regs[1][31]_i_60/O
+                         net (fo=1, routed)           0.590    27.889    datapath/rf/regs[1][31]_i_60_n_0
+    SLICE_X40Y14         LUT6 (Prop_lut6_I4_O)        0.124    28.013 f  datapath/rf/regs[1][31]_i_19/O
+                         net (fo=13, routed)          0.589    28.602    mem/regs_reg[31][8]
+    SLICE_X41Y12         LUT3 (Prop_lut3_I0_O)        0.124    28.726 f  mem/stage2_dividend_intermediate[31]_i_9/O
+                         net (fo=24, routed)          0.277    29.003    mem/mem_reg_1_1_91
+    SLICE_X41Y12         LUT5 (Prop_lut5_I4_O)        0.124    29.127 r  mem/stage2_quotient_intermediate[15]_i_38/O
+                         net (fo=4, routed)           0.583    29.710    mem/mem_reg_1_1_2[28]
+    SLICE_X41Y13         LUT3 (Prop_lut3_I1_O)        0.124    29.834 r  mem/stage2_quotient_intermediate[15]_i_37/O
+                         net (fo=1, routed)           0.000    29.834    datapath/rf/S[0]
+    SLICE_X41Y13         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    30.366 r  datapath/rf/stage2_quotient_intermediate_reg[15]_i_21/CO[3]
+                         net (fo=1, routed)           0.000    30.366    datapath/rf/stage2_quotient_intermediate_reg[15]_i_21_n_0
+    SLICE_X41Y14         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    30.480 r  datapath/rf/stage2_quotient_intermediate_reg[15]_i_12/CO[3]
+                         net (fo=1, routed)           0.000    30.480    datapath/rf/stage2_quotient_intermediate_reg[15]_i_12_n_0
+    SLICE_X41Y15         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    30.594 r  datapath/rf/stage2_quotient_intermediate_reg[15]_i_3/CO[3]
+                         net (fo=1, routed)           0.000    30.594    datapath/rf/stage2_quotient_intermediate_reg[15]_i_3_n_0
+    SLICE_X41Y16         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    30.708 r  datapath/rf/stage2_quotient_intermediate_reg[15]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    30.708    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_n_0
+    SLICE_X41Y17         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    30.943 r  datapath/rf/stage2_quotient_intermediate_reg[15]_i_1/O[0]
+                         net (fo=33, routed)          1.013    31.956    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[15]
+    SLICE_X42Y14         LUT2 (Prop_lut2_I0_O)        0.299    32.255 r  datapath/rf/stage2_quotient_intermediate[14]_i_76/O
+                         net (fo=1, routed)           0.000    32.255    datapath/rf/divider_instance/stage1[0].div_stage1_instance/p_1_in[1]
+    SLICE_X42Y14         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    32.788 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    32.788    datapath/rf/stage2_quotient_intermediate_reg[14]_i_64_n_0
+    SLICE_X42Y15         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    32.905 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    32.905    datapath/rf/stage2_quotient_intermediate_reg[14]_i_55_n_0
+    SLICE_X42Y16         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    33.022 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    33.022    datapath/rf/stage2_quotient_intermediate_reg[14]_i_54_n_0
+    SLICE_X42Y17         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    33.139 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    33.139    datapath/rf/stage2_quotient_intermediate_reg[14]_i_34_n_0
+    SLICE_X42Y18         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    33.256 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    33.256    datapath/rf/stage2_quotient_intermediate_reg[14]_i_33_n_0
+    SLICE_X42Y19         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323    33.579 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_23/O[1]
+                         net (fo=4, routed)           0.982    34.562    datapath/rf/divider_instance/stage1_remainder[1]_0[21]
+    SLICE_X46Y18         LUT4 (Prop_lut4_I1_O)        0.306    34.868 r  datapath/rf/stage2_quotient_intermediate[14]_i_17/O
+                         net (fo=1, routed)           0.000    34.868    datapath/rf/stage2_quotient_intermediate[14]_i_17_n_0
+    SLICE_X46Y18         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.376    35.244 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_3/CO[3]
+                         net (fo=1, routed)           0.000    35.244    datapath/rf/stage2_quotient_intermediate_reg[14]_i_3_n_0
+    SLICE_X46Y19         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    35.361 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    35.361    datapath/rf/stage2_quotient_intermediate_reg[14]_i_2_n_0
+    SLICE_X46Y20         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.232    35.593 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_1/O[0]
+                         net (fo=33, routed)          0.515    36.108    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[14]
+    SLICE_X43Y19         LUT6 (Prop_lut6_I5_O)        0.295    36.403 r  datapath/rf/stage2_quotient_intermediate[13]_i_77/O
+                         net (fo=1, routed)           0.599    37.001    datapath/rf/stage2_quotient_intermediate[13]_i_77_n_0
+    SLICE_X39Y15         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.656    37.657 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    37.657    datapath/rf/stage2_quotient_intermediate_reg[13]_i_64_n_0
+    SLICE_X39Y16         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    37.771 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    37.771    datapath/rf/stage2_quotient_intermediate_reg[13]_i_55_n_0
+    SLICE_X39Y17         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    37.885 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    37.885    datapath/rf/stage2_quotient_intermediate_reg[13]_i_54_n_0
+    SLICE_X39Y18         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    37.999 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    37.999    datapath/rf/stage2_quotient_intermediate_reg[13]_i_34_n_0
+    SLICE_X39Y19         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    38.113 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    38.113    datapath/rf/stage2_quotient_intermediate_reg[13]_i_33_n_0
+    SLICE_X39Y20         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    38.227 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    38.227    datapath/rf/stage2_quotient_intermediate_reg[13]_i_23_n_0
+    SLICE_X39Y21         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    38.561 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_22/O[1]
+                         net (fo=4, routed)           0.994    39.555    datapath/rf/divider_instance/stage1_remainder[2]_1[25]
+    SLICE_X45Y23         LUT4 (Prop_lut4_I1_O)        0.303    39.858 r  datapath/rf/stage2_quotient_intermediate[13]_i_10/O
+                         net (fo=1, routed)           0.000    39.858    datapath/rf/stage2_quotient_intermediate[13]_i_10_n_0
+    SLICE_X45Y23         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    40.408 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    40.408    datapath/rf/stage2_quotient_intermediate_reg[13]_i_2_n_0
+    SLICE_X45Y24         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    40.643 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_1/O[0]
+                         net (fo=33, routed)          0.372    41.015    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[13]
+    SLICE_X41Y24         LUT6 (Prop_lut6_I5_O)        0.299    41.314 r  datapath/rf/stage2_quotient_intermediate[12]_i_77/O
+                         net (fo=1, routed)           0.571    41.885    datapath/rf/stage2_quotient_intermediate[12]_i_77_n_0
+    SLICE_X37Y22         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.656    42.541 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    42.541    datapath/rf/stage2_quotient_intermediate_reg[12]_i_64_n_0
+    SLICE_X37Y23         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    42.655 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    42.655    datapath/rf/stage2_quotient_intermediate_reg[12]_i_55_n_0
+    SLICE_X37Y24         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    42.769 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_54/CO[3]
+                         net (fo=1, routed)           0.009    42.778    datapath/rf/stage2_quotient_intermediate_reg[12]_i_54_n_0
+    SLICE_X37Y25         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    42.892 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    42.892    datapath/rf/stage2_quotient_intermediate_reg[12]_i_34_n_0
+    SLICE_X37Y26         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    43.006 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    43.006    datapath/rf/stage2_quotient_intermediate_reg[12]_i_33_n_0
+    SLICE_X37Y27         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    43.120 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    43.120    datapath/rf/stage2_quotient_intermediate_reg[12]_i_23_n_0
+    SLICE_X37Y28         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    43.454 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_22/O[1]
+                         net (fo=4, routed)           1.028    44.481    datapath/rf/divider_instance/stage1_remainder[3]_2[25]
+    SLICE_X36Y24         LUT4 (Prop_lut4_I1_O)        0.303    44.784 r  datapath/rf/stage2_quotient_intermediate[12]_i_10/O
+                         net (fo=1, routed)           0.000    44.784    datapath/rf/stage2_quotient_intermediate[12]_i_10_n_0
+    SLICE_X36Y24         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    45.317 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_2/CO[3]
+                         net (fo=1, routed)           0.009    45.326    datapath/rf/stage2_quotient_intermediate_reg[12]_i_2_n_0
+    SLICE_X36Y25         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.232    45.558 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_1/O[0]
+                         net (fo=33, routed)          0.697    46.256    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[12]
+    SLICE_X37Y21         LUT6 (Prop_lut6_I5_O)        0.295    46.551 r  datapath/rf/stage2_quotient_intermediate[11]_i_77/O
+                         net (fo=1, routed)           0.711    47.262    datapath/rf/stage2_quotient_intermediate[11]_i_77_n_0
+    SLICE_X38Y16         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.637    47.899 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    47.899    datapath/rf/stage2_quotient_intermediate_reg[11]_i_64_n_0
+    SLICE_X38Y17         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    48.016 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    48.016    datapath/rf/stage2_quotient_intermediate_reg[11]_i_55_n_0
+    SLICE_X38Y18         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    48.133 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    48.133    datapath/rf/stage2_quotient_intermediate_reg[11]_i_54_n_0
+    SLICE_X38Y19         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    48.250 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    48.250    datapath/rf/stage2_quotient_intermediate_reg[11]_i_34_n_0
+    SLICE_X38Y20         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    48.367 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    48.367    datapath/rf/stage2_quotient_intermediate_reg[11]_i_33_n_0
+    SLICE_X38Y21         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    48.484 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    48.484    datapath/rf/stage2_quotient_intermediate_reg[11]_i_23_n_0
+    SLICE_X38Y22         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323    48.807 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_22/O[1]
+                         net (fo=4, routed)           1.059    49.866    datapath/rf/divider_instance/stage1_remainder[4]_3[25]
+    SLICE_X36Y17         LUT4 (Prop_lut4_I1_O)        0.306    50.172 r  datapath/rf/stage2_quotient_intermediate[11]_i_10/O
+                         net (fo=1, routed)           0.000    50.172    datapath/rf/stage2_quotient_intermediate[11]_i_10_n_0
+    SLICE_X36Y17         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    50.705 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    50.705    datapath/rf/stage2_quotient_intermediate_reg[11]_i_2_n_0
+    SLICE_X36Y18         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.232    50.937 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_1/O[0]
+                         net (fo=33, routed)          0.949    51.885    mem/stage2_quotient_intermediate_reg[10]_i_21[0]
+    SLICE_X37Y12         LUT3 (Prop_lut3_I2_O)        0.295    52.180 r  mem/stage2_quotient_intermediate[10]_i_77/O
+                         net (fo=1, routed)           0.000    52.180    datapath/rf/stage2_quotient_intermediate[10]_i_49[0]
+    SLICE_X37Y12         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    52.712 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    52.712    datapath/rf/stage2_quotient_intermediate_reg[10]_i_64_n_0
+    SLICE_X37Y13         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    52.826 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    52.826    datapath/rf/stage2_quotient_intermediate_reg[10]_i_55_n_0
+    SLICE_X37Y14         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    52.940 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    52.940    datapath/rf/stage2_quotient_intermediate_reg[10]_i_54_n_0
+    SLICE_X37Y15         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    53.054 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    53.054    datapath/rf/stage2_quotient_intermediate_reg[10]_i_34_n_0
+    SLICE_X37Y16         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    53.168 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    53.168    datapath/rf/stage2_quotient_intermediate_reg[10]_i_33_n_0
+    SLICE_X37Y17         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    53.282 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    53.282    datapath/rf/stage2_quotient_intermediate_reg[10]_i_23_n_0
+    SLICE_X37Y18         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    53.616 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_22/O[1]
+                         net (fo=4, routed)           0.818    54.434    datapath/rf/divider_instance/stage1_remainder[5]_4[25]
+    SLICE_X40Y18         LUT4 (Prop_lut4_I1_O)        0.303    54.737 r  datapath/rf/stage2_quotient_intermediate[10]_i_10/O
+                         net (fo=1, routed)           0.000    54.737    datapath/rf/stage2_quotient_intermediate[10]_i_10_n_0
+    SLICE_X40Y18         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    55.287 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    55.287    datapath/rf/stage2_quotient_intermediate_reg[10]_i_2_n_0
+    SLICE_X40Y19         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    55.522 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_1/O[0]
+                         net (fo=33, routed)          1.050    56.572    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[10]
+    SLICE_X38Y8          LUT3 (Prop_lut3_I2_O)        0.299    56.871 r  datapath/rf/stage2_quotient_intermediate[9]_i_76/O
+                         net (fo=1, routed)           0.000    56.871    datapath/rf/stage2_quotient_intermediate[9]_i_76_n_0
+    SLICE_X38Y8          CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    57.404 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    57.404    datapath/rf/stage2_quotient_intermediate_reg[9]_i_64_n_0
+    SLICE_X38Y9          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    57.521 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    57.521    datapath/rf/stage2_quotient_intermediate_reg[9]_i_55_n_0
+    SLICE_X38Y10         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    57.638 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    57.638    datapath/rf/stage2_quotient_intermediate_reg[9]_i_54_n_0
+    SLICE_X38Y11         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    57.755 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    57.755    datapath/rf/stage2_quotient_intermediate_reg[9]_i_34_n_0
+    SLICE_X38Y12         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    57.872 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    57.872    datapath/rf/stage2_quotient_intermediate_reg[9]_i_33_n_0
+    SLICE_X38Y13         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    57.989 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    57.989    datapath/rf/stage2_quotient_intermediate_reg[9]_i_23_n_0
+    SLICE_X38Y14         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    58.106 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_22/CO[3]
+                         net (fo=1, routed)           0.000    58.106    datapath/rf/stage2_quotient_intermediate_reg[9]_i_22_n_0
+    SLICE_X38Y15         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323    58.429 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_21/O[1]
+                         net (fo=3, routed)           0.904    59.333    mem/stage2_quotient_intermediate_reg[9]_i_2[1]
+    SLICE_X37Y10         LUT4 (Prop_lut4_I1_O)        0.306    59.639 r  mem/stage2_quotient_intermediate[9]_i_8/O
+                         net (fo=1, routed)           0.000    59.639    datapath/rf/stage2_quotient_intermediate_reg[9]_1[0]
+    SLICE_X37Y10         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.401    60.040 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    60.040    datapath/rf/stage2_quotient_intermediate_reg[9]_i_2_n_0
+    SLICE_X37Y11         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    60.275 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_1/O[0]
+                         net (fo=33, routed)          0.599    60.874    mem/stage2_quotient_intermediate_reg[8]_i_21[0]
+    SLICE_X38Y7          LUT6 (Prop_lut6_I5_O)        0.299    61.173 r  mem/stage2_quotient_intermediate[8]_i_77/O
+                         net (fo=1, routed)           0.683    61.856    datapath/rf/stage2_quotient_intermediate[8]_i_49[0]
+    SLICE_X43Y7          CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.656    62.512 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    62.512    datapath/rf/stage2_quotient_intermediate_reg[8]_i_64_n_0
+    SLICE_X43Y8          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    62.626 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    62.626    datapath/rf/stage2_quotient_intermediate_reg[8]_i_55_n_0
+    SLICE_X43Y9          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    62.740 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    62.740    datapath/rf/stage2_quotient_intermediate_reg[8]_i_54_n_0
+    SLICE_X43Y10         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    62.854 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    62.854    datapath/rf/stage2_quotient_intermediate_reg[8]_i_34_n_0
+    SLICE_X43Y11         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    62.968 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    62.968    datapath/rf/stage2_quotient_intermediate_reg[8]_i_33_n_0
+    SLICE_X43Y12         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    63.082 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    63.082    datapath/rf/stage2_quotient_intermediate_reg[8]_i_23_n_0
+    SLICE_X43Y13         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    63.196 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_22/CO[3]
+                         net (fo=1, routed)           0.000    63.196    datapath/rf/stage2_quotient_intermediate_reg[8]_i_22_n_0
+    SLICE_X43Y14         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    63.530 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_21/O[1]
+                         net (fo=3, routed)           0.948    64.478    mem/stage2_quotient_intermediate_reg[8]_i_2[1]
+    SLICE_X40Y10         LUT4 (Prop_lut4_I1_O)        0.303    64.781 r  mem/stage2_quotient_intermediate[8]_i_8/O
+                         net (fo=1, routed)           0.000    64.781    datapath/rf/stage2_quotient_intermediate_reg[8]_0[0]
+    SLICE_X40Y10         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.401    65.182 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    65.182    datapath/rf/stage2_quotient_intermediate_reg[8]_i_2_n_0
+    SLICE_X40Y11         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    65.417 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_1/O[0]
+                         net (fo=33, routed)          0.860    66.277    mem/stage2_quotient_intermediate_reg[7]_i_21[0]
+    SLICE_X39Y7          LUT3 (Prop_lut3_I2_O)        0.299    66.576 r  mem/stage2_quotient_intermediate[7]_i_77/O
+                         net (fo=1, routed)           0.000    66.576    datapath/rf/stage2_quotient_intermediate[7]_i_49[0]
+    SLICE_X39Y7          CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    67.108 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    67.108    datapath/rf/stage2_quotient_intermediate_reg[7]_i_64_n_0
+    SLICE_X39Y8          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    67.222 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    67.222    datapath/rf/stage2_quotient_intermediate_reg[7]_i_55_n_0
+    SLICE_X39Y9          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    67.336 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    67.336    datapath/rf/stage2_quotient_intermediate_reg[7]_i_54_n_0
+    SLICE_X39Y10         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    67.450 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    67.450    datapath/rf/stage2_quotient_intermediate_reg[7]_i_34_n_0
+    SLICE_X39Y11         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    67.564 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    67.564    datapath/rf/stage2_quotient_intermediate_reg[7]_i_33_n_0
+    SLICE_X39Y12         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    67.678 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    67.678    datapath/rf/stage2_quotient_intermediate_reg[7]_i_23_n_0
+    SLICE_X39Y13         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    68.012 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_22/O[1]
+                         net (fo=4, routed)           0.837    68.849    datapath/rf/divider_instance/stage1_remainder[8]_7[25]
+    SLICE_X36Y12         LUT4 (Prop_lut4_I1_O)        0.303    69.152 r  datapath/rf/stage2_quotient_intermediate[7]_i_10/O
+                         net (fo=1, routed)           0.000    69.152    datapath/rf/stage2_quotient_intermediate[7]_i_10_n_0
+    SLICE_X36Y12         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    69.685 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    69.685    datapath/rf/stage2_quotient_intermediate_reg[7]_i_2_n_0
+    SLICE_X36Y13         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.232    69.917 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_1/O[0]
+                         net (fo=33, routed)          0.894    70.811    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[7]
+    SLICE_X35Y7          LUT3 (Prop_lut3_I2_O)        0.295    71.106 r  datapath/rf/stage2_quotient_intermediate[6]_i_76/O
+                         net (fo=1, routed)           0.000    71.106    datapath/rf/stage2_quotient_intermediate[6]_i_76_n_0
+    SLICE_X35Y7          CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    71.656 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    71.656    datapath/rf/stage2_quotient_intermediate_reg[6]_i_64_n_0
+    SLICE_X35Y8          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    71.770 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    71.770    datapath/rf/stage2_quotient_intermediate_reg[6]_i_55_n_0
+    SLICE_X35Y9          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    71.884 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    71.884    datapath/rf/stage2_quotient_intermediate_reg[6]_i_54_n_0
+    SLICE_X35Y10         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    71.998 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    71.998    datapath/rf/stage2_quotient_intermediate_reg[6]_i_34_n_0
+    SLICE_X35Y11         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    72.112 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    72.112    datapath/rf/stage2_quotient_intermediate_reg[6]_i_33_n_0
+    SLICE_X35Y12         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    72.226 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    72.226    datapath/rf/stage2_quotient_intermediate_reg[6]_i_23_n_0
+    SLICE_X35Y13         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    72.560 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_22/O[1]
+                         net (fo=4, routed)           0.834    73.394    datapath/rf/divider_instance/stage1_remainder[9]_8[25]
+    SLICE_X34Y12         LUT4 (Prop_lut4_I1_O)        0.303    73.697 r  datapath/rf/stage2_quotient_intermediate[6]_i_10/O
+                         net (fo=1, routed)           0.000    73.697    datapath/rf/stage2_quotient_intermediate[6]_i_10_n_0
+    SLICE_X34Y12         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    74.230 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    74.230    datapath/rf/stage2_quotient_intermediate_reg[6]_i_2_n_0
+    SLICE_X34Y13         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.232    74.462 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_1/O[0]
+                         net (fo=33, routed)          0.806    75.268    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[6]
+    SLICE_X33Y11         LUT3 (Prop_lut3_I2_O)        0.295    75.563 r  datapath/rf/stage2_remainder_intermediate[27]_i_34/O
+                         net (fo=1, routed)           0.000    75.563    datapath/rf/stage2_remainder_intermediate[27]_i_34_n_0
+    SLICE_X33Y11         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    76.113 r  datapath/rf/stage2_remainder_intermediate_reg[27]_i_27/CO[3]
+                         net (fo=1, routed)           0.000    76.113    datapath/rf/stage2_remainder_intermediate_reg[27]_i_27_n_0
+    SLICE_X33Y12         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    76.227 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    76.227    datapath/rf/stage2_quotient_intermediate_reg[5]_i_55_n_0
+    SLICE_X33Y13         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    76.341 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    76.341    datapath/rf/stage2_quotient_intermediate_reg[5]_i_54_n_0
+    SLICE_X33Y14         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    76.455 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    76.455    datapath/rf/stage2_quotient_intermediate_reg[5]_i_34_n_0
+    SLICE_X33Y15         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    76.569 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    76.569    datapath/rf/stage2_quotient_intermediate_reg[5]_i_33_n_0
+    SLICE_X33Y16         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    76.683 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    76.683    datapath/rf/stage2_quotient_intermediate_reg[5]_i_23_n_0
+    SLICE_X33Y17         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    77.017 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_22/O[1]
+                         net (fo=4, routed)           0.769    77.786    datapath/rf/divider_instance/stage1_remainder[10]_9[25]
+    SLICE_X32Y16         LUT4 (Prop_lut4_I1_O)        0.303    78.089 r  datapath/rf/stage2_quotient_intermediate[5]_i_10/O
+                         net (fo=1, routed)           0.000    78.089    datapath/rf/stage2_quotient_intermediate[5]_i_10_n_0
+    SLICE_X32Y16         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    78.622 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    78.622    datapath/rf/stage2_quotient_intermediate_reg[5]_i_2_n_0
+    SLICE_X32Y17         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.232    78.854 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_1/O[0]
+                         net (fo=33, routed)          0.981    79.834    mem/stage2_quotient_intermediate_reg[4]_i_21[0]
+    SLICE_X31Y12         LUT3 (Prop_lut3_I2_O)        0.295    80.129 r  mem/stage2_remainder_intermediate[23]_i_31/O
+                         net (fo=1, routed)           0.000    80.129    datapath/rf/stage2_quotient_intermediate[4]_i_49[0]
+    SLICE_X31Y12         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    80.661 r  datapath/rf/stage2_remainder_intermediate_reg[23]_i_22/CO[3]
+                         net (fo=1, routed)           0.000    80.661    datapath/rf/stage2_remainder_intermediate_reg[23]_i_22_n_0
+    SLICE_X31Y13         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    80.775 r  datapath/rf/stage2_remainder_intermediate_reg[27]_i_22/CO[3]
+                         net (fo=1, routed)           0.000    80.775    datapath/rf/stage2_remainder_intermediate_reg[27]_i_22_n_0
+    SLICE_X31Y14         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    80.889 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_53/CO[3]
+                         net (fo=1, routed)           0.000    80.889    datapath/rf/stage2_remainder_intermediate_reg[30]_i_53_n_0
+    SLICE_X31Y15         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    81.003 r  datapath/rf/stage2_quotient_intermediate_reg[4]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    81.003    datapath/rf/stage2_quotient_intermediate_reg[4]_i_34_n_0
+    SLICE_X31Y16         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    81.117 r  datapath/rf/stage2_quotient_intermediate_reg[4]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    81.117    datapath/rf/stage2_quotient_intermediate_reg[4]_i_33_n_0
+    SLICE_X31Y17         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    81.231 r  datapath/rf/stage2_quotient_intermediate_reg[4]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    81.231    datapath/rf/stage2_quotient_intermediate_reg[4]_i_23_n_0
+    SLICE_X31Y18         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    81.565 r  datapath/rf/stage2_quotient_intermediate_reg[4]_i_22/O[1]
+                         net (fo=4, routed)           0.956    82.521    datapath/rf/divider_instance/stage1_remainder[11]_10[25]
+    SLICE_X30Y15         LUT4 (Prop_lut4_I1_O)        0.303    82.824 r  datapath/rf/stage2_quotient_intermediate[4]_i_10/O
+                         net (fo=1, routed)           0.000    82.824    datapath/rf/stage2_quotient_intermediate[4]_i_10_n_0
+    SLICE_X30Y15         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    83.357 r  datapath/rf/stage2_quotient_intermediate_reg[4]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    83.357    datapath/rf/stage2_quotient_intermediate_reg[4]_i_2_n_0
+    SLICE_X30Y16         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.232    83.589 r  datapath/rf/stage2_quotient_intermediate_reg[4]_i_1/O[0]
+                         net (fo=33, routed)          0.824    84.413    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[4]
+    SLICE_X29Y15         CARRY4 (Prop_carry4_CYINIT_CO[3])
+                                                      0.751    85.164 r  datapath/rf/stage2_remainder_intermediate_reg[19]_i_17/CO[3]
+                         net (fo=1, routed)           0.000    85.164    datapath/rf/stage2_remainder_intermediate_reg[19]_i_17_n_0
+    SLICE_X29Y16         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    85.278 r  datapath/rf/stage2_remainder_intermediate_reg[23]_i_17/CO[3]
+                         net (fo=1, routed)           0.000    85.278    datapath/rf/stage2_remainder_intermediate_reg[23]_i_17_n_0
+    SLICE_X29Y17         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    85.392 r  datapath/rf/stage2_remainder_intermediate_reg[27]_i_17/CO[3]
+                         net (fo=1, routed)           0.000    85.392    datapath/rf/stage2_remainder_intermediate_reg[27]_i_17_n_0
+    SLICE_X29Y18         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    85.506 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_44/CO[3]
+                         net (fo=1, routed)           0.000    85.506    datapath/rf/stage2_remainder_intermediate_reg[30]_i_44_n_0
+    SLICE_X29Y19         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    85.620 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_39/CO[3]
+                         net (fo=1, routed)           0.000    85.620    datapath/rf/stage2_remainder_intermediate_reg[30]_i_39_n_0
+    SLICE_X29Y20         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    85.734 r  datapath/rf/stage2_quotient_intermediate_reg[3]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    85.734    datapath/rf/stage2_quotient_intermediate_reg[3]_i_23_n_0
+    SLICE_X29Y21         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    85.848 r  datapath/rf/stage2_quotient_intermediate_reg[3]_i_22/CO[3]
+                         net (fo=1, routed)           0.000    85.848    datapath/rf/stage2_quotient_intermediate_reg[3]_i_22_n_0
+    SLICE_X29Y22         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    86.182 r  datapath/rf/stage2_quotient_intermediate_reg[3]_i_21/O[1]
+                         net (fo=3, routed)           0.941    87.123    mem/stage2_quotient_intermediate_reg[3]_i_2[1]
+    SLICE_X28Y18         LUT4 (Prop_lut4_I1_O)        0.303    87.426 r  mem/stage2_quotient_intermediate[3]_i_8/O
+                         net (fo=1, routed)           0.000    87.426    datapath/rf/stage2_quotient_intermediate_reg[3]_0[0]
+    SLICE_X28Y18         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.401    87.827 r  datapath/rf/stage2_quotient_intermediate_reg[3]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    87.827    datapath/rf/stage2_quotient_intermediate_reg[3]_i_2_n_0
+    SLICE_X28Y19         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    88.062 r  datapath/rf/stage2_quotient_intermediate_reg[3]_i_1/O[0]
+                         net (fo=33, routed)          0.706    88.768    mem/stage2_remainder_intermediate_reg[30]_i_17[0]
+    SLICE_X26Y19         LUT3 (Prop_lut3_I2_O)        0.299    89.067 r  mem/stage2_remainder_intermediate[15]_i_21/O
+                         net (fo=1, routed)           0.000    89.067    datapath/rf/stage2_quotient_intermediate[2]_i_33[0]
+    SLICE_X26Y19         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.513    89.580 r  datapath/rf/stage2_remainder_intermediate_reg[15]_i_12/CO[3]
+                         net (fo=1, routed)           0.000    89.580    datapath/rf/stage2_remainder_intermediate_reg[15]_i_12_n_0
+    SLICE_X26Y20         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    89.697 r  datapath/rf/stage2_remainder_intermediate_reg[19]_i_12/CO[3]
+                         net (fo=1, routed)           0.000    89.697    datapath/rf/stage2_remainder_intermediate_reg[19]_i_12_n_0
+    SLICE_X26Y21         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    89.814 r  datapath/rf/stage2_remainder_intermediate_reg[23]_i_12/CO[3]
+                         net (fo=1, routed)           0.000    89.814    datapath/rf/stage2_remainder_intermediate_reg[23]_i_12_n_0
+    SLICE_X26Y22         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    89.931 r  datapath/rf/stage2_remainder_intermediate_reg[27]_i_12/CO[3]
+                         net (fo=1, routed)           0.000    89.931    datapath/rf/stage2_remainder_intermediate_reg[27]_i_12_n_0
+    SLICE_X26Y23         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    90.048 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_27/CO[3]
+                         net (fo=1, routed)           0.000    90.048    datapath/rf/stage2_remainder_intermediate_reg[30]_i_27_n_0
+    SLICE_X26Y24         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    90.165 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_22/CO[3]
+                         net (fo=1, routed)           0.009    90.174    datapath/rf/stage2_remainder_intermediate_reg[30]_i_22_n_0
+    SLICE_X26Y25         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323    90.497 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_18/O[1]
+                         net (fo=4, routed)           0.896    91.393    datapath/rf/divider_instance/stage1_remainder[13]_12[25]
+    SLICE_X24Y25         LUT4 (Prop_lut4_I1_O)        0.306    91.699 r  datapath/rf/stage2_quotient_intermediate[2]_i_10/O
+                         net (fo=1, routed)           0.000    91.699    datapath/rf/stage2_quotient_intermediate[2]_i_10_n_0
+    SLICE_X24Y25         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    92.249 r  datapath/rf/stage2_quotient_intermediate_reg[2]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    92.249    datapath/rf/stage2_quotient_intermediate_reg[2]_i_2_n_0
+    SLICE_X24Y26         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    92.484 r  datapath/rf/stage2_quotient_intermediate_reg[2]_i_1/O[0]
+                         net (fo=33, routed)          0.693    93.177    mem/stage2_remainder_intermediate_reg[30]_i_7[0]
+    SLICE_X25Y25         LUT3 (Prop_lut3_I2_O)        0.299    93.476 r  mem/stage2_remainder_intermediate[11]_i_16/O
+                         net (fo=1, routed)           0.000    93.476    datapath/rf/stage2_quotient_intermediate[1]_i_33[0]
+    SLICE_X25Y25         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    94.008 r  datapath/rf/stage2_remainder_intermediate_reg[11]_i_7/CO[3]
+                         net (fo=1, routed)           0.000    94.008    datapath/rf/stage2_remainder_intermediate_reg[11]_i_7_n_0
+    SLICE_X25Y26         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    94.122 r  datapath/rf/stage2_remainder_intermediate_reg[15]_i_7/CO[3]
+                         net (fo=1, routed)           0.000    94.122    datapath/rf/stage2_remainder_intermediate_reg[15]_i_7_n_0
+    SLICE_X25Y27         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    94.236 r  datapath/rf/stage2_remainder_intermediate_reg[19]_i_7/CO[3]
+                         net (fo=1, routed)           0.000    94.236    datapath/rf/stage2_remainder_intermediate_reg[19]_i_7_n_0
+    SLICE_X25Y28         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    94.350 r  datapath/rf/stage2_remainder_intermediate_reg[23]_i_7/CO[3]
+                         net (fo=1, routed)           0.000    94.350    datapath/rf/stage2_remainder_intermediate_reg[23]_i_7_n_0
+    SLICE_X25Y29         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    94.464 r  datapath/rf/stage2_remainder_intermediate_reg[27]_i_7/CO[3]
+                         net (fo=1, routed)           0.000    94.464    datapath/rf/stage2_remainder_intermediate_reg[27]_i_7_n_0
+    SLICE_X25Y30         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    94.578 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_12/CO[3]
+                         net (fo=1, routed)           0.000    94.578    datapath/rf/stage2_remainder_intermediate_reg[30]_i_12_n_0
+    SLICE_X25Y31         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    94.692 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_8/CO[3]
+                         net (fo=1, routed)           0.000    94.692    datapath/rf/stage2_remainder_intermediate_reg[30]_i_8_n_0
+    SLICE_X25Y32         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    95.026 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_7/O[1]
+                         net (fo=3, routed)           0.666    95.692    mem/stage2_quotient_intermediate_reg[1]_i_2[1]
+    SLICE_X27Y31         LUT4 (Prop_lut4_I1_O)        0.303    95.995 r  mem/stage2_quotient_intermediate[1]_i_8/O
+                         net (fo=1, routed)           0.000    95.995    datapath/rf/stage2_quotient_intermediate_reg[1]_1[0]
+    SLICE_X27Y31         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.401    96.396 r  datapath/rf/stage2_quotient_intermediate_reg[1]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    96.396    datapath/rf/stage2_quotient_intermediate_reg[1]_i_2_n_0
+    SLICE_X27Y32         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    96.631 r  datapath/rf/stage2_quotient_intermediate_reg[1]_i_1/O[0]
+                         net (fo=33, routed)          0.649    97.280    mem/stage2_remainder_intermediate_reg[30]_i_2[0]
+    SLICE_X24Y31         LUT3 (Prop_lut3_I2_O)        0.299    97.579 r  mem/stage2_remainder_intermediate[7]_i_11/O
+                         net (fo=1, routed)           0.000    97.579    datapath/rf/stage2_remainder_intermediate_reg[7][0]
+    SLICE_X24Y31         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    98.111 r  datapath/rf/stage2_remainder_intermediate_reg[7]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    98.111    datapath/rf/stage2_remainder_intermediate_reg[7]_i_2_n_0
+    SLICE_X24Y32         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    98.225 r  datapath/rf/stage2_remainder_intermediate_reg[11]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    98.225    datapath/rf/stage2_remainder_intermediate_reg[11]_i_2_n_0
+    SLICE_X24Y33         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    98.339 r  datapath/rf/stage2_remainder_intermediate_reg[15]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    98.339    datapath/rf/stage2_remainder_intermediate_reg[15]_i_2_n_0
+    SLICE_X24Y34         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    98.453 r  datapath/rf/stage2_remainder_intermediate_reg[19]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    98.453    datapath/rf/stage2_remainder_intermediate_reg[19]_i_2_n_0
+    SLICE_X24Y35         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    98.567 r  datapath/rf/stage2_remainder_intermediate_reg[23]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    98.567    datapath/rf/stage2_remainder_intermediate_reg[23]_i_2_n_0
+    SLICE_X24Y36         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    98.681 r  datapath/rf/stage2_remainder_intermediate_reg[27]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    98.681    datapath/rf/stage2_remainder_intermediate_reg[27]_i_2_n_0
+    SLICE_X24Y37         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    98.795 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_3/CO[3]
+                         net (fo=1, routed)           0.000    98.795    datapath/rf/stage2_remainder_intermediate_reg[30]_i_3_n_0
+    SLICE_X24Y38         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    99.129 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_2/O[1]
+                         net (fo=3, routed)           0.742    99.871    mem/stage2_quotient_intermediate_reg[0]_i_2[1]
+    SLICE_X25Y37         LUT4 (Prop_lut4_I1_O)        0.303   100.174 r  mem/stage2_quotient_intermediate[0]_i_8/O
+                         net (fo=1, routed)           0.000   100.174    datapath/rf/stage2_quotient_intermediate_reg[0]_0[0]
+    SLICE_X25Y37         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.401   100.575 r  datapath/rf/stage2_quotient_intermediate_reg[0]_i_2/CO[3]
+                         net (fo=1, routed)           0.000   100.575    datapath/rf/stage2_quotient_intermediate_reg[0]_i_2_n_0
+    SLICE_X25Y38         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235   100.810 r  datapath/rf/stage2_quotient_intermediate_reg[0]_i_1/O[0]
+                         net (fo=33, routed)          0.784   101.594    mem/stage2_remainder_intermediate_reg[3][0]
+    SLICE_X26Y35         LUT3 (Prop_lut3_I2_O)        0.299   101.893 r  mem/stage2_remainder_intermediate[3]_i_6/O
+                         net (fo=1, routed)           0.000   101.893    datapath/rf/stage2_remainder_intermediate_reg[3][0]
+    SLICE_X26Y35         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.513   102.406 r  datapath/rf/stage2_remainder_intermediate_reg[3]_i_1/CO[3]
+                         net (fo=1, routed)           0.000   102.406    datapath/rf/stage2_remainder_intermediate_reg[3]_i_1_n_0
+    SLICE_X26Y36         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117   102.523 r  datapath/rf/stage2_remainder_intermediate_reg[7]_i_1/CO[3]
+                         net (fo=1, routed)           0.000   102.523    datapath/rf/stage2_remainder_intermediate_reg[7]_i_1_n_0
+    SLICE_X26Y37         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117   102.640 r  datapath/rf/stage2_remainder_intermediate_reg[11]_i_1/CO[3]
+                         net (fo=1, routed)           0.000   102.640    datapath/rf/stage2_remainder_intermediate_reg[11]_i_1_n_0
+    SLICE_X26Y38         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117   102.757 r  datapath/rf/stage2_remainder_intermediate_reg[15]_i_1/CO[3]
+                         net (fo=1, routed)           0.000   102.757    datapath/rf/stage2_remainder_intermediate_reg[15]_i_1_n_0
+    SLICE_X26Y39         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117   102.874 r  datapath/rf/stage2_remainder_intermediate_reg[19]_i_1/CO[3]
+                         net (fo=1, routed)           0.000   102.874    datapath/rf/stage2_remainder_intermediate_reg[19]_i_1_n_0
+    SLICE_X26Y40         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117   102.991 r  datapath/rf/stage2_remainder_intermediate_reg[23]_i_1/CO[3]
+                         net (fo=1, routed)           0.000   102.991    datapath/rf/stage2_remainder_intermediate_reg[23]_i_1_n_0
+    SLICE_X26Y41         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117   103.108 r  datapath/rf/stage2_remainder_intermediate_reg[27]_i_1/CO[3]
+                         net (fo=1, routed)           0.000   103.108    datapath/rf/stage2_remainder_intermediate_reg[27]_i_1_n_0
+    SLICE_X26Y42         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323   103.431 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_1/O[1]
+                         net (fo=1, routed)           0.000   103.431    datapath/divider_instance/stage2_remainder_intermediate_reg[30]_0[29]
+    SLICE_X26Y42         FDRE                                         r  datapath/divider_instance/stage2_remainder_intermediate_reg[29]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_proc_clk_wiz_0 rise edge)
+                                                     76.923    76.923 r  
+    Y9                                                0.000    76.923 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000    76.923    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         1.420    78.343 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           1.162    79.505    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -7.438    72.067 r  mmcm/mmcm_adv_inst/CLKOUT0
+                         net (fo=2, routed)           1.691    73.758    mmcm/clk_proc_clk_wiz_0
+    BUFGCTRL_X0Y0        BUFGCTRL (Prop_bufgctrl_I0_O)
+                                                      0.091    73.849 r  mmcm/clkout1_buf/O
+                         net (fo=1120, routed)        1.568    75.418    datapath/divider_instance/clock_processor
+    SLICE_X26Y42         FDRE                                         r  datapath/divider_instance/stage2_remainder_intermediate_reg[29]/C
+                         clock pessimism              0.288    75.706    
+                         clock uncertainty           -0.221    75.485    
+    SLICE_X26Y42         FDRE (Setup_fdre_C_D)        0.109    75.594    datapath/divider_instance/stage2_remainder_intermediate_reg[29]
+  -------------------------------------------------------------------
+                         required time                         75.594    
+                         arrival time                        -103.431    
+  -------------------------------------------------------------------
+                         slack                                -27.838    
+
+
+
+

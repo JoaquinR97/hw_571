@@ -1,0 +1,1934 @@
+Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+--------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2020.2 (lin64) Build 3064766 Wed Nov 18 09:12:47 MST 2020
+| Date         : Mon Mar 18 22:36:19 2024
+| Host         : big24.seas.upenn.edu running 64-bit openSUSE Leap 15.5
+| Command      : report_timing_summary -file ./vivado_output/post_route_timing_summary_report.txt
+| Design       : RiscvSystem
+| Device       : 7z020-clg484
+| Speed File   : -1  PRODUCTION 1.12 2019-11-22
+--------------------------------------------------------------------------------------------------
+
+Timing Summary Report
+
+------------------------------------------------------------------------------------------------
+| Timer Settings
+| --------------
+------------------------------------------------------------------------------------------------
+
+  Enable Multi Corner Analysis               :  Yes
+  Enable Pessimism Removal                   :  Yes
+  Pessimism Removal Resolution               :  Nearest Common Node
+  Enable Input Delay Default Clock           :  No
+  Enable Preset / Clear Arcs                 :  No
+  Disable Flight Delays                      :  No
+  Ignore I/O Paths                           :  No
+  Timing Early Launch at Borrowing Latches   :  No
+  Borrow Time for Max Delay Exceptions       :  Yes
+  Merge Timing Exceptions                    :  Yes
+
+  Corner  Analyze    Analyze    
+  Name    Max Paths  Min Paths  
+  ------  ---------  ---------  
+  Slow    Yes        Yes        
+  Fast    Yes        Yes        
+
+
+
+check_timing report
+
+Table of Contents
+-----------------
+1. checking no_clock (0)
+2. checking constant_clock (0)
+3. checking pulse_width_clock (0)
+4. checking unconstrained_internal_endpoints (0)
+5. checking no_input_delay (2)
+6. checking no_output_delay (8)
+7. checking multiple_clock (0)
+8. checking generated_clocks (0)
+9. checking loops (0)
+10. checking partial_input_delay (0)
+11. checking partial_output_delay (0)
+12. checking latch_loops (0)
+
+1. checking no_clock (0)
+------------------------
+ There are 0 register/latch pins with no clock.
+
+
+2. checking constant_clock (0)
+------------------------------
+ There are 0 register/latch pins with constant_clock.
+
+
+3. checking pulse_width_clock (0)
+---------------------------------
+ There are 0 register/latch pins which need pulse_width check
+
+
+4. checking unconstrained_internal_endpoints (0)
+------------------------------------------------
+ There are 0 pins that are not constrained for maximum delay.
+
+ There are 0 pins that are not constrained for maximum delay due to constant clock.
+
+
+5. checking no_input_delay (2)
+------------------------------
+ There are 2 input ports with no input delay specified. (HIGH)
+
+ There are 0 input ports with no input delay but user has a false path constraint.
+
+
+6. checking no_output_delay (8)
+-------------------------------
+ There are 8 ports with no output delay specified. (HIGH)
+
+ There are 0 ports with no output delay but user has a false path constraint
+
+ There are 0 ports with no output delay but with a timing clock defined on it or propagating through it
+
+
+7. checking multiple_clock (0)
+------------------------------
+ There are 0 register/latch pins with multiple clocks.
+
+
+8. checking generated_clocks (0)
+--------------------------------
+ There are 0 generated clocks that are not connected to a clock source.
+
+
+9. checking loops (0)
+---------------------
+ There are 0 combinational loops in the design.
+
+
+10. checking partial_input_delay (0)
+------------------------------------
+ There are 0 input ports with partial input delay specified.
+
+
+11. checking partial_output_delay (0)
+-------------------------------------
+ There are 0 ports with partial output delay specified.
+
+
+12. checking latch_loops (0)
+----------------------------
+ There are 0 combinational latch loops in the design through latch input
+
+
+
+------------------------------------------------------------------------------------------------
+| Design Timing Summary
+| ---------------------
+------------------------------------------------------------------------------------------------
+
+    WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints     WPWS(ns)     TPWS(ns)  TPWS Failing Endpoints  TPWS Total Endpoints  
+    -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------     --------     --------  ----------------------  --------------------  
+    -27.838    -9419.899                   1029                 4425        0.122        0.000                      0                 4425        3.000        0.000                       0                  1914  
+
+
+Timing constraints are not met.
+
+
+------------------------------------------------------------------------------------------------
+| Clock Summary
+| -------------
+------------------------------------------------------------------------------------------------
+
+Clock                 Waveform(ns)       Period(ns)      Frequency(MHz)
+-----                 ------------       ----------      --------------
+CLOCK_100MHz          {0.000 5.000}      10.000          100.000         
+  clk_mem_clk_wiz_0   {19.231 57.692}    76.923          13.000          
+  clk_proc_clk_wiz_0  {0.000 38.462}     76.923          13.000          
+  clkfbout_clk_wiz_0  {0.000 5.000}      10.000          100.000         
+
+
+------------------------------------------------------------------------------------------------
+| Intra Clock Table
+| -----------------
+------------------------------------------------------------------------------------------------
+
+Clock                     WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints     WPWS(ns)     TPWS(ns)  TPWS Failing Endpoints  TPWS Total Endpoints  
+-----                     -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------     --------     --------  ----------------------  --------------------  
+CLOCK_100MHz                                                                                                                                                            3.000        0.000                       0                     1  
+  clk_mem_clk_wiz_0        13.838        0.000                      0                 2169        0.122        0.000                      0                 2169       37.962        0.000                       0                   779  
+  clk_proc_clk_wiz_0       -9.874    -8640.954                   1024                 1160        0.131        0.000                      0                 1160       37.962        0.000                       0                  1131  
+  clkfbout_clk_wiz_0                                                                                                                                                    7.845        0.000                       0                     3  
+
+
+------------------------------------------------------------------------------------------------
+| Inter Clock Table
+| -----------------
+------------------------------------------------------------------------------------------------
+
+From Clock          To Clock                WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints  
+----------          --------                -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------  
+clk_proc_clk_wiz_0  clk_mem_clk_wiz_0        14.361        0.000                      0                 1760       19.473        0.000                      0                 1760  
+clk_mem_clk_wiz_0   clk_proc_clk_wiz_0      -27.838     -934.928                     37                 2144       19.916        0.000                      0                 2144  
+
+
+------------------------------------------------------------------------------------------------
+| Other Path Groups Table
+| -----------------------
+------------------------------------------------------------------------------------------------
+
+Path Group    From Clock    To Clock          WNS(ns)      TNS(ns)  TNS Failing Endpoints  TNS Total Endpoints      WHS(ns)      THS(ns)  THS Failing Endpoints  THS Total Endpoints  
+----------    ----------    --------          -------      -------  ---------------------  -------------------      -------      -------  ---------------------  -------------------  
+
+
+------------------------------------------------------------------------------------------------
+| Timing Details
+| --------------
+------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  CLOCK_100MHz
+  To Clock:  CLOCK_100MHz
+
+Setup :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+Hold  :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+PW    :            0  Failing Endpoints,  Worst Slack        3.000ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Pulse Width Checks
+--------------------------------------------------------------------------------------
+Clock Name:         CLOCK_100MHz
+Waveform(ns):       { 0.000 5.000 }
+Period(ns):         10.000
+Sources:            { CLOCK_100MHz }
+
+Check Type        Corner  Lib Pin            Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location         Pin
+Min Period        n/a     MMCME2_ADV/CLKIN1  n/a            1.249         10.000      8.751      MMCME2_ADV_X0Y0  mmcm/mmcm_adv_inst/CLKIN1
+Max Period        n/a     MMCME2_ADV/CLKIN1  n/a            100.000       10.000      90.000     MMCME2_ADV_X0Y0  mmcm/mmcm_adv_inst/CLKIN1
+Low Pulse Width   Slow    MMCME2_ADV/CLKIN1  n/a            2.000         5.000       3.000      MMCME2_ADV_X0Y0  mmcm/mmcm_adv_inst/CLKIN1
+High Pulse Width  Slow    MMCME2_ADV/CLKIN1  n/a            2.000         5.000       3.000      MMCME2_ADV_X0Y0  mmcm/mmcm_adv_inst/CLKIN1
+
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  clk_mem_clk_wiz_0
+  To Clock:  clk_mem_clk_wiz_0
+
+Setup :            0  Failing Endpoints,  Worst Slack       13.838ns,  Total Violation        0.000ns
+Hold  :            0  Failing Endpoints,  Worst Slack        0.122ns,  Total Violation        0.000ns
+PW    :            0  Failing Endpoints,  Worst Slack       37.962ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack (MET) :             13.838ns  (required time - arrival time)
+  Source:                 mem/mem_reg_0_0/CLKBWRCLK
+                            (rising edge-triggered cell RAMB36E1 clocked by clk_mem_clk_wiz_0  {rise@19.231ns fall@57.692ns period=76.923ns})
+  Destination:            oled_device/mem_reg[3][11][2]/R
+                            (falling edge-triggered cell FDRE clocked by clk_mem_clk_wiz_0  {rise@19.231ns fall@57.692ns period=76.923ns})
+  Path Group:             clk_mem_clk_wiz_0
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            38.462ns  (clk_mem_clk_wiz_0 fall@57.692ns - clk_mem_clk_wiz_0 rise@19.231ns)
+  Data Path Delay:        23.787ns  (logic 5.158ns (21.685%)  route 18.629ns (78.315%))
+  Logic Levels:           13  (CARRY4=2 LUT3=1 LUT5=2 LUT6=7 MUXF7=1)
+  Clock Path Skew:        -0.101ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    -1.580ns = ( 56.112 - 57.692 ) 
+    Source Clock Delay      (SCD):    -0.902ns = ( 18.329 - 19.231 ) 
+    Clock Pessimism Removal (CPR):    0.577ns
+  Clock Uncertainty:      0.101ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.189ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk_mem_clk_wiz_0 rise edge)
+                                                     19.231    19.231 r  
+    Y9                                                0.000    19.231 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000    19.231    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         1.490    20.721 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           1.285    22.006    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -7.343    14.663 r  mmcm/mmcm_adv_inst/CLKOUT1
+                         net (fo=2, routed)           1.855    16.518    mmcm/clk_mem_clk_wiz_0
+    BUFGCTRL_X0Y1        BUFGCTRL (Prop_bufgctrl_I0_O)
+                                                      0.101    16.619 r  mmcm/clkout2_buf/O
+                         net (fo=768, routed)         1.709    18.329    mem/clock_mem
+    RAMB36_X2Y0          RAMB36E1                                     r  mem/mem_reg_0_0/CLKBWRCLK
+  -------------------------------------------------------------------    -------------------
+    RAMB36_X2Y0          RAMB36E1 (Prop_ramb36e1_CLKBWRCLK_DOBDO[1])
+                                                      2.454    20.783 r  mem/mem_reg_0_0/DOBDO[1]
+                         net (fo=7, routed)           1.563    22.346    mem/insn_from_imem[1]
+    SLICE_X39Y6          LUT6 (Prop_lut6_I0_O)        0.124    22.470 f  mem/pcCurrent[31]_i_9/O
+                         net (fo=4, routed)           0.169    22.638    mem/pcCurrent[31]_i_9_n_0
+    SLICE_X39Y6          LUT5 (Prop_lut5_I4_O)        0.124    22.762 r  mem/rd_data0_i_131/O
+                         net (fo=3, routed)           0.671    23.433    mem/rd_data0_i_131_n_0
+    SLICE_X38Y5          LUT6 (Prop_lut6_I0_O)        0.124    23.557 r  mem/rd_data0_i_126/O
+                         net (fo=128, routed)         1.001    24.558    datapath/rf/rs1[2]
+    SLICE_X44Y4          MUXF7 (Prop_muxf7_S_O)       0.296    24.854 r  datapath/rf/rd_data0__1_i_51/O
+                         net (fo=1, routed)           0.984    25.837    datapath/rf/rd_data0__1_i_51_n_0
+    SLICE_X40Y6          LUT6 (Prop_lut6_I1_O)        0.298    26.135 r  datapath/rf/rd_data0__1_i_9/O
+                         net (fo=46, routed)          4.493    30.628    datapath/rf/A[8]
+    SLICE_X8Y17          CARRY4 (Prop_carry4_DI[0]_CO[3])
+                                                      0.550    31.178 r  datapath/rf/mem_reg_0_0_i_26/CO[3]
+                         net (fo=1, routed)           0.000    31.178    datapath/rf/mem_reg_0_0_i_26_n_0
+    SLICE_X8Y18          CARRY4 (Prop_carry4_CI_O[2])
+                                                      0.239    31.417 f  datapath/rf/mem_reg_0_0_i_22/O[2]
+                         net (fo=1, routed)           0.808    32.226    mem/mem[3][10][7]_i_2_1[2]
+    SLICE_X11Y18         LUT5 (Prop_lut5_I2_O)        0.301    32.527 f  mem/mem_reg_0_0_i_2/O
+                         net (fo=9, routed)           0.801    33.328    mem/addr_from_proc[14]
+    SLICE_X8Y23          LUT6 (Prop_lut6_I0_O)        0.124    33.452 f  mem/mem[3][10][7]_i_24/O
+                         net (fo=1, routed)           1.007    34.459    mem/mem[3][10][7]_i_24_n_0
+    SLICE_X10Y18         LUT6 (Prop_lut6_I5_O)        0.124    34.583 f  mem/mem[3][10][7]_i_11/O
+                         net (fo=1, routed)           1.014    35.597    mem/mem[3][10][7]_i_11_n_0
+    SLICE_X10Y21         LUT6 (Prop_lut6_I5_O)        0.124    35.721 r  mem/mem[3][10][7]_i_2/O
+                         net (fo=11, routed)          1.953    37.674    mem/mem[3][10][7]_i_2_n_0
+    SLICE_X25Y9          LUT6 (Prop_lut6_I0_O)        0.124    37.798 r  mem/mem[3][0][7]_i_4/O
+                         net (fo=30, routed)          3.054    40.852    mem/mem[3][0][7]_i_4_n_0
+    SLICE_X39Y1          LUT3 (Prop_lut3_I0_O)        0.152    41.004 r  mem/mem[3][11][7]_i_1/O
+                         net (fo=8, routed)           1.111    42.115    oled_device/mem_reg[3][11][7]_0
+    SLICE_X40Y0          FDRE                                         r  oled_device/mem_reg[3][11][2]/R
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_mem_clk_wiz_0 fall edge)
+                                                     57.692    57.692 f  
+    Y9                                                0.000    57.692 f  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000    57.692    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         1.420    59.112 f  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           1.162    60.274    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -7.438    52.836 f  mmcm/mmcm_adv_inst/CLKOUT1
+                         net (fo=2, routed)           1.691    54.528    mmcm/clk_mem_clk_wiz_0
+    BUFGCTRL_X0Y1        BUFGCTRL (Prop_bufgctrl_I0_O)
+                                                      0.091    54.619 f  mmcm/clkout2_buf/O
+                         net (fo=768, routed)         1.493    56.112    oled_device/clock_mem
+    SLICE_X40Y0          FDRE                                         r  oled_device/mem_reg[3][11][2]/C  (IS_INVERTED)
+                         clock pessimism              0.577    56.689    
+                         clock uncertainty           -0.101    56.588    
+    SLICE_X40Y0          FDRE (Setup_fdre_C_R)       -0.634    55.954    oled_device/mem_reg[3][11][2]
+  -------------------------------------------------------------------
+                         required time                         55.954    
+                         arrival time                         -42.115    
+  -------------------------------------------------------------------
+                         slack                                 13.838    
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack (MET) :             0.122ns  (arrival time - required time)
+  Source:                 mmcm/seq_reg2_reg[0]/C
+                            (rising edge-triggered cell FDCE clocked by clk_mem_clk_wiz_0  {rise@19.231ns fall@57.692ns period=76.923ns})
+  Destination:            mmcm/seq_reg2_reg[1]/D
+                            (rising edge-triggered cell FDCE clocked by clk_mem_clk_wiz_0  {rise@19.231ns fall@57.692ns period=76.923ns})
+  Path Group:             clk_mem_clk_wiz_0
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            0.000ns  (clk_mem_clk_wiz_0 rise@19.231ns - clk_mem_clk_wiz_0 rise@19.231ns)
+  Data Path Delay:        0.197ns  (logic 0.141ns (71.611%)  route 0.056ns (28.389%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.000ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    -1.299ns = ( 17.932 - 19.231 ) 
+    Source Clock Delay      (SCD):    -1.035ns = ( 18.196 - 19.231 ) 
+    Clock Pessimism Removal (CPR):    -0.264ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk_mem_clk_wiz_0 rise edge)
+                                                     19.231    19.231 r  
+    Y9                                                0.000    19.231 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000    19.231    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         0.258    19.489 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           0.440    19.929    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -2.421    17.509 r  mmcm/mmcm_adv_inst/CLKOUT1
+                         net (fo=2, routed)           0.398    17.907    mmcm/clk_mem_clk_wiz_0
+    BUFHCE_X0Y1          BUFH (Prop_bufh_I_O)         0.020    17.927 r  mmcm/clkout2_buf_en/O
+                         net (fo=8, routed)           0.269    18.196    mmcm/clk_mem_clk_wiz_0_en_clk
+    SLICE_X49Y46         FDCE                                         r  mmcm/seq_reg2_reg[0]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X49Y46         FDCE (Prop_fdce_C_Q)         0.141    18.337 r  mmcm/seq_reg2_reg[0]/Q
+                         net (fo=1, routed)           0.056    18.393    mmcm/seq_reg2[0]
+    SLICE_X49Y46         FDCE                                         r  mmcm/seq_reg2_reg[1]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_mem_clk_wiz_0 rise edge)
+                                                     19.231    19.231 r  
+    Y9                                                0.000    19.231 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000    19.231    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         0.446    19.677 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           0.480    20.157    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -3.204    16.953 r  mmcm/mmcm_adv_inst/CLKOUT1
+                         net (fo=2, routed)           0.442    17.395    mmcm/clk_mem_clk_wiz_0
+    BUFHCE_X0Y1          BUFH (Prop_bufh_I_O)         0.043    17.438 r  mmcm/clkout2_buf_en/O
+                         net (fo=8, routed)           0.494    17.932    mmcm/clk_mem_clk_wiz_0_en_clk
+    SLICE_X49Y46         FDCE                                         r  mmcm/seq_reg2_reg[1]/C
+                         clock pessimism              0.264    18.196    
+    SLICE_X49Y46         FDCE (Hold_fdce_C_D)         0.075    18.271    mmcm/seq_reg2_reg[1]
+  -------------------------------------------------------------------
+                         required time                        -18.271    
+                         arrival time                          18.393    
+  -------------------------------------------------------------------
+                         slack                                  0.122    
+
+
+
+
+
+Pulse Width Checks
+--------------------------------------------------------------------------------------
+Clock Name:         clk_mem_clk_wiz_0
+Waveform(ns):       { 19.231 57.692 }
+Period(ns):         76.923
+Sources:            { mmcm/mmcm_adv_inst/CLKOUT1 }
+
+Check Type        Corner  Lib Pin             Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location         Pin
+Min Period        n/a     RAMB36E1/CLKARDCLK  n/a            2.944         76.923      73.979     RAMB36_X2Y0      mem/mem_reg_0_0/CLKARDCLK
+Max Period        n/a     MMCME2_ADV/CLKOUT1  n/a            213.360       76.923      136.437    MMCME2_ADV_X0Y0  mmcm/mmcm_adv_inst/CLKOUT1
+Low Pulse Width   Slow    FDRE/C              n/a            0.500         38.462      37.962     SLICE_X13Y7      oled_device/m_OLEDCtrl/SPI_CTRL/shift_register_reg[0]/C
+High Pulse Width  Slow    FDRE/C              n/a            0.500         38.462      37.962     SLICE_X23Y1      oled_device/mem_reg[0][6][0]/C
+
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  clk_proc_clk_wiz_0
+  To Clock:  clk_proc_clk_wiz_0
+
+Setup :         1024  Failing Endpoints,  Worst Slack       -9.874ns,  Total Violation    -8640.954ns
+Hold  :            0  Failing Endpoints,  Worst Slack        0.131ns,  Total Violation        0.000ns
+PW    :            0  Failing Endpoints,  Worst Slack       37.962ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack (VIOLATED) :        -9.874ns  (required time - arrival time)
+  Source:                 datapath/divider_instance/stage2_dividend_intermediate_reg[31]/C
+                            (rising edge-triggered cell FDRE clocked by clk_proc_clk_wiz_0  {rise@0.000ns fall@38.462ns period=76.923ns})
+  Destination:            datapath/rf/regs_reg[10][22]/D
+                            (rising edge-triggered cell FDRE clocked by clk_proc_clk_wiz_0  {rise@0.000ns fall@38.462ns period=76.923ns})
+  Path Group:             clk_proc_clk_wiz_0
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            76.923ns  (clk_proc_clk_wiz_0 rise@76.923ns - clk_proc_clk_wiz_0 rise@0.000ns)
+  Data Path Delay:        86.454ns  (logic 45.283ns (52.378%)  route 41.171ns (47.622%))
+  Logic Levels:           183  (CARRY4=148 LUT3=13 LUT4=17 LUT5=3 LUT6=2)
+  Clock Path Skew:        -0.134ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    -1.584ns = ( 75.339 - 76.923 ) 
+    Source Clock Delay      (SCD):    -0.874ns
+    Clock Pessimism Removal (CPR):    0.577ns
+  Clock Uncertainty:      0.101ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.189ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk_proc_clk_wiz_0 rise edge)
+                                                      0.000     0.000 r  
+    Y9                                                0.000     0.000 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000     0.000    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         1.490     1.490 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           1.285     2.775    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -7.343    -4.568 r  mmcm/mmcm_adv_inst/CLKOUT0
+                         net (fo=2, routed)           1.855    -2.713    mmcm/clk_proc_clk_wiz_0
+    BUFGCTRL_X0Y0        BUFGCTRL (Prop_bufgctrl_I0_O)
+                                                      0.101    -2.612 r  mmcm/clkout1_buf/O
+                         net (fo=1120, routed)        1.738    -0.874    datapath/divider_instance/clock_processor
+    SLICE_X27Y16         FDRE                                         r  datapath/divider_instance/stage2_dividend_intermediate_reg[31]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X27Y16         FDRE (Prop_fdre_C_Q)         0.456    -0.418 r  datapath/divider_instance/stage2_dividend_intermediate_reg[31]/Q
+                         net (fo=4, routed)           1.399     0.982    datapath/divider_instance/stage2_dividend_intermediate[31]
+    SLICE_X26Y28         LUT4 (Prop_lut4_I1_O)        0.124     1.106 r  datapath/divider_instance/regs[1][15]_i_142/O
+                         net (fo=1, routed)           0.000     1.106    datapath/divider_instance/regs[1][15]_i_142_n_0
+    SLICE_X26Y28         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.513     1.619 r  datapath/divider_instance/regs_reg[1][15]_i_126/CO[3]
+                         net (fo=1, routed)           0.000     1.619    datapath/divider_instance/regs_reg[1][15]_i_126_n_0
+    SLICE_X26Y29         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     1.736 r  datapath/divider_instance/regs_reg[1][15]_i_117/CO[3]
+                         net (fo=1, routed)           0.000     1.736    datapath/divider_instance/regs_reg[1][15]_i_117_n_0
+    SLICE_X26Y30         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     1.853 r  datapath/divider_instance/regs_reg[1][15]_i_104/CO[3]
+                         net (fo=1, routed)           0.000     1.853    datapath/divider_instance/regs_reg[1][15]_i_104_n_0
+    SLICE_X26Y31         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     1.970 r  datapath/divider_instance/regs_reg[1][15]_i_93/CO[3]
+                         net (fo=1, routed)           0.000     1.970    datapath/divider_instance/regs_reg[1][15]_i_93_n_0
+    SLICE_X26Y32         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.219     2.189 r  datapath/divider_instance/regs_reg[1][15]_i_65/O[0]
+                         net (fo=36, routed)          1.192     3.380    datapath/divider_instance/regs_reg[1][15]_i_93_0[0]
+    SLICE_X22Y26         LUT3 (Prop_lut3_I2_O)        0.295     3.675 r  datapath/divider_instance/regs[1][14]_i_125/O
+                         net (fo=1, routed)           0.000     3.675    datapath/divider_instance/regs[1][14]_i_125_n_0
+    SLICE_X22Y26         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.513     4.188 r  datapath/divider_instance/regs_reg[1][14]_i_113/CO[3]
+                         net (fo=1, routed)           0.000     4.188    datapath/divider_instance/regs_reg[1][14]_i_113_n_0
+    SLICE_X22Y27         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     4.305 r  datapath/divider_instance/regs_reg[1][14]_i_104/CO[3]
+                         net (fo=1, routed)           0.000     4.305    datapath/divider_instance/regs_reg[1][14]_i_104_n_0
+    SLICE_X22Y28         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     4.422 r  datapath/divider_instance/regs_reg[1][14]_i_103/CO[3]
+                         net (fo=1, routed)           0.000     4.422    datapath/divider_instance/regs_reg[1][14]_i_103_n_0
+    SLICE_X22Y29         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     4.539 r  datapath/divider_instance/regs_reg[1][14]_i_83/CO[3]
+                         net (fo=1, routed)           0.000     4.539    datapath/divider_instance/regs_reg[1][14]_i_83_n_0
+    SLICE_X22Y30         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     4.656 r  datapath/divider_instance/regs_reg[1][14]_i_82/CO[3]
+                         net (fo=1, routed)           0.000     4.656    datapath/divider_instance/regs_reg[1][14]_i_82_n_0
+    SLICE_X22Y31         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     4.773 r  datapath/divider_instance/regs_reg[1][14]_i_72/CO[3]
+                         net (fo=1, routed)           0.000     4.773    datapath/divider_instance/regs_reg[1][14]_i_72_n_0
+    SLICE_X22Y32         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323     5.096 r  datapath/divider_instance/regs_reg[1][14]_i_71/O[1]
+                         net (fo=4, routed)           1.231     6.327    datapath/divider_instance/stage2_remainder[1]_16[25]
+    SLICE_X31Y30         LUT4 (Prop_lut4_I1_O)        0.306     6.633 r  datapath/divider_instance/regs[1][14]_i_54/O
+                         net (fo=1, routed)           0.000     6.633    datapath/divider_instance/regs[1][14]_i_54_n_0
+    SLICE_X31Y30         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550     7.183 r  datapath/divider_instance/regs_reg[1][14]_i_31/CO[3]
+                         net (fo=1, routed)           0.000     7.183    datapath/divider_instance/regs_reg[1][14]_i_31_n_0
+    SLICE_X31Y31         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.222     7.405 r  datapath/divider_instance/regs_reg[1][14]_i_12/O[0]
+                         net (fo=36, routed)          1.315     8.721    datapath/divider_instance/regs_reg[1][14]_i_31_0[0]
+    SLICE_X32Y23         LUT3 (Prop_lut3_I2_O)        0.299     9.020 r  datapath/divider_instance/regs[1][13]_i_117/O
+                         net (fo=1, routed)           0.000     9.020    datapath/divider_instance/regs[1][13]_i_117_n_0
+    SLICE_X32Y23         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.513     9.533 r  datapath/divider_instance/regs_reg[1][13]_i_105/CO[3]
+                         net (fo=1, routed)           0.000     9.533    datapath/divider_instance/regs_reg[1][13]_i_105_n_0
+    SLICE_X32Y24         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     9.650 r  datapath/divider_instance/regs_reg[1][13]_i_96/CO[3]
+                         net (fo=1, routed)           0.009     9.659    datapath/divider_instance/regs_reg[1][13]_i_96_n_0
+    SLICE_X32Y25         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     9.776 r  datapath/divider_instance/regs_reg[1][13]_i_95/CO[3]
+                         net (fo=1, routed)           0.000     9.776    datapath/divider_instance/regs_reg[1][13]_i_95_n_0
+    SLICE_X32Y26         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117     9.893 r  datapath/divider_instance/regs_reg[1][13]_i_75/CO[3]
+                         net (fo=1, routed)           0.000     9.893    datapath/divider_instance/regs_reg[1][13]_i_75_n_0
+    SLICE_X32Y27         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323    10.216 r  datapath/divider_instance/regs_reg[1][13]_i_74/O[1]
+                         net (fo=4, routed)           0.975    11.191    datapath/divider_instance/stage2_remainder[2]_17[17]
+    SLICE_X33Y30         LUT4 (Prop_lut4_I1_O)        0.306    11.497 r  datapath/divider_instance/regs[1][13]_i_60/O
+                         net (fo=1, routed)           0.000    11.497    datapath/divider_instance/regs[1][13]_i_60_n_0
+    SLICE_X33Y30         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    12.047 r  datapath/divider_instance/regs_reg[1][13]_i_44/CO[3]
+                         net (fo=1, routed)           0.000    12.047    datapath/divider_instance/regs_reg[1][13]_i_44_n_0
+    SLICE_X33Y31         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    12.161 r  datapath/divider_instance/regs_reg[1][13]_i_39/CO[3]
+                         net (fo=1, routed)           0.000    12.161    datapath/divider_instance/regs_reg[1][13]_i_39_n_0
+    SLICE_X33Y32         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.222    12.383 r  datapath/divider_instance/regs_reg[1][13]_i_29/O[0]
+                         net (fo=36, routed)          1.158    13.541    datapath/divider_instance/regs_reg[1][13]_i_39_0[0]
+    SLICE_X35Y25         LUT3 (Prop_lut3_I2_O)        0.299    13.840 r  datapath/divider_instance/regs[1][11]_i_128/O
+                         net (fo=1, routed)           0.000    13.840    datapath/divider_instance/regs[1][11]_i_128_n_0
+    SLICE_X35Y25         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    14.372 r  datapath/divider_instance/regs_reg[1][11]_i_112/CO[3]
+                         net (fo=1, routed)           0.000    14.372    datapath/divider_instance/regs_reg[1][11]_i_112_n_0
+    SLICE_X35Y26         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    14.486 r  datapath/divider_instance/regs_reg[1][12]_i_104/CO[3]
+                         net (fo=1, routed)           0.000    14.486    datapath/divider_instance/regs_reg[1][12]_i_104_n_0
+    SLICE_X35Y27         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    14.600 r  datapath/divider_instance/regs_reg[1][11]_i_98/CO[3]
+                         net (fo=1, routed)           0.000    14.600    datapath/divider_instance/regs_reg[1][11]_i_98_n_0
+    SLICE_X35Y28         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    14.714 r  datapath/divider_instance/regs_reg[1][12]_i_84/CO[3]
+                         net (fo=1, routed)           0.000    14.714    datapath/divider_instance/regs_reg[1][12]_i_84_n_0
+    SLICE_X35Y29         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    14.828 r  datapath/divider_instance/regs_reg[1][11]_i_79/CO[3]
+                         net (fo=1, routed)           0.000    14.828    datapath/divider_instance/regs_reg[1][11]_i_79_n_0
+    SLICE_X35Y30         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    14.942 r  datapath/divider_instance/regs_reg[1][12]_i_74/CO[3]
+                         net (fo=1, routed)           0.000    14.942    datapath/divider_instance/regs_reg[1][12]_i_74_n_0
+    SLICE_X35Y31         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    15.276 r  datapath/divider_instance/regs_reg[1][12]_i_73/O[1]
+                         net (fo=4, routed)           0.850    16.126    datapath/divider_instance/stage2_remainder[3]_18[25]
+    SLICE_X36Y31         LUT4 (Prop_lut4_I1_O)        0.303    16.429 r  datapath/divider_instance/regs[1][12]_i_61/O
+                         net (fo=1, routed)           0.000    16.429    datapath/divider_instance/regs[1][12]_i_61_n_0
+    SLICE_X36Y31         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    16.962 r  datapath/divider_instance/regs_reg[1][12]_i_53/CO[3]
+                         net (fo=1, routed)           0.000    16.962    datapath/divider_instance/regs_reg[1][12]_i_53_n_0
+    SLICE_X36Y32         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.219    17.181 r  datapath/divider_instance/regs_reg[1][12]_i_49/O[0]
+                         net (fo=36, routed)          1.090    18.271    datapath/divider_instance/regs_reg[1][12]_i_53_0[0]
+    SLICE_X34Y22         CARRY4 (Prop_carry4_CYINIT_CO[3])
+                                                      0.766    19.037 r  datapath/divider_instance/regs_reg[1][11]_i_107/CO[3]
+                         net (fo=1, routed)           0.000    19.037    datapath/divider_instance/regs_reg[1][11]_i_107_n_0
+    SLICE_X34Y23         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    19.154 r  datapath/divider_instance/regs_reg[1][11]_i_93/CO[3]
+                         net (fo=1, routed)           0.000    19.154    datapath/divider_instance/regs_reg[1][11]_i_93_n_0
+    SLICE_X34Y24         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    19.271 r  datapath/divider_instance/regs_reg[1][11]_i_92/CO[3]
+                         net (fo=1, routed)           0.009    19.280    datapath/divider_instance/regs_reg[1][11]_i_92_n_0
+    SLICE_X34Y25         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    19.397 r  datapath/divider_instance/regs_reg[1][11]_i_71/CO[3]
+                         net (fo=1, routed)           0.000    19.397    datapath/divider_instance/regs_reg[1][11]_i_71_n_0
+    SLICE_X34Y26         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    19.514 r  datapath/divider_instance/regs_reg[1][11]_i_70/CO[3]
+                         net (fo=1, routed)           0.000    19.514    datapath/divider_instance/regs_reg[1][11]_i_70_n_0
+    SLICE_X34Y27         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    19.631 r  datapath/divider_instance/regs_reg[1][11]_i_60/CO[3]
+                         net (fo=1, routed)           0.000    19.631    datapath/divider_instance/regs_reg[1][11]_i_60_n_0
+    SLICE_X34Y28         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323    19.954 r  datapath/divider_instance/regs_reg[1][11]_i_59/O[1]
+                         net (fo=4, routed)           1.159    21.113    datapath/divider_instance/stage2_remainder[4]_19[25]
+    SLICE_X35Y23         LUT4 (Prop_lut4_I1_O)        0.306    21.419 r  datapath/divider_instance/regs[1][11]_i_47/O
+                         net (fo=1, routed)           0.000    21.419    datapath/divider_instance/regs[1][11]_i_47_n_0
+    SLICE_X35Y23         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    21.969 r  datapath/divider_instance/regs_reg[1][11]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    21.969    datapath/divider_instance/regs_reg[1][11]_i_34_n_0
+    SLICE_X35Y24         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.222    22.191 r  datapath/divider_instance/regs_reg[1][11]_i_28/O[0]
+                         net (fo=35, routed)          1.022    23.212    datapath/divider_instance/regs_reg[1][11]_i_34_0[0]
+    SLICE_X33Y20         LUT3 (Prop_lut3_I2_O)        0.299    23.511 r  datapath/divider_instance/regs[1][8]_i_204/O
+                         net (fo=1, routed)           0.000    23.511    datapath/divider_instance/regs[1][8]_i_204_n_0
+    SLICE_X33Y20         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    24.043 r  datapath/divider_instance/regs_reg[1][8]_i_184/CO[3]
+                         net (fo=1, routed)           0.000    24.043    datapath/divider_instance/regs_reg[1][8]_i_184_n_0
+    SLICE_X33Y21         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    24.157 r  datapath/divider_instance/regs_reg[1][8]_i_167/CO[3]
+                         net (fo=1, routed)           0.000    24.157    datapath/divider_instance/regs_reg[1][8]_i_167_n_0
+    SLICE_X33Y22         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    24.271 r  datapath/divider_instance/regs_reg[1][8]_i_162/CO[3]
+                         net (fo=1, routed)           0.000    24.271    datapath/divider_instance/regs_reg[1][8]_i_162_n_0
+    SLICE_X33Y23         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    24.385 r  datapath/divider_instance/regs_reg[1][8]_i_146/CO[3]
+                         net (fo=1, routed)           0.000    24.385    datapath/divider_instance/regs_reg[1][8]_i_146_n_0
+    SLICE_X33Y24         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    24.499 r  datapath/divider_instance/regs_reg[1][8]_i_141/CO[3]
+                         net (fo=1, routed)           0.009    24.508    datapath/divider_instance/regs_reg[1][8]_i_141_n_0
+    SLICE_X33Y25         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    24.622 r  datapath/divider_instance/regs_reg[1][10]_i_66/CO[3]
+                         net (fo=1, routed)           0.000    24.622    datapath/divider_instance/regs_reg[1][10]_i_66_n_0
+    SLICE_X33Y26         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    24.736 r  datapath/divider_instance/regs_reg[1][10]_i_65/CO[3]
+                         net (fo=1, routed)           0.000    24.736    datapath/divider_instance/regs_reg[1][10]_i_65_n_0
+    SLICE_X33Y27         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    25.070 r  datapath/divider_instance/regs_reg[1][10]_i_64/O[1]
+                         net (fo=3, routed)           1.105    26.176    datapath/divider_instance/stage2_remainder[5]_20[29]
+    SLICE_X29Y26         LUT4 (Prop_lut4_I1_O)        0.303    26.479 r  datapath/divider_instance/regs[1][10]_i_51/O
+                         net (fo=1, routed)           0.000    26.479    datapath/divider_instance/regs[1][10]_i_51_n_0
+    SLICE_X29Y26         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.401    26.880 r  datapath/divider_instance/regs_reg[1][10]_i_45/CO[3]
+                         net (fo=1, routed)           0.000    26.880    datapath/divider_instance/regs_reg[1][10]_i_45_n_0
+    SLICE_X29Y27         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.222    27.102 r  datapath/divider_instance/regs_reg[1][10]_i_36/O[0]
+                         net (fo=36, routed)          1.295    28.396    datapath/divider_instance/regs_reg[1][10]_i_45_0[0]
+    SLICE_X30Y19         LUT3 (Prop_lut3_I2_O)        0.299    28.695 r  datapath/divider_instance/regs[1][8]_i_190/O
+                         net (fo=1, routed)           0.000    28.695    datapath/divider_instance/regs[1][8]_i_190_n_0
+    SLICE_X30Y19         CARRY4 (Prop_carry4_S[2]_CO[3])
+                                                      0.380    29.075 r  datapath/divider_instance/regs_reg[1][8]_i_157/CO[3]
+                         net (fo=1, routed)           0.000    29.075    datapath/divider_instance/regs_reg[1][8]_i_157_n_0
+    SLICE_X30Y20         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    29.192 r  datapath/divider_instance/regs_reg[1][8]_i_152/CO[3]
+                         net (fo=1, routed)           0.000    29.192    datapath/divider_instance/regs_reg[1][8]_i_152_n_0
+    SLICE_X30Y21         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    29.309 r  datapath/divider_instance/regs_reg[1][8]_i_129/CO[3]
+                         net (fo=1, routed)           0.000    29.309    datapath/divider_instance/regs_reg[1][8]_i_129_n_0
+    SLICE_X30Y22         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    29.426 r  datapath/divider_instance/regs_reg[1][8]_i_124/CO[3]
+                         net (fo=1, routed)           0.000    29.426    datapath/divider_instance/regs_reg[1][8]_i_124_n_0
+    SLICE_X30Y23         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    29.543 r  datapath/divider_instance/regs_reg[1][8]_i_109/CO[3]
+                         net (fo=1, routed)           0.000    29.543    datapath/divider_instance/regs_reg[1][8]_i_109_n_0
+    SLICE_X30Y24         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    29.660 r  datapath/divider_instance/regs_reg[1][8]_i_104/CO[3]
+                         net (fo=1, routed)           0.009    29.669    datapath/divider_instance/regs_reg[1][8]_i_104_n_0
+    SLICE_X30Y25         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323    29.992 r  datapath/divider_instance/regs_reg[1][8]_i_100/O[1]
+                         net (fo=4, routed)           1.026    31.019    datapath/divider_instance/stage2_remainder[6]_21[25]
+    SLICE_X31Y23         LUT4 (Prop_lut4_I1_O)        0.306    31.325 r  datapath/divider_instance/regs[1][9]_i_58/O
+                         net (fo=1, routed)           0.000    31.325    datapath/divider_instance/regs[1][9]_i_58_n_0
+    SLICE_X31Y23         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    31.875 r  datapath/divider_instance/regs_reg[1][9]_i_47/CO[3]
+                         net (fo=1, routed)           0.000    31.875    datapath/divider_instance/regs_reg[1][9]_i_47_n_0
+    SLICE_X31Y24         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.222    32.097 r  datapath/divider_instance/regs_reg[1][9]_i_41/O[0]
+                         net (fo=36, routed)          1.053    33.150    datapath/divider_instance/regs_reg[1][9]_i_47_0[0]
+    SLICE_X27Y17         LUT3 (Prop_lut3_I2_O)        0.299    33.449 r  datapath/divider_instance/regs[1][8]_i_183/O
+                         net (fo=1, routed)           0.000    33.449    datapath/divider_instance/regs[1][8]_i_183_n_0
+    SLICE_X27Y17         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    33.981 r  datapath/divider_instance/regs_reg[1][8]_i_151/CO[3]
+                         net (fo=1, routed)           0.000    33.981    datapath/divider_instance/regs_reg[1][8]_i_151_n_0
+    SLICE_X27Y18         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    34.095 r  datapath/divider_instance/regs_reg[1][8]_i_123/CO[3]
+                         net (fo=1, routed)           0.000    34.095    datapath/divider_instance/regs_reg[1][8]_i_123_n_0
+    SLICE_X27Y19         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    34.209 r  datapath/divider_instance/regs_reg[1][8]_i_122/CO[3]
+                         net (fo=1, routed)           0.000    34.209    datapath/divider_instance/regs_reg[1][8]_i_122_n_0
+    SLICE_X27Y20         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    34.323 r  datapath/divider_instance/regs_reg[1][8]_i_98/CO[3]
+                         net (fo=1, routed)           0.000    34.323    datapath/divider_instance/regs_reg[1][8]_i_98_n_0
+    SLICE_X27Y21         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    34.437 r  datapath/divider_instance/regs_reg[1][8]_i_97/CO[3]
+                         net (fo=1, routed)           0.000    34.437    datapath/divider_instance/regs_reg[1][8]_i_97_n_0
+    SLICE_X27Y22         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    34.551 r  datapath/divider_instance/regs_reg[1][8]_i_83/CO[3]
+                         net (fo=1, routed)           0.000    34.551    datapath/divider_instance/regs_reg[1][8]_i_83_n_0
+    SLICE_X27Y23         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    34.885 r  datapath/divider_instance/regs_reg[1][8]_i_82/O[1]
+                         net (fo=4, routed)           1.056    35.941    datapath/divider_instance/stage2_remainder[7]_22[25]
+    SLICE_X23Y23         LUT4 (Prop_lut4_I1_O)        0.303    36.244 r  datapath/divider_instance/regs[1][8]_i_65/O
+                         net (fo=1, routed)           0.000    36.244    datapath/divider_instance/regs[1][8]_i_65_n_0
+    SLICE_X23Y23         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    36.794 r  datapath/divider_instance/regs_reg[1][8]_i_40/CO[3]
+                         net (fo=1, routed)           0.000    36.794    datapath/divider_instance/regs_reg[1][8]_i_40_n_0
+    SLICE_X23Y24         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.222    37.016 r  datapath/divider_instance/regs_reg[1][8]_i_20/O[0]
+                         net (fo=36, routed)          0.901    37.917    datapath/divider_instance/regs_reg[1][8]_i_40_0[0]
+    SLICE_X22Y18         LUT3 (Prop_lut3_I2_O)        0.299    38.216 r  datapath/divider_instance/regs[1][7]_i_117/O
+                         net (fo=1, routed)           0.000    38.216    datapath/divider_instance/regs[1][7]_i_117_n_0
+    SLICE_X22Y18         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    38.749 r  datapath/divider_instance/regs_reg[1][7]_i_106/CO[3]
+                         net (fo=1, routed)           0.000    38.749    datapath/divider_instance/regs_reg[1][7]_i_106_n_0
+    SLICE_X22Y19         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    38.866 r  datapath/divider_instance/regs_reg[1][7]_i_97/CO[3]
+                         net (fo=1, routed)           0.000    38.866    datapath/divider_instance/regs_reg[1][7]_i_97_n_0
+    SLICE_X22Y20         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    38.983 r  datapath/divider_instance/regs_reg[1][7]_i_96/CO[3]
+                         net (fo=1, routed)           0.000    38.983    datapath/divider_instance/regs_reg[1][7]_i_96_n_0
+    SLICE_X22Y21         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    39.100 r  datapath/divider_instance/regs_reg[1][7]_i_76/CO[3]
+                         net (fo=1, routed)           0.000    39.100    datapath/divider_instance/regs_reg[1][7]_i_76_n_0
+    SLICE_X22Y22         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    39.217 r  datapath/divider_instance/regs_reg[1][7]_i_75/CO[3]
+                         net (fo=1, routed)           0.000    39.217    datapath/divider_instance/regs_reg[1][7]_i_75_n_0
+    SLICE_X22Y23         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    39.334 r  datapath/divider_instance/regs_reg[1][7]_i_65/CO[3]
+                         net (fo=1, routed)           0.000    39.334    datapath/divider_instance/regs_reg[1][7]_i_65_n_0
+    SLICE_X22Y24         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323    39.657 r  datapath/divider_instance/regs_reg[1][7]_i_64/O[1]
+                         net (fo=4, routed)           0.910    40.566    datapath/divider_instance/stage2_remainder[8]_23[25]
+    SLICE_X21Y26         LUT4 (Prop_lut4_I1_O)        0.306    40.872 r  datapath/divider_instance/regs[1][7]_i_52/O
+                         net (fo=1, routed)           0.000    40.872    datapath/divider_instance/regs[1][7]_i_52_n_0
+    SLICE_X21Y26         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    41.422 r  datapath/divider_instance/regs_reg[1][7]_i_44/CO[3]
+                         net (fo=1, routed)           0.000    41.422    datapath/divider_instance/regs_reg[1][7]_i_44_n_0
+    SLICE_X21Y27         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.222    41.644 r  datapath/divider_instance/regs_reg[1][7]_i_38/O[0]
+                         net (fo=36, routed)          1.089    42.734    datapath/divider_instance/regs_reg[1][7]_i_44_0[0]
+    SLICE_X18Y20         LUT3 (Prop_lut3_I2_O)        0.299    43.033 r  datapath/divider_instance/regs[1][31]_i_216/O
+                         net (fo=1, routed)           0.000    43.033    datapath/divider_instance/regs[1][31]_i_216_n_0
+    SLICE_X18Y20         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.513    43.546 r  datapath/divider_instance/regs_reg[1][31]_i_208/CO[3]
+                         net (fo=1, routed)           0.000    43.546    datapath/divider_instance/regs_reg[1][31]_i_208_n_0
+    SLICE_X18Y21         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    43.663 r  datapath/divider_instance/regs_reg[1][6]_i_101/CO[3]
+                         net (fo=1, routed)           0.000    43.663    datapath/divider_instance/regs_reg[1][6]_i_101_n_0
+    SLICE_X18Y22         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    43.780 r  datapath/divider_instance/regs_reg[1][6]_i_100/CO[3]
+                         net (fo=1, routed)           0.000    43.780    datapath/divider_instance/regs_reg[1][6]_i_100_n_0
+    SLICE_X18Y23         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    43.897 r  datapath/divider_instance/regs_reg[1][6]_i_80/CO[3]
+                         net (fo=1, routed)           0.000    43.897    datapath/divider_instance/regs_reg[1][6]_i_80_n_0
+    SLICE_X18Y24         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    44.014 r  datapath/divider_instance/regs_reg[1][6]_i_79/CO[3]
+                         net (fo=1, routed)           0.009    44.023    datapath/divider_instance/regs_reg[1][6]_i_79_n_0
+    SLICE_X18Y25         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    44.140 r  datapath/divider_instance/regs_reg[1][6]_i_69/CO[3]
+                         net (fo=1, routed)           0.000    44.140    datapath/divider_instance/regs_reg[1][6]_i_69_n_0
+    SLICE_X18Y26         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    44.257 r  datapath/divider_instance/regs_reg[1][6]_i_68/CO[3]
+                         net (fo=1, routed)           0.000    44.257    datapath/divider_instance/regs_reg[1][6]_i_68_n_0
+    SLICE_X18Y27         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323    44.580 r  datapath/divider_instance/regs_reg[1][6]_i_67/O[1]
+                         net (fo=3, routed)           1.096    45.675    datapath/divider_instance/stage2_remainder[9]_24[29]
+    SLICE_X19Y24         LUT4 (Prop_lut4_I1_O)        0.306    45.981 r  datapath/divider_instance/regs[1][6]_i_54/O
+                         net (fo=1, routed)           0.000    45.981    datapath/divider_instance/regs[1][6]_i_54_n_0
+    SLICE_X19Y24         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.401    46.382 r  datapath/divider_instance/regs_reg[1][6]_i_43/CO[3]
+                         net (fo=1, routed)           0.009    46.391    datapath/divider_instance/regs_reg[1][6]_i_43_n_0
+    SLICE_X19Y25         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.222    46.613 r  datapath/divider_instance/regs_reg[1][6]_i_32/O[0]
+                         net (fo=35, routed)          1.009    47.623    datapath/divider_instance/regs_reg[1][6]_i_43_0[0]
+    SLICE_X14Y19         CARRY4 (Prop_carry4_CYINIT_CO[3])
+                                                      0.770    48.393 r  datapath/divider_instance/regs_reg[1][26]_i_92/CO[3]
+                         net (fo=1, routed)           0.000    48.393    datapath/divider_instance/regs_reg[1][26]_i_92_n_0
+    SLICE_X14Y20         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    48.510 r  datapath/divider_instance/regs_reg[1][31]_i_196/CO[3]
+                         net (fo=1, routed)           0.000    48.510    datapath/divider_instance/regs_reg[1][31]_i_196_n_0
+    SLICE_X14Y21         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    48.627 r  datapath/divider_instance/regs_reg[1][31]_i_191/CO[3]
+                         net (fo=1, routed)           0.000    48.627    datapath/divider_instance/regs_reg[1][31]_i_191_n_0
+    SLICE_X14Y22         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    48.744 r  datapath/divider_instance/regs_reg[1][5]_i_93/CO[3]
+                         net (fo=1, routed)           0.000    48.744    datapath/divider_instance/regs_reg[1][5]_i_93_n_0
+    SLICE_X14Y23         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    48.861 r  datapath/divider_instance/regs_reg[1][5]_i_92/CO[3]
+                         net (fo=1, routed)           0.000    48.861    datapath/divider_instance/regs_reg[1][5]_i_92_n_0
+    SLICE_X14Y24         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    48.978 r  datapath/divider_instance/regs_reg[1][5]_i_77/CO[3]
+                         net (fo=1, routed)           0.009    48.987    datapath/divider_instance/regs_reg[1][5]_i_77_n_0
+    SLICE_X14Y25         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323    49.310 r  datapath/divider_instance/regs_reg[1][5]_i_76/O[1]
+                         net (fo=4, routed)           0.984    50.294    datapath/divider_instance/stage2_remainder[10]_25[25]
+    SLICE_X16Y28         LUT4 (Prop_lut4_I1_O)        0.306    50.600 r  datapath/divider_instance/regs[1][5]_i_59/O
+                         net (fo=1, routed)           0.000    50.600    datapath/divider_instance/regs[1][5]_i_59_n_0
+    SLICE_X16Y28         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    51.133 r  datapath/divider_instance/regs_reg[1][5]_i_42/CO[3]
+                         net (fo=1, routed)           0.000    51.133    datapath/divider_instance/regs_reg[1][5]_i_42_n_0
+    SLICE_X16Y29         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.219    51.352 r  datapath/divider_instance/regs_reg[1][5]_i_32/O[0]
+                         net (fo=36, routed)          1.353    52.705    datapath/divider_instance/regs_reg[1][5]_i_42_0[0]
+    SLICE_X13Y19         LUT3 (Prop_lut3_I2_O)        0.295    53.000 r  datapath/divider_instance/regs[1][23]_i_92/O
+                         net (fo=1, routed)           0.000    53.000    datapath/divider_instance/regs[1][23]_i_92_n_0
+    SLICE_X13Y19         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    53.532 r  datapath/divider_instance/regs_reg[1][23]_i_84/CO[3]
+                         net (fo=1, routed)           0.000    53.532    datapath/divider_instance/regs_reg[1][23]_i_84_n_0
+    SLICE_X13Y20         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    53.646 r  datapath/divider_instance/regs_reg[1][26]_i_87/CO[3]
+                         net (fo=1, routed)           0.000    53.646    datapath/divider_instance/regs_reg[1][26]_i_87_n_0
+    SLICE_X13Y21         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    53.760 r  datapath/divider_instance/regs_reg[1][31]_i_178/CO[3]
+                         net (fo=1, routed)           0.000    53.760    datapath/divider_instance/regs_reg[1][31]_i_178_n_0
+    SLICE_X13Y22         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    53.874 r  datapath/divider_instance/regs_reg[1][31]_i_173/CO[3]
+                         net (fo=1, routed)           0.000    53.874    datapath/divider_instance/regs_reg[1][31]_i_173_n_0
+    SLICE_X13Y23         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    53.988 r  datapath/divider_instance/regs_reg[1][31]_i_168/CO[3]
+                         net (fo=1, routed)           0.000    53.988    datapath/divider_instance/regs_reg[1][31]_i_168_n_0
+    SLICE_X13Y24         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    54.102 r  datapath/divider_instance/regs_reg[1][4]_i_59/CO[3]
+                         net (fo=1, routed)           0.009    54.111    datapath/divider_instance/regs_reg[1][4]_i_59_n_0
+    SLICE_X13Y25         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    54.445 r  datapath/divider_instance/regs_reg[1][4]_i_58/O[1]
+                         net (fo=4, routed)           0.782    55.227    datapath/divider_instance/stage2_remainder[11]_26[25]
+    SLICE_X12Y24         LUT4 (Prop_lut4_I1_O)        0.303    55.530 r  datapath/divider_instance/regs[1][4]_i_46/O
+                         net (fo=1, routed)           0.000    55.530    datapath/divider_instance/regs[1][4]_i_46_n_0
+    SLICE_X12Y24         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    56.063 r  datapath/divider_instance/regs_reg[1][4]_i_36/CO[3]
+                         net (fo=1, routed)           0.009    56.072    datapath/divider_instance/regs_reg[1][4]_i_36_n_0
+    SLICE_X12Y25         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.219    56.291 r  datapath/divider_instance/regs_reg[1][4]_i_25/O[0]
+                         net (fo=36, routed)          1.329    57.620    datapath/divider_instance/regs_reg[1][4]_i_36_0[0]
+    SLICE_X1Y19          LUT3 (Prop_lut3_I2_O)        0.295    57.915 r  datapath/divider_instance/regs[1][15]_i_115/O
+                         net (fo=1, routed)           0.000    57.915    datapath/divider_instance/regs[1][15]_i_115_n_0
+    SLICE_X1Y19          CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    58.465 r  datapath/divider_instance/regs_reg[1][15]_i_94/CO[3]
+                         net (fo=1, routed)           0.000    58.465    datapath/divider_instance/regs_reg[1][15]_i_94_n_0
+    SLICE_X1Y20          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    58.579 r  datapath/divider_instance/regs_reg[1][23]_i_79/CO[3]
+                         net (fo=1, routed)           0.000    58.579    datapath/divider_instance/regs_reg[1][23]_i_79_n_0
+    SLICE_X1Y21          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    58.693 r  datapath/divider_instance/regs_reg[1][26]_i_82/CO[3]
+                         net (fo=1, routed)           0.000    58.693    datapath/divider_instance/regs_reg[1][26]_i_82_n_0
+    SLICE_X1Y22          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    58.807 r  datapath/divider_instance/regs_reg[1][31]_i_151/CO[3]
+                         net (fo=1, routed)           0.000    58.807    datapath/divider_instance/regs_reg[1][31]_i_151_n_0
+    SLICE_X1Y23          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    58.921 r  datapath/divider_instance/regs_reg[1][31]_i_146/CO[3]
+                         net (fo=1, routed)           0.000    58.921    datapath/divider_instance/regs_reg[1][31]_i_146_n_0
+    SLICE_X1Y24          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    59.035 r  datapath/divider_instance/regs_reg[1][31]_i_141/CO[3]
+                         net (fo=1, routed)           0.009    59.044    datapath/divider_instance/regs_reg[1][31]_i_141_n_0
+    SLICE_X1Y25          CARRY4 (Prop_carry4_CI_O[3])
+                                                      0.313    59.357 r  datapath/divider_instance/regs_reg[1][31]_i_137/O[3]
+                         net (fo=4, routed)           1.017    60.374    datapath/divider_instance/stage2_remainder[12]_27[27]
+    SLICE_X0Y24          LUT4 (Prop_lut4_I1_O)        0.306    60.680 r  datapath/divider_instance/regs[1][3]_i_61/O
+                         net (fo=1, routed)           0.000    60.680    datapath/divider_instance/regs[1][3]_i_61_n_0
+    SLICE_X0Y24          CARRY4 (Prop_carry4_S[2]_CO[3])
+                                                      0.380    61.060 r  datapath/divider_instance/regs_reg[1][3]_i_41/CO[3]
+                         net (fo=1, routed)           0.009    61.069    datapath/divider_instance/regs_reg[1][3]_i_41_n_0
+    SLICE_X0Y25          CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.219    61.288 r  datapath/divider_instance/regs_reg[1][3]_i_28/O[0]
+                         net (fo=36, routed)          0.881    62.169    datapath/divider_instance/regs_reg[1][3]_i_41_0[0]
+    SLICE_X2Y19          LUT3 (Prop_lut3_I2_O)        0.295    62.464 r  datapath/divider_instance/regs[1][15]_i_102/O
+                         net (fo=1, routed)           0.000    62.464    datapath/divider_instance/regs[1][15]_i_102_n_0
+    SLICE_X2Y19          CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.513    62.977 r  datapath/divider_instance/regs_reg[1][15]_i_83/CO[3]
+                         net (fo=1, routed)           0.000    62.977    datapath/divider_instance/regs_reg[1][15]_i_83_n_0
+    SLICE_X2Y20          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    63.094 r  datapath/divider_instance/regs_reg[1][15]_i_78/CO[3]
+                         net (fo=1, routed)           0.000    63.094    datapath/divider_instance/regs_reg[1][15]_i_78_n_0
+    SLICE_X2Y21          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    63.211 r  datapath/divider_instance/regs_reg[1][23]_i_74/CO[3]
+                         net (fo=1, routed)           0.000    63.211    datapath/divider_instance/regs_reg[1][23]_i_74_n_0
+    SLICE_X2Y22          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    63.328 r  datapath/divider_instance/regs_reg[1][26]_i_73/CO[3]
+                         net (fo=1, routed)           0.000    63.328    datapath/divider_instance/regs_reg[1][26]_i_73_n_0
+    SLICE_X2Y23          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    63.445 r  datapath/divider_instance/regs_reg[1][31]_i_123/CO[3]
+                         net (fo=1, routed)           0.000    63.445    datapath/divider_instance/regs_reg[1][31]_i_123_n_0
+    SLICE_X2Y24          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    63.562 r  datapath/divider_instance/regs_reg[1][31]_i_118/CO[3]
+                         net (fo=1, routed)           0.009    63.571    datapath/divider_instance/regs_reg[1][31]_i_118_n_0
+    SLICE_X2Y25          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    63.688 r  datapath/divider_instance/regs_reg[1][31]_i_114/CO[3]
+                         net (fo=1, routed)           0.000    63.688    datapath/divider_instance/regs_reg[1][31]_i_114_n_0
+    SLICE_X2Y26          CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323    64.011 r  datapath/divider_instance/regs_reg[1][31]_i_113/O[1]
+                         net (fo=3, routed)           0.891    64.902    datapath/divider_instance/stage2_remainder[13]_28[29]
+    SLICE_X6Y24          LUT4 (Prop_lut4_I1_O)        0.306    65.208 r  datapath/divider_instance/regs[1][2]_i_47/O
+                         net (fo=1, routed)           0.000    65.208    datapath/divider_instance/regs[1][2]_i_47_n_0
+    SLICE_X6Y24          CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.376    65.584 r  datapath/divider_instance/regs_reg[1][2]_i_38/CO[3]
+                         net (fo=1, routed)           0.009    65.593    datapath/divider_instance/regs_reg[1][2]_i_38_n_0
+    SLICE_X6Y25          CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.219    65.812 r  datapath/divider_instance/regs_reg[1][2]_i_24/O[0]
+                         net (fo=36, routed)          1.040    66.853    datapath/divider_instance/regs_reg[1][2]_i_38_0[0]
+    SLICE_X5Y20          LUT3 (Prop_lut3_I2_O)        0.295    67.148 r  datapath/divider_instance/regs[1][8]_i_87/O
+                         net (fo=1, routed)           0.000    67.148    datapath/divider_instance/regs[1][8]_i_87_n_0
+    SLICE_X5Y20          CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    67.680 r  datapath/divider_instance/regs_reg[1][8]_i_67/CO[3]
+                         net (fo=1, routed)           0.000    67.680    datapath/divider_instance/regs_reg[1][8]_i_67_n_0
+    SLICE_X5Y21          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    67.794 r  datapath/divider_instance/regs_reg[1][15]_i_56/CO[3]
+                         net (fo=1, routed)           0.000    67.794    datapath/divider_instance/regs_reg[1][15]_i_56_n_0
+    SLICE_X5Y22          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    67.908 r  datapath/divider_instance/regs_reg[1][15]_i_51/CO[3]
+                         net (fo=1, routed)           0.000    67.908    datapath/divider_instance/regs_reg[1][15]_i_51_n_0
+    SLICE_X5Y23          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    68.022 r  datapath/divider_instance/regs_reg[1][23]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    68.022    datapath/divider_instance/regs_reg[1][23]_i_55_n_0
+    SLICE_X5Y24          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    68.136 r  datapath/divider_instance/regs_reg[1][26]_i_53/CO[3]
+                         net (fo=1, routed)           0.009    68.145    datapath/divider_instance/regs_reg[1][26]_i_53_n_0
+    SLICE_X5Y25          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    68.259 r  datapath/divider_instance/regs_reg[1][31]_i_90/CO[3]
+                         net (fo=1, routed)           0.000    68.259    datapath/divider_instance/regs_reg[1][31]_i_90_n_0
+    SLICE_X5Y26          CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    68.593 r  datapath/divider_instance/regs_reg[1][31]_i_86/O[1]
+                         net (fo=4, routed)           0.831    69.424    datapath/divider_instance/stage2_remainder[14]_29[25]
+    SLICE_X4Y25          LUT4 (Prop_lut4_I1_O)        0.303    69.727 r  datapath/divider_instance/regs[1][1]_i_47/O
+                         net (fo=1, routed)           0.000    69.727    datapath/divider_instance/regs[1][1]_i_47_n_0
+    SLICE_X4Y25          CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    70.260 r  datapath/divider_instance/regs_reg[1][1]_i_35/CO[3]
+                         net (fo=1, routed)           0.000    70.260    datapath/divider_instance/regs_reg[1][1]_i_35_n_0
+    SLICE_X4Y26          CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.219    70.479 r  datapath/divider_instance/regs_reg[1][1]_i_28/O[0]
+                         net (fo=36, routed)          1.180    71.658    datapath/divider_instance/o_quotient[0]
+    SLICE_X7Y21          LUT3 (Prop_lut3_I2_O)        0.295    71.953 r  datapath/divider_instance/regs[1][6]_i_40/O
+                         net (fo=1, routed)           0.000    71.953    datapath/divider_instance/regs[1][6]_i_40_n_0
+    SLICE_X7Y21          CARRY4 (Prop_carry4_S[2]_CO[3])
+                                                      0.398    72.351 r  datapath/divider_instance/regs_reg[1][6]_i_26/CO[3]
+                         net (fo=1, routed)           0.000    72.351    datapath/divider_instance/regs_reg[1][6]_i_26_n_0
+    SLICE_X7Y22          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    72.465 r  datapath/divider_instance/regs_reg[1][8]_i_42/CO[3]
+                         net (fo=1, routed)           0.000    72.465    datapath/divider_instance/regs_reg[1][8]_i_42_n_0
+    SLICE_X7Y23          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    72.579 r  datapath/divider_instance/regs_reg[1][15]_i_26/CO[3]
+                         net (fo=1, routed)           0.000    72.579    datapath/divider_instance/regs_reg[1][15]_i_26_n_0
+    SLICE_X7Y24          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    72.693 r  datapath/divider_instance/regs_reg[1][15]_i_25/CO[3]
+                         net (fo=1, routed)           0.009    72.702    datapath/divider_instance/regs_reg[1][15]_i_25_n_0
+    SLICE_X7Y25          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    72.816 r  datapath/divider_instance/regs_reg[1][23]_i_24/CO[3]
+                         net (fo=1, routed)           0.000    72.816    datapath/divider_instance/regs_reg[1][23]_i_24_n_0
+    SLICE_X7Y26          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    72.930 r  datapath/divider_instance/regs_reg[1][26]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    72.930    datapath/divider_instance/regs_reg[1][26]_i_34_n_0
+    SLICE_X7Y27          CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    73.264 r  datapath/divider_instance/regs_reg[1][31]_i_53/O[1]
+                         net (fo=4, routed)           1.072    74.336    datapath/divider_instance/stage2_remainder[15]_30[25]
+    SLICE_X11Y26         LUT4 (Prop_lut4_I1_O)        0.303    74.639 r  datapath/divider_instance/regs[1][0]_i_66/O
+                         net (fo=1, routed)           0.000    74.639    datapath/divider_instance/regs[1][0]_i_66_n_0
+    SLICE_X11Y26         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    75.189 r  datapath/divider_instance/regs_reg[1][0]_i_30/CO[3]
+                         net (fo=1, routed)           0.000    75.189    datapath/divider_instance/regs_reg[1][0]_i_30_n_0
+    SLICE_X11Y27         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.222    75.411 r  datapath/divider_instance/regs_reg[1][0]_i_16/O[0]
+                         net (fo=36, routed)          1.419    76.830    datapath/divider_instance/regs_reg[1][0]_i_30_0[0]
+    SLICE_X29Y28         LUT5 (Prop_lut5_I1_O)        0.299    77.129 f  datapath/divider_instance/regs[1][26]_i_64/O
+                         net (fo=34, routed)          0.367    77.496    datapath/divider_instance/regs[1][26]_i_64_n_0
+    SLICE_X29Y29         LUT4 (Prop_lut4_I2_O)        0.124    77.620 r  datapath/divider_instance/regs[1][26]_i_40/O
+                         net (fo=31, routed)          1.142    78.762    datapath/divider_instance/regs[1][26]_i_40_n_0
+    SLICE_X28Y22         CARRY4 (Prop_carry4_DI[0]_CO[3])
+                                                      0.633    79.395 r  datapath/divider_instance/regs_reg[1][0]_i_17/CO[3]
+                         net (fo=1, routed)           0.000    79.395    datapath/divider_instance/regs_reg[1][0]_i_17_n_0
+    SLICE_X28Y23         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    79.509 r  datapath/divider_instance/regs_reg[1][6]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    79.509    datapath/divider_instance/regs_reg[1][6]_i_33_n_0
+    SLICE_X28Y24         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    79.623 r  datapath/divider_instance/regs_reg[1][11]_i_29/CO[3]
+                         net (fo=1, routed)           0.009    79.632    datapath/divider_instance/regs_reg[1][11]_i_29_n_0
+    SLICE_X28Y25         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    79.746 r  datapath/divider_instance/regs_reg[1][18]_i_35/CO[3]
+                         net (fo=1, routed)           0.000    79.746    datapath/divider_instance/regs_reg[1][18]_i_35_n_0
+    SLICE_X28Y26         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    79.860 r  datapath/divider_instance/regs_reg[1][18]_i_14/CO[3]
+                         net (fo=1, routed)           0.000    79.860    datapath/divider_instance/regs_reg[1][18]_i_14_n_0
+    SLICE_X28Y27         CARRY4 (Prop_carry4_CI_O[2])
+                                                      0.239    80.099 r  datapath/divider_instance/regs_reg[1][26]_i_39/O[2]
+                         net (fo=1, routed)           1.001    81.100    datapath/divider_instance/regs_reg[1][26]_i_39_n_5
+    SLICE_X18Y30         LUT6 (Prop_lut6_I0_O)        0.302    81.402 r  datapath/divider_instance/regs[1][22]_i_33/O
+                         net (fo=1, routed)           0.599    82.001    datapath/divider_instance/regs[1][22]_i_33_n_0
+    SLICE_X17Y33         LUT5 (Prop_lut5_I4_O)        0.124    82.125 r  datapath/divider_instance/regs[1][22]_i_14/O
+                         net (fo=1, routed)           0.151    82.277    mem/regs_reg[31][22]_2
+    SLICE_X17Y33         LUT5 (Prop_lut5_I0_O)        0.124    82.401 r  mem/regs[1][22]_i_5/O
+                         net (fo=1, routed)           1.422    83.823    mem/regs[1][22]_i_5_n_0
+    SLICE_X46Y33         LUT6 (Prop_lut6_I3_O)        0.124    83.947 r  mem/regs[1][22]_i_1/O
+                         net (fo=31, routed)          1.634    85.581    datapath/rf/regs_reg[31][31]_1[15]
+    SLICE_X45Y10         FDRE                                         r  datapath/rf/regs_reg[10][22]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_proc_clk_wiz_0 rise edge)
+                                                     76.923    76.923 r  
+    Y9                                                0.000    76.923 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000    76.923    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         1.420    78.343 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           1.162    79.505    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -7.438    72.067 r  mmcm/mmcm_adv_inst/CLKOUT0
+                         net (fo=2, routed)           1.691    73.758    mmcm/clk_proc_clk_wiz_0
+    BUFGCTRL_X0Y0        BUFGCTRL (Prop_bufgctrl_I0_O)
+                                                      0.091    73.849 r  mmcm/clkout1_buf/O
+                         net (fo=1120, routed)        1.489    75.339    datapath/rf/clock_processor
+    SLICE_X45Y10         FDRE                                         r  datapath/rf/regs_reg[10][22]/C
+                         clock pessimism              0.577    75.915    
+                         clock uncertainty           -0.101    75.814    
+    SLICE_X45Y10         FDRE (Setup_fdre_C_D)       -0.108    75.706    datapath/rf/regs_reg[10][22]
+  -------------------------------------------------------------------
+                         required time                         75.706    
+                         arrival time                         -85.581    
+  -------------------------------------------------------------------
+                         slack                                 -9.874    
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack (MET) :             0.131ns  (arrival time - required time)
+  Source:                 mmcm/seq_reg1_reg[0]/C
+                            (rising edge-triggered cell FDCE clocked by clk_proc_clk_wiz_0  {rise@0.000ns fall@38.462ns period=76.923ns})
+  Destination:            mmcm/seq_reg1_reg[1]/D
+                            (rising edge-triggered cell FDCE clocked by clk_proc_clk_wiz_0  {rise@0.000ns fall@38.462ns period=76.923ns})
+  Path Group:             clk_proc_clk_wiz_0
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            0.000ns  (clk_proc_clk_wiz_0 rise@0.000ns - clk_proc_clk_wiz_0 rise@0.000ns)
+  Data Path Delay:        0.206ns  (logic 0.141ns (68.336%)  route 0.065ns (31.664%))
+  Logic Levels:           0  
+  Clock Path Skew:        0.000ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    -1.299ns
+    Source Clock Delay      (SCD):    -1.035ns
+    Clock Pessimism Removal (CPR):    -0.264ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk_proc_clk_wiz_0 rise edge)
+                                                      0.000     0.000 r  
+    Y9                                                0.000     0.000 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000     0.000    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         0.258     0.258 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           0.440     0.698    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -2.421    -1.722 r  mmcm/mmcm_adv_inst/CLKOUT0
+                         net (fo=2, routed)           0.398    -1.324    mmcm/clk_proc_clk_wiz_0
+    BUFHCE_X0Y0          BUFH (Prop_bufh_I_O)         0.020    -1.304 r  mmcm/clkout1_buf_en/O
+                         net (fo=8, routed)           0.269    -1.035    mmcm/clk_proc_clk_wiz_0_en_clk
+    SLICE_X48Y46         FDCE                                         r  mmcm/seq_reg1_reg[0]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X48Y46         FDCE (Prop_fdce_C_Q)         0.141    -0.894 r  mmcm/seq_reg1_reg[0]/Q
+                         net (fo=1, routed)           0.065    -0.829    mmcm/seq_reg1[0]
+    SLICE_X48Y46         FDCE                                         r  mmcm/seq_reg1_reg[1]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_proc_clk_wiz_0 rise edge)
+                                                      0.000     0.000 r  
+    Y9                                                0.000     0.000 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000     0.000    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         0.446     0.446 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           0.480     0.926    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.204    -2.278 r  mmcm/mmcm_adv_inst/CLKOUT0
+                         net (fo=2, routed)           0.442    -1.836    mmcm/clk_proc_clk_wiz_0
+    BUFHCE_X0Y0          BUFH (Prop_bufh_I_O)         0.043    -1.793 r  mmcm/clkout1_buf_en/O
+                         net (fo=8, routed)           0.494    -1.299    mmcm/clk_proc_clk_wiz_0_en_clk
+    SLICE_X48Y46         FDCE                                         r  mmcm/seq_reg1_reg[1]/C
+                         clock pessimism              0.264    -1.035    
+    SLICE_X48Y46         FDCE (Hold_fdce_C_D)         0.075    -0.960    mmcm/seq_reg1_reg[1]
+  -------------------------------------------------------------------
+                         required time                          0.960    
+                         arrival time                          -0.829    
+  -------------------------------------------------------------------
+                         slack                                  0.131    
+
+
+
+
+
+Pulse Width Checks
+--------------------------------------------------------------------------------------
+Clock Name:         clk_proc_clk_wiz_0
+Waveform(ns):       { 0.000 38.462 }
+Period(ns):         76.923
+Sources:            { mmcm/mmcm_adv_inst/CLKOUT0 }
+
+Check Type        Corner  Lib Pin             Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location         Pin
+Min Period        n/a     BUFGCTRL/I0         n/a            2.155         76.923      74.768     BUFGCTRL_X0Y0    mmcm/clkout1_buf/I0
+Max Period        n/a     MMCME2_ADV/CLKOUT0  n/a            213.360       76.923      136.437    MMCME2_ADV_X0Y0  mmcm/mmcm_adv_inst/CLKOUT0
+Low Pulse Width   Fast    FDRE/C              n/a            0.500         38.462      37.962     SLICE_X41Y26     datapath/rf/regs_reg[12][31]/C
+High Pulse Width  Slow    FDRE/C              n/a            0.500         38.462      37.962     SLICE_X35Y28     datapath/divider_instance/divisor_temp_reg[0]/C
+
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  clkfbout_clk_wiz_0
+  To Clock:  clkfbout_clk_wiz_0
+
+Setup :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+Hold  :           NA  Failing Endpoints,  Worst Slack           NA  ,  Total Violation           NA
+PW    :            0  Failing Endpoints,  Worst Slack        7.845ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Pulse Width Checks
+--------------------------------------------------------------------------------------
+Clock Name:         clkfbout_clk_wiz_0
+Waveform(ns):       { 0.000 5.000 }
+Period(ns):         10.000
+Sources:            { mmcm/mmcm_adv_inst/CLKFBOUT }
+
+Check Type  Corner  Lib Pin             Reference Pin  Required(ns)  Actual(ns)  Slack(ns)  Location         Pin
+Min Period  n/a     BUFG/I              n/a            2.155         10.000      7.845      BUFGCTRL_X0Y2    mmcm/clkf_buf/I
+Max Period  n/a     MMCME2_ADV/CLKFBIN  n/a            100.000       10.000      90.000     MMCME2_ADV_X0Y0  mmcm/mmcm_adv_inst/CLKFBIN
+
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  clk_proc_clk_wiz_0
+  To Clock:  clk_mem_clk_wiz_0
+
+Setup :            0  Failing Endpoints,  Worst Slack       14.361ns,  Total Violation        0.000ns
+Hold  :            0  Failing Endpoints,  Worst Slack       19.473ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack (MET) :             14.361ns  (required time - arrival time)
+  Source:                 datapath/pcCurrent_reg[9]/C
+                            (rising edge-triggered cell FDRE clocked by clk_proc_clk_wiz_0  {rise@0.000ns fall@38.462ns period=76.923ns})
+  Destination:            mem/mem_reg_2_1/ADDRBWRADDR[9]
+                            (rising edge-triggered cell RAMB36E1 clocked by clk_mem_clk_wiz_0  {rise@19.231ns fall@57.692ns period=76.923ns})
+  Path Group:             clk_mem_clk_wiz_0
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            19.231ns  (clk_mem_clk_wiz_0 rise@19.231ns - clk_proc_clk_wiz_0 rise@0.000ns)
+  Data Path Delay:        3.760ns  (logic 0.456ns (12.129%)  route 3.304ns (87.871%))
+  Logic Levels:           0  
+  Clock Path Skew:        -0.323ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    -1.480ns = ( 17.751 - 19.231 ) 
+    Source Clock Delay      (SCD):    -0.869ns
+    Clock Pessimism Removal (CPR):    0.288ns
+  Clock Uncertainty:      0.221ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.189ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk_proc_clk_wiz_0 rise edge)
+                                                      0.000     0.000 r  
+    Y9                                                0.000     0.000 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000     0.000    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         1.490     1.490 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           1.285     2.775    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -7.343    -4.568 r  mmcm/mmcm_adv_inst/CLKOUT0
+                         net (fo=2, routed)           1.855    -2.713    mmcm/clk_proc_clk_wiz_0
+    BUFGCTRL_X0Y0        BUFGCTRL (Prop_bufgctrl_I0_O)
+                                                      0.101    -2.612 r  mmcm/clkout1_buf/O
+                         net (fo=1120, routed)        1.743    -0.869    datapath/clock_processor
+    SLICE_X13Y18         FDRE                                         r  datapath/pcCurrent_reg[9]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X13Y18         FDRE (Prop_fdre_C_Q)         0.456    -0.413 r  datapath/pcCurrent_reg[9]/Q
+                         net (fo=14, routed)          3.304     2.891    mem/Q[9]
+    RAMB36_X3Y0          RAMB36E1                                     r  mem/mem_reg_2_1/ADDRBWRADDR[9]
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_mem_clk_wiz_0 rise edge)
+                                                     19.231    19.231 r  
+    Y9                                                0.000    19.231 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000    19.231    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         1.420    20.651 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           1.162    21.812    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -7.438    14.375 r  mmcm/mmcm_adv_inst/CLKOUT1
+                         net (fo=2, routed)           1.691    16.066    mmcm/clk_mem_clk_wiz_0
+    BUFGCTRL_X0Y1        BUFGCTRL (Prop_bufgctrl_I0_O)
+                                                      0.091    16.157 r  mmcm/clkout2_buf/O
+                         net (fo=768, routed)         1.594    17.751    mem/clock_mem
+    RAMB36_X3Y0          RAMB36E1                                     r  mem/mem_reg_2_1/CLKBWRCLK
+                         clock pessimism              0.288    18.039    
+                         clock uncertainty           -0.221    17.818    
+    RAMB36_X3Y0          RAMB36E1 (Setup_ramb36e1_CLKBWRCLK_ADDRBWRADDR[9])
+                                                     -0.566    17.252    mem/mem_reg_2_1
+  -------------------------------------------------------------------
+                         required time                         17.252    
+                         arrival time                          -2.891    
+  -------------------------------------------------------------------
+                         slack                                 14.361    
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack (MET) :             19.473ns  (arrival time - required time)
+  Source:                 datapath/rf/regs_reg[12][7]/C
+                            (rising edge-triggered cell FDRE clocked by clk_proc_clk_wiz_0  {rise@0.000ns fall@38.462ns period=76.923ns})
+  Destination:            oled_device/mem_reg[0][11][7]/D
+                            (falling edge-triggered cell FDRE clocked by clk_mem_clk_wiz_0  {rise@19.231ns fall@57.692ns period=76.923ns})
+  Path Group:             clk_mem_clk_wiz_0
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            -19.231ns  (clk_mem_clk_wiz_0 fall@57.692ns - clk_proc_clk_wiz_0 rise@76.923ns)
+  Data Path Delay:        0.866ns  (logic 0.359ns (41.468%)  route 0.507ns (58.532%))
+  Logic Levels:           3  (LUT6=2 MUXF7=1)
+  Clock Path Skew:        0.318ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    -0.857ns = ( 56.835 - 57.692 ) 
+    Source Clock Delay      (SCD):    -0.619ns = ( 76.304 - 76.923 ) 
+    Clock Pessimism Removal (CPR):    -0.556ns
+  Clock Uncertainty:      0.221ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.189ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk_proc_clk_wiz_0 rise edge)
+                                                     76.923    76.923 r  
+    Y9                                                0.000    76.923 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000    76.923    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         0.258    77.181 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           0.440    77.621    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -2.421    75.201 r  mmcm/mmcm_adv_inst/CLKOUT0
+                         net (fo=2, routed)           0.518    75.719    mmcm/clk_proc_clk_wiz_0
+    BUFGCTRL_X0Y0        BUFGCTRL (Prop_bufgctrl_I0_O)
+                                                      0.026    75.745 r  mmcm/clkout1_buf/O
+                         net (fo=1120, routed)        0.560    76.304    datapath/rf/clock_processor
+    SLICE_X45Y3          FDRE                                         r  datapath/rf/regs_reg[12][7]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X45Y3          FDRE (Prop_fdre_C_Q)         0.141    76.445 r  datapath/rf/regs_reg[12][7]/Q
+                         net (fo=2, routed)           0.192    76.638    datapath/rf/regs_reg[12]_42[7]
+    SLICE_X47Y3          LUT6 (Prop_lut6_I5_O)        0.045    76.683 r  datapath/rf/mem[3][0][7]_i_27/O
+                         net (fo=1, routed)           0.000    76.683    datapath/rf/mem[3][0][7]_i_27_n_0
+    SLICE_X47Y3          MUXF7 (Prop_muxf7_I1_O)      0.065    76.748 r  datapath/rf/mem_reg[3][0][7]_i_12/O
+                         net (fo=1, routed)           0.097    76.845    datapath/rf/mem_reg[3][0][7]_i_12_n_0
+    SLICE_X45Y3          LUT6 (Prop_lut6_I3_O)        0.108    76.953 r  datapath/rf/mem[3][0][7]_i_3/O
+                         net (fo=93, routed)          0.218    77.170    oled_device/mem_reg[3][0][7]_2
+    SLICE_X40Y1          FDRE                                         r  oled_device/mem_reg[0][11][7]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_mem_clk_wiz_0 fall edge)
+                                                     57.692    57.692 f  
+    Y9                                                0.000    57.692 f  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000    57.692    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         0.446    58.138 f  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           0.480    58.618    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -3.204    55.414 f  mmcm/mmcm_adv_inst/CLKOUT1
+                         net (fo=2, routed)           0.564    55.978    mmcm/clk_mem_clk_wiz_0
+    BUFGCTRL_X0Y1        BUFGCTRL (Prop_bufgctrl_I0_O)
+                                                      0.029    56.007 f  mmcm/clkout2_buf/O
+                         net (fo=768, routed)         0.828    56.835    oled_device/clock_mem
+    SLICE_X40Y1          FDRE                                         r  oled_device/mem_reg[0][11][7]/C  (IS_INVERTED)
+                         clock pessimism              0.556    57.391    
+                         clock uncertainty            0.221    57.612    
+    SLICE_X40Y1          FDRE (Hold_fdre_C_D)         0.085    57.697    oled_device/mem_reg[0][11][7]
+  -------------------------------------------------------------------
+                         required time                        -57.697    
+                         arrival time                          77.170    
+  -------------------------------------------------------------------
+                         slack                                 19.473    
+
+
+
+
+
+---------------------------------------------------------------------------------------------------
+From Clock:  clk_mem_clk_wiz_0
+  To Clock:  clk_proc_clk_wiz_0
+
+Setup :           37  Failing Endpoints,  Worst Slack      -27.838ns,  Total Violation     -934.928ns
+Hold  :            0  Failing Endpoints,  Worst Slack       19.916ns,  Total Violation        0.000ns
+---------------------------------------------------------------------------------------------------
+
+
+Max Delay Paths
+--------------------------------------------------------------------------------------
+Slack (VIOLATED) :        -27.838ns  (required time - arrival time)
+  Source:                 mem/mem_reg_0_0/CLKBWRCLK
+                            (rising edge-triggered cell RAMB36E1 clocked by clk_mem_clk_wiz_0  {rise@19.231ns fall@57.692ns period=76.923ns})
+  Destination:            datapath/divider_instance/stage2_remainder_intermediate_reg[29]/D
+                            (rising edge-triggered cell FDRE clocked by clk_proc_clk_wiz_0  {rise@0.000ns fall@38.462ns period=76.923ns})
+  Path Group:             clk_proc_clk_wiz_0
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            57.692ns  (clk_proc_clk_wiz_0 rise@76.923ns - clk_mem_clk_wiz_0 rise@19.231ns)
+  Data Path Delay:        85.103ns  (logic 49.357ns (57.997%)  route 35.746ns (42.003%))
+  Logic Levels:           194  (CARRY4=153 LUT2=1 LUT3=12 LUT4=17 LUT5=3 LUT6=7 MUXF7=1)
+  Clock Path Skew:        -0.315ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    -1.505ns = ( 75.418 - 76.923 ) 
+    Source Clock Delay      (SCD):    -0.902ns = ( 18.329 - 19.231 ) 
+    Clock Pessimism Removal (CPR):    0.288ns
+  Clock Uncertainty:      0.221ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.189ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk_mem_clk_wiz_0 rise edge)
+                                                     19.231    19.231 r  
+    Y9                                                0.000    19.231 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000    19.231    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         1.490    20.721 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           1.285    22.006    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -7.343    14.663 r  mmcm/mmcm_adv_inst/CLKOUT1
+                         net (fo=2, routed)           1.855    16.518    mmcm/clk_mem_clk_wiz_0
+    BUFGCTRL_X0Y1        BUFGCTRL (Prop_bufgctrl_I0_O)
+                                                      0.101    16.619 r  mmcm/clkout2_buf/O
+                         net (fo=768, routed)         1.709    18.329    mem/clock_mem
+    RAMB36_X2Y0          RAMB36E1                                     r  mem/mem_reg_0_0/CLKBWRCLK
+  -------------------------------------------------------------------    -------------------
+    RAMB36_X2Y0          RAMB36E1 (Prop_ramb36e1_CLKBWRCLK_DOBDO[1])
+                                                      2.454    20.783 r  mem/mem_reg_0_0/DOBDO[1]
+                         net (fo=7, routed)           1.265    22.048    mem/insn_from_imem[1]
+    SLICE_X52Y4          LUT4 (Prop_lut4_I3_O)        0.124    22.172 f  mem/mem[3][0][7]_i_25/O
+                         net (fo=5, routed)           0.821    22.992    mem/mem[3][0][7]_i_25_n_0
+    SLICE_X50Y4          LUT5 (Prop_lut5_I4_O)        0.124    23.116 r  mem/mem[3][0][7]_i_30/O
+                         net (fo=256, routed)         1.010    24.126    datapath/rf/rs2[1]
+    SLICE_X42Y5          LUT6 (Prop_lut6_I2_O)        0.124    24.250 r  datapath/rf/rd_data0_i_297/O
+                         net (fo=1, routed)           0.000    24.250    datapath/rf/rd_data0_i_297_n_0
+    SLICE_X42Y5          MUXF7 (Prop_muxf7_I1_O)      0.247    24.497 r  datapath/rf/rd_data0_i_114/O
+                         net (fo=1, routed)           0.867    25.364    datapath/rf/rd_data0_i_114_n_0
+    SLICE_X42Y11         LUT6 (Prop_lut6_I0_O)        0.298    25.662 r  datapath/rf/rd_data0_i_22/O
+                         net (fo=27, routed)          0.993    26.655    datapath/rf/mem_reg_0_0[10]
+    SLICE_X47Y14         LUT4 (Prop_lut4_I1_O)        0.124    26.779 r  datapath/rf/regs[1][31]_i_95/O
+                         net (fo=1, routed)           0.395    27.175    datapath/rf/regs[1][31]_i_95_n_0
+    SLICE_X45Y14         LUT5 (Prop_lut5_I4_O)        0.124    27.299 f  datapath/rf/regs[1][31]_i_60/O
+                         net (fo=1, routed)           0.590    27.889    datapath/rf/regs[1][31]_i_60_n_0
+    SLICE_X40Y14         LUT6 (Prop_lut6_I4_O)        0.124    28.013 f  datapath/rf/regs[1][31]_i_19/O
+                         net (fo=13, routed)          0.589    28.602    mem/regs_reg[31][8]
+    SLICE_X41Y12         LUT3 (Prop_lut3_I0_O)        0.124    28.726 f  mem/stage2_dividend_intermediate[31]_i_9/O
+                         net (fo=24, routed)          0.277    29.003    mem/mem_reg_1_1_91
+    SLICE_X41Y12         LUT5 (Prop_lut5_I4_O)        0.124    29.127 r  mem/stage2_quotient_intermediate[15]_i_38/O
+                         net (fo=4, routed)           0.583    29.710    mem/mem_reg_1_1_2[28]
+    SLICE_X41Y13         LUT3 (Prop_lut3_I1_O)        0.124    29.834 r  mem/stage2_quotient_intermediate[15]_i_37/O
+                         net (fo=1, routed)           0.000    29.834    datapath/rf/S[0]
+    SLICE_X41Y13         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    30.366 r  datapath/rf/stage2_quotient_intermediate_reg[15]_i_21/CO[3]
+                         net (fo=1, routed)           0.000    30.366    datapath/rf/stage2_quotient_intermediate_reg[15]_i_21_n_0
+    SLICE_X41Y14         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    30.480 r  datapath/rf/stage2_quotient_intermediate_reg[15]_i_12/CO[3]
+                         net (fo=1, routed)           0.000    30.480    datapath/rf/stage2_quotient_intermediate_reg[15]_i_12_n_0
+    SLICE_X41Y15         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    30.594 r  datapath/rf/stage2_quotient_intermediate_reg[15]_i_3/CO[3]
+                         net (fo=1, routed)           0.000    30.594    datapath/rf/stage2_quotient_intermediate_reg[15]_i_3_n_0
+    SLICE_X41Y16         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    30.708 r  datapath/rf/stage2_quotient_intermediate_reg[15]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    30.708    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_n_0
+    SLICE_X41Y17         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    30.943 r  datapath/rf/stage2_quotient_intermediate_reg[15]_i_1/O[0]
+                         net (fo=33, routed)          1.013    31.956    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[15]
+    SLICE_X42Y14         LUT2 (Prop_lut2_I0_O)        0.299    32.255 r  datapath/rf/stage2_quotient_intermediate[14]_i_76/O
+                         net (fo=1, routed)           0.000    32.255    datapath/rf/divider_instance/stage1[0].div_stage1_instance/p_1_in[1]
+    SLICE_X42Y14         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    32.788 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    32.788    datapath/rf/stage2_quotient_intermediate_reg[14]_i_64_n_0
+    SLICE_X42Y15         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    32.905 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    32.905    datapath/rf/stage2_quotient_intermediate_reg[14]_i_55_n_0
+    SLICE_X42Y16         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    33.022 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    33.022    datapath/rf/stage2_quotient_intermediate_reg[14]_i_54_n_0
+    SLICE_X42Y17         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    33.139 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    33.139    datapath/rf/stage2_quotient_intermediate_reg[14]_i_34_n_0
+    SLICE_X42Y18         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    33.256 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    33.256    datapath/rf/stage2_quotient_intermediate_reg[14]_i_33_n_0
+    SLICE_X42Y19         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323    33.579 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_23/O[1]
+                         net (fo=4, routed)           0.982    34.562    datapath/rf/divider_instance/stage1_remainder[1]_0[21]
+    SLICE_X46Y18         LUT4 (Prop_lut4_I1_O)        0.306    34.868 r  datapath/rf/stage2_quotient_intermediate[14]_i_17/O
+                         net (fo=1, routed)           0.000    34.868    datapath/rf/stage2_quotient_intermediate[14]_i_17_n_0
+    SLICE_X46Y18         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.376    35.244 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_3/CO[3]
+                         net (fo=1, routed)           0.000    35.244    datapath/rf/stage2_quotient_intermediate_reg[14]_i_3_n_0
+    SLICE_X46Y19         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    35.361 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    35.361    datapath/rf/stage2_quotient_intermediate_reg[14]_i_2_n_0
+    SLICE_X46Y20         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.232    35.593 r  datapath/rf/stage2_quotient_intermediate_reg[14]_i_1/O[0]
+                         net (fo=33, routed)          0.515    36.108    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[14]
+    SLICE_X43Y19         LUT6 (Prop_lut6_I5_O)        0.295    36.403 r  datapath/rf/stage2_quotient_intermediate[13]_i_77/O
+                         net (fo=1, routed)           0.599    37.001    datapath/rf/stage2_quotient_intermediate[13]_i_77_n_0
+    SLICE_X39Y15         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.656    37.657 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    37.657    datapath/rf/stage2_quotient_intermediate_reg[13]_i_64_n_0
+    SLICE_X39Y16         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    37.771 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    37.771    datapath/rf/stage2_quotient_intermediate_reg[13]_i_55_n_0
+    SLICE_X39Y17         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    37.885 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    37.885    datapath/rf/stage2_quotient_intermediate_reg[13]_i_54_n_0
+    SLICE_X39Y18         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    37.999 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    37.999    datapath/rf/stage2_quotient_intermediate_reg[13]_i_34_n_0
+    SLICE_X39Y19         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    38.113 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    38.113    datapath/rf/stage2_quotient_intermediate_reg[13]_i_33_n_0
+    SLICE_X39Y20         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    38.227 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    38.227    datapath/rf/stage2_quotient_intermediate_reg[13]_i_23_n_0
+    SLICE_X39Y21         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    38.561 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_22/O[1]
+                         net (fo=4, routed)           0.994    39.555    datapath/rf/divider_instance/stage1_remainder[2]_1[25]
+    SLICE_X45Y23         LUT4 (Prop_lut4_I1_O)        0.303    39.858 r  datapath/rf/stage2_quotient_intermediate[13]_i_10/O
+                         net (fo=1, routed)           0.000    39.858    datapath/rf/stage2_quotient_intermediate[13]_i_10_n_0
+    SLICE_X45Y23         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    40.408 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    40.408    datapath/rf/stage2_quotient_intermediate_reg[13]_i_2_n_0
+    SLICE_X45Y24         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    40.643 r  datapath/rf/stage2_quotient_intermediate_reg[13]_i_1/O[0]
+                         net (fo=33, routed)          0.372    41.015    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[13]
+    SLICE_X41Y24         LUT6 (Prop_lut6_I5_O)        0.299    41.314 r  datapath/rf/stage2_quotient_intermediate[12]_i_77/O
+                         net (fo=1, routed)           0.571    41.885    datapath/rf/stage2_quotient_intermediate[12]_i_77_n_0
+    SLICE_X37Y22         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.656    42.541 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    42.541    datapath/rf/stage2_quotient_intermediate_reg[12]_i_64_n_0
+    SLICE_X37Y23         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    42.655 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    42.655    datapath/rf/stage2_quotient_intermediate_reg[12]_i_55_n_0
+    SLICE_X37Y24         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    42.769 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_54/CO[3]
+                         net (fo=1, routed)           0.009    42.778    datapath/rf/stage2_quotient_intermediate_reg[12]_i_54_n_0
+    SLICE_X37Y25         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    42.892 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    42.892    datapath/rf/stage2_quotient_intermediate_reg[12]_i_34_n_0
+    SLICE_X37Y26         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    43.006 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    43.006    datapath/rf/stage2_quotient_intermediate_reg[12]_i_33_n_0
+    SLICE_X37Y27         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    43.120 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    43.120    datapath/rf/stage2_quotient_intermediate_reg[12]_i_23_n_0
+    SLICE_X37Y28         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    43.454 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_22/O[1]
+                         net (fo=4, routed)           1.028    44.481    datapath/rf/divider_instance/stage1_remainder[3]_2[25]
+    SLICE_X36Y24         LUT4 (Prop_lut4_I1_O)        0.303    44.784 r  datapath/rf/stage2_quotient_intermediate[12]_i_10/O
+                         net (fo=1, routed)           0.000    44.784    datapath/rf/stage2_quotient_intermediate[12]_i_10_n_0
+    SLICE_X36Y24         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    45.317 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_2/CO[3]
+                         net (fo=1, routed)           0.009    45.326    datapath/rf/stage2_quotient_intermediate_reg[12]_i_2_n_0
+    SLICE_X36Y25         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.232    45.558 r  datapath/rf/stage2_quotient_intermediate_reg[12]_i_1/O[0]
+                         net (fo=33, routed)          0.697    46.256    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[12]
+    SLICE_X37Y21         LUT6 (Prop_lut6_I5_O)        0.295    46.551 r  datapath/rf/stage2_quotient_intermediate[11]_i_77/O
+                         net (fo=1, routed)           0.711    47.262    datapath/rf/stage2_quotient_intermediate[11]_i_77_n_0
+    SLICE_X38Y16         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.637    47.899 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    47.899    datapath/rf/stage2_quotient_intermediate_reg[11]_i_64_n_0
+    SLICE_X38Y17         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    48.016 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    48.016    datapath/rf/stage2_quotient_intermediate_reg[11]_i_55_n_0
+    SLICE_X38Y18         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    48.133 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    48.133    datapath/rf/stage2_quotient_intermediate_reg[11]_i_54_n_0
+    SLICE_X38Y19         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    48.250 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    48.250    datapath/rf/stage2_quotient_intermediate_reg[11]_i_34_n_0
+    SLICE_X38Y20         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    48.367 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    48.367    datapath/rf/stage2_quotient_intermediate_reg[11]_i_33_n_0
+    SLICE_X38Y21         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    48.484 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    48.484    datapath/rf/stage2_quotient_intermediate_reg[11]_i_23_n_0
+    SLICE_X38Y22         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323    48.807 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_22/O[1]
+                         net (fo=4, routed)           1.059    49.866    datapath/rf/divider_instance/stage1_remainder[4]_3[25]
+    SLICE_X36Y17         LUT4 (Prop_lut4_I1_O)        0.306    50.172 r  datapath/rf/stage2_quotient_intermediate[11]_i_10/O
+                         net (fo=1, routed)           0.000    50.172    datapath/rf/stage2_quotient_intermediate[11]_i_10_n_0
+    SLICE_X36Y17         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    50.705 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    50.705    datapath/rf/stage2_quotient_intermediate_reg[11]_i_2_n_0
+    SLICE_X36Y18         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.232    50.937 r  datapath/rf/stage2_quotient_intermediate_reg[11]_i_1/O[0]
+                         net (fo=33, routed)          0.949    51.885    mem/stage2_quotient_intermediate_reg[10]_i_21[0]
+    SLICE_X37Y12         LUT3 (Prop_lut3_I2_O)        0.295    52.180 r  mem/stage2_quotient_intermediate[10]_i_77/O
+                         net (fo=1, routed)           0.000    52.180    datapath/rf/stage2_quotient_intermediate[10]_i_49[0]
+    SLICE_X37Y12         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    52.712 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    52.712    datapath/rf/stage2_quotient_intermediate_reg[10]_i_64_n_0
+    SLICE_X37Y13         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    52.826 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    52.826    datapath/rf/stage2_quotient_intermediate_reg[10]_i_55_n_0
+    SLICE_X37Y14         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    52.940 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    52.940    datapath/rf/stage2_quotient_intermediate_reg[10]_i_54_n_0
+    SLICE_X37Y15         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    53.054 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    53.054    datapath/rf/stage2_quotient_intermediate_reg[10]_i_34_n_0
+    SLICE_X37Y16         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    53.168 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    53.168    datapath/rf/stage2_quotient_intermediate_reg[10]_i_33_n_0
+    SLICE_X37Y17         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    53.282 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    53.282    datapath/rf/stage2_quotient_intermediate_reg[10]_i_23_n_0
+    SLICE_X37Y18         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    53.616 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_22/O[1]
+                         net (fo=4, routed)           0.818    54.434    datapath/rf/divider_instance/stage1_remainder[5]_4[25]
+    SLICE_X40Y18         LUT4 (Prop_lut4_I1_O)        0.303    54.737 r  datapath/rf/stage2_quotient_intermediate[10]_i_10/O
+                         net (fo=1, routed)           0.000    54.737    datapath/rf/stage2_quotient_intermediate[10]_i_10_n_0
+    SLICE_X40Y18         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    55.287 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    55.287    datapath/rf/stage2_quotient_intermediate_reg[10]_i_2_n_0
+    SLICE_X40Y19         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    55.522 r  datapath/rf/stage2_quotient_intermediate_reg[10]_i_1/O[0]
+                         net (fo=33, routed)          1.050    56.572    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[10]
+    SLICE_X38Y8          LUT3 (Prop_lut3_I2_O)        0.299    56.871 r  datapath/rf/stage2_quotient_intermediate[9]_i_76/O
+                         net (fo=1, routed)           0.000    56.871    datapath/rf/stage2_quotient_intermediate[9]_i_76_n_0
+    SLICE_X38Y8          CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    57.404 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    57.404    datapath/rf/stage2_quotient_intermediate_reg[9]_i_64_n_0
+    SLICE_X38Y9          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    57.521 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    57.521    datapath/rf/stage2_quotient_intermediate_reg[9]_i_55_n_0
+    SLICE_X38Y10         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    57.638 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    57.638    datapath/rf/stage2_quotient_intermediate_reg[9]_i_54_n_0
+    SLICE_X38Y11         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    57.755 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    57.755    datapath/rf/stage2_quotient_intermediate_reg[9]_i_34_n_0
+    SLICE_X38Y12         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    57.872 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    57.872    datapath/rf/stage2_quotient_intermediate_reg[9]_i_33_n_0
+    SLICE_X38Y13         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    57.989 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    57.989    datapath/rf/stage2_quotient_intermediate_reg[9]_i_23_n_0
+    SLICE_X38Y14         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    58.106 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_22/CO[3]
+                         net (fo=1, routed)           0.000    58.106    datapath/rf/stage2_quotient_intermediate_reg[9]_i_22_n_0
+    SLICE_X38Y15         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323    58.429 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_21/O[1]
+                         net (fo=3, routed)           0.904    59.333    mem/stage2_quotient_intermediate_reg[9]_i_2[1]
+    SLICE_X37Y10         LUT4 (Prop_lut4_I1_O)        0.306    59.639 r  mem/stage2_quotient_intermediate[9]_i_8/O
+                         net (fo=1, routed)           0.000    59.639    datapath/rf/stage2_quotient_intermediate_reg[9]_1[0]
+    SLICE_X37Y10         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.401    60.040 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    60.040    datapath/rf/stage2_quotient_intermediate_reg[9]_i_2_n_0
+    SLICE_X37Y11         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    60.275 r  datapath/rf/stage2_quotient_intermediate_reg[9]_i_1/O[0]
+                         net (fo=33, routed)          0.599    60.874    mem/stage2_quotient_intermediate_reg[8]_i_21[0]
+    SLICE_X38Y7          LUT6 (Prop_lut6_I5_O)        0.299    61.173 r  mem/stage2_quotient_intermediate[8]_i_77/O
+                         net (fo=1, routed)           0.683    61.856    datapath/rf/stage2_quotient_intermediate[8]_i_49[0]
+    SLICE_X43Y7          CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.656    62.512 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    62.512    datapath/rf/stage2_quotient_intermediate_reg[8]_i_64_n_0
+    SLICE_X43Y8          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    62.626 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    62.626    datapath/rf/stage2_quotient_intermediate_reg[8]_i_55_n_0
+    SLICE_X43Y9          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    62.740 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    62.740    datapath/rf/stage2_quotient_intermediate_reg[8]_i_54_n_0
+    SLICE_X43Y10         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    62.854 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    62.854    datapath/rf/stage2_quotient_intermediate_reg[8]_i_34_n_0
+    SLICE_X43Y11         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    62.968 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    62.968    datapath/rf/stage2_quotient_intermediate_reg[8]_i_33_n_0
+    SLICE_X43Y12         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    63.082 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    63.082    datapath/rf/stage2_quotient_intermediate_reg[8]_i_23_n_0
+    SLICE_X43Y13         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    63.196 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_22/CO[3]
+                         net (fo=1, routed)           0.000    63.196    datapath/rf/stage2_quotient_intermediate_reg[8]_i_22_n_0
+    SLICE_X43Y14         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    63.530 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_21/O[1]
+                         net (fo=3, routed)           0.948    64.478    mem/stage2_quotient_intermediate_reg[8]_i_2[1]
+    SLICE_X40Y10         LUT4 (Prop_lut4_I1_O)        0.303    64.781 r  mem/stage2_quotient_intermediate[8]_i_8/O
+                         net (fo=1, routed)           0.000    64.781    datapath/rf/stage2_quotient_intermediate_reg[8]_0[0]
+    SLICE_X40Y10         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.401    65.182 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    65.182    datapath/rf/stage2_quotient_intermediate_reg[8]_i_2_n_0
+    SLICE_X40Y11         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    65.417 r  datapath/rf/stage2_quotient_intermediate_reg[8]_i_1/O[0]
+                         net (fo=33, routed)          0.860    66.277    mem/stage2_quotient_intermediate_reg[7]_i_21[0]
+    SLICE_X39Y7          LUT3 (Prop_lut3_I2_O)        0.299    66.576 r  mem/stage2_quotient_intermediate[7]_i_77/O
+                         net (fo=1, routed)           0.000    66.576    datapath/rf/stage2_quotient_intermediate[7]_i_49[0]
+    SLICE_X39Y7          CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    67.108 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    67.108    datapath/rf/stage2_quotient_intermediate_reg[7]_i_64_n_0
+    SLICE_X39Y8          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    67.222 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    67.222    datapath/rf/stage2_quotient_intermediate_reg[7]_i_55_n_0
+    SLICE_X39Y9          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    67.336 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    67.336    datapath/rf/stage2_quotient_intermediate_reg[7]_i_54_n_0
+    SLICE_X39Y10         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    67.450 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    67.450    datapath/rf/stage2_quotient_intermediate_reg[7]_i_34_n_0
+    SLICE_X39Y11         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    67.564 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    67.564    datapath/rf/stage2_quotient_intermediate_reg[7]_i_33_n_0
+    SLICE_X39Y12         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    67.678 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    67.678    datapath/rf/stage2_quotient_intermediate_reg[7]_i_23_n_0
+    SLICE_X39Y13         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    68.012 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_22/O[1]
+                         net (fo=4, routed)           0.837    68.849    datapath/rf/divider_instance/stage1_remainder[8]_7[25]
+    SLICE_X36Y12         LUT4 (Prop_lut4_I1_O)        0.303    69.152 r  datapath/rf/stage2_quotient_intermediate[7]_i_10/O
+                         net (fo=1, routed)           0.000    69.152    datapath/rf/stage2_quotient_intermediate[7]_i_10_n_0
+    SLICE_X36Y12         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    69.685 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    69.685    datapath/rf/stage2_quotient_intermediate_reg[7]_i_2_n_0
+    SLICE_X36Y13         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.232    69.917 r  datapath/rf/stage2_quotient_intermediate_reg[7]_i_1/O[0]
+                         net (fo=33, routed)          0.894    70.811    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[7]
+    SLICE_X35Y7          LUT3 (Prop_lut3_I2_O)        0.295    71.106 r  datapath/rf/stage2_quotient_intermediate[6]_i_76/O
+                         net (fo=1, routed)           0.000    71.106    datapath/rf/stage2_quotient_intermediate[6]_i_76_n_0
+    SLICE_X35Y7          CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    71.656 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_64/CO[3]
+                         net (fo=1, routed)           0.000    71.656    datapath/rf/stage2_quotient_intermediate_reg[6]_i_64_n_0
+    SLICE_X35Y8          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    71.770 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    71.770    datapath/rf/stage2_quotient_intermediate_reg[6]_i_55_n_0
+    SLICE_X35Y9          CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    71.884 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    71.884    datapath/rf/stage2_quotient_intermediate_reg[6]_i_54_n_0
+    SLICE_X35Y10         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    71.998 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    71.998    datapath/rf/stage2_quotient_intermediate_reg[6]_i_34_n_0
+    SLICE_X35Y11         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    72.112 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    72.112    datapath/rf/stage2_quotient_intermediate_reg[6]_i_33_n_0
+    SLICE_X35Y12         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    72.226 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    72.226    datapath/rf/stage2_quotient_intermediate_reg[6]_i_23_n_0
+    SLICE_X35Y13         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    72.560 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_22/O[1]
+                         net (fo=4, routed)           0.834    73.394    datapath/rf/divider_instance/stage1_remainder[9]_8[25]
+    SLICE_X34Y12         LUT4 (Prop_lut4_I1_O)        0.303    73.697 r  datapath/rf/stage2_quotient_intermediate[6]_i_10/O
+                         net (fo=1, routed)           0.000    73.697    datapath/rf/stage2_quotient_intermediate[6]_i_10_n_0
+    SLICE_X34Y12         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    74.230 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    74.230    datapath/rf/stage2_quotient_intermediate_reg[6]_i_2_n_0
+    SLICE_X34Y13         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.232    74.462 r  datapath/rf/stage2_quotient_intermediate_reg[6]_i_1/O[0]
+                         net (fo=33, routed)          0.806    75.268    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[6]
+    SLICE_X33Y11         LUT3 (Prop_lut3_I2_O)        0.295    75.563 r  datapath/rf/stage2_remainder_intermediate[27]_i_34/O
+                         net (fo=1, routed)           0.000    75.563    datapath/rf/stage2_remainder_intermediate[27]_i_34_n_0
+    SLICE_X33Y11         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    76.113 r  datapath/rf/stage2_remainder_intermediate_reg[27]_i_27/CO[3]
+                         net (fo=1, routed)           0.000    76.113    datapath/rf/stage2_remainder_intermediate_reg[27]_i_27_n_0
+    SLICE_X33Y12         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    76.227 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_55/CO[3]
+                         net (fo=1, routed)           0.000    76.227    datapath/rf/stage2_quotient_intermediate_reg[5]_i_55_n_0
+    SLICE_X33Y13         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    76.341 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_54/CO[3]
+                         net (fo=1, routed)           0.000    76.341    datapath/rf/stage2_quotient_intermediate_reg[5]_i_54_n_0
+    SLICE_X33Y14         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    76.455 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    76.455    datapath/rf/stage2_quotient_intermediate_reg[5]_i_34_n_0
+    SLICE_X33Y15         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    76.569 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    76.569    datapath/rf/stage2_quotient_intermediate_reg[5]_i_33_n_0
+    SLICE_X33Y16         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    76.683 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    76.683    datapath/rf/stage2_quotient_intermediate_reg[5]_i_23_n_0
+    SLICE_X33Y17         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    77.017 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_22/O[1]
+                         net (fo=4, routed)           0.769    77.786    datapath/rf/divider_instance/stage1_remainder[10]_9[25]
+    SLICE_X32Y16         LUT4 (Prop_lut4_I1_O)        0.303    78.089 r  datapath/rf/stage2_quotient_intermediate[5]_i_10/O
+                         net (fo=1, routed)           0.000    78.089    datapath/rf/stage2_quotient_intermediate[5]_i_10_n_0
+    SLICE_X32Y16         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    78.622 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    78.622    datapath/rf/stage2_quotient_intermediate_reg[5]_i_2_n_0
+    SLICE_X32Y17         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.232    78.854 r  datapath/rf/stage2_quotient_intermediate_reg[5]_i_1/O[0]
+                         net (fo=33, routed)          0.981    79.834    mem/stage2_quotient_intermediate_reg[4]_i_21[0]
+    SLICE_X31Y12         LUT3 (Prop_lut3_I2_O)        0.295    80.129 r  mem/stage2_remainder_intermediate[23]_i_31/O
+                         net (fo=1, routed)           0.000    80.129    datapath/rf/stage2_quotient_intermediate[4]_i_49[0]
+    SLICE_X31Y12         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    80.661 r  datapath/rf/stage2_remainder_intermediate_reg[23]_i_22/CO[3]
+                         net (fo=1, routed)           0.000    80.661    datapath/rf/stage2_remainder_intermediate_reg[23]_i_22_n_0
+    SLICE_X31Y13         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    80.775 r  datapath/rf/stage2_remainder_intermediate_reg[27]_i_22/CO[3]
+                         net (fo=1, routed)           0.000    80.775    datapath/rf/stage2_remainder_intermediate_reg[27]_i_22_n_0
+    SLICE_X31Y14         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    80.889 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_53/CO[3]
+                         net (fo=1, routed)           0.000    80.889    datapath/rf/stage2_remainder_intermediate_reg[30]_i_53_n_0
+    SLICE_X31Y15         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    81.003 r  datapath/rf/stage2_quotient_intermediate_reg[4]_i_34/CO[3]
+                         net (fo=1, routed)           0.000    81.003    datapath/rf/stage2_quotient_intermediate_reg[4]_i_34_n_0
+    SLICE_X31Y16         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    81.117 r  datapath/rf/stage2_quotient_intermediate_reg[4]_i_33/CO[3]
+                         net (fo=1, routed)           0.000    81.117    datapath/rf/stage2_quotient_intermediate_reg[4]_i_33_n_0
+    SLICE_X31Y17         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    81.231 r  datapath/rf/stage2_quotient_intermediate_reg[4]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    81.231    datapath/rf/stage2_quotient_intermediate_reg[4]_i_23_n_0
+    SLICE_X31Y18         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    81.565 r  datapath/rf/stage2_quotient_intermediate_reg[4]_i_22/O[1]
+                         net (fo=4, routed)           0.956    82.521    datapath/rf/divider_instance/stage1_remainder[11]_10[25]
+    SLICE_X30Y15         LUT4 (Prop_lut4_I1_O)        0.303    82.824 r  datapath/rf/stage2_quotient_intermediate[4]_i_10/O
+                         net (fo=1, routed)           0.000    82.824    datapath/rf/stage2_quotient_intermediate[4]_i_10_n_0
+    SLICE_X30Y15         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.533    83.357 r  datapath/rf/stage2_quotient_intermediate_reg[4]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    83.357    datapath/rf/stage2_quotient_intermediate_reg[4]_i_2_n_0
+    SLICE_X30Y16         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.232    83.589 r  datapath/rf/stage2_quotient_intermediate_reg[4]_i_1/O[0]
+                         net (fo=33, routed)          0.824    84.413    datapath/rf/stage2_quotient_intermediate_reg[15]_i_2_0[4]
+    SLICE_X29Y15         CARRY4 (Prop_carry4_CYINIT_CO[3])
+                                                      0.751    85.164 r  datapath/rf/stage2_remainder_intermediate_reg[19]_i_17/CO[3]
+                         net (fo=1, routed)           0.000    85.164    datapath/rf/stage2_remainder_intermediate_reg[19]_i_17_n_0
+    SLICE_X29Y16         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    85.278 r  datapath/rf/stage2_remainder_intermediate_reg[23]_i_17/CO[3]
+                         net (fo=1, routed)           0.000    85.278    datapath/rf/stage2_remainder_intermediate_reg[23]_i_17_n_0
+    SLICE_X29Y17         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    85.392 r  datapath/rf/stage2_remainder_intermediate_reg[27]_i_17/CO[3]
+                         net (fo=1, routed)           0.000    85.392    datapath/rf/stage2_remainder_intermediate_reg[27]_i_17_n_0
+    SLICE_X29Y18         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    85.506 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_44/CO[3]
+                         net (fo=1, routed)           0.000    85.506    datapath/rf/stage2_remainder_intermediate_reg[30]_i_44_n_0
+    SLICE_X29Y19         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    85.620 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_39/CO[3]
+                         net (fo=1, routed)           0.000    85.620    datapath/rf/stage2_remainder_intermediate_reg[30]_i_39_n_0
+    SLICE_X29Y20         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    85.734 r  datapath/rf/stage2_quotient_intermediate_reg[3]_i_23/CO[3]
+                         net (fo=1, routed)           0.000    85.734    datapath/rf/stage2_quotient_intermediate_reg[3]_i_23_n_0
+    SLICE_X29Y21         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    85.848 r  datapath/rf/stage2_quotient_intermediate_reg[3]_i_22/CO[3]
+                         net (fo=1, routed)           0.000    85.848    datapath/rf/stage2_quotient_intermediate_reg[3]_i_22_n_0
+    SLICE_X29Y22         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    86.182 r  datapath/rf/stage2_quotient_intermediate_reg[3]_i_21/O[1]
+                         net (fo=3, routed)           0.941    87.123    mem/stage2_quotient_intermediate_reg[3]_i_2[1]
+    SLICE_X28Y18         LUT4 (Prop_lut4_I1_O)        0.303    87.426 r  mem/stage2_quotient_intermediate[3]_i_8/O
+                         net (fo=1, routed)           0.000    87.426    datapath/rf/stage2_quotient_intermediate_reg[3]_0[0]
+    SLICE_X28Y18         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.401    87.827 r  datapath/rf/stage2_quotient_intermediate_reg[3]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    87.827    datapath/rf/stage2_quotient_intermediate_reg[3]_i_2_n_0
+    SLICE_X28Y19         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    88.062 r  datapath/rf/stage2_quotient_intermediate_reg[3]_i_1/O[0]
+                         net (fo=33, routed)          0.706    88.768    mem/stage2_remainder_intermediate_reg[30]_i_17[0]
+    SLICE_X26Y19         LUT3 (Prop_lut3_I2_O)        0.299    89.067 r  mem/stage2_remainder_intermediate[15]_i_21/O
+                         net (fo=1, routed)           0.000    89.067    datapath/rf/stage2_quotient_intermediate[2]_i_33[0]
+    SLICE_X26Y19         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.513    89.580 r  datapath/rf/stage2_remainder_intermediate_reg[15]_i_12/CO[3]
+                         net (fo=1, routed)           0.000    89.580    datapath/rf/stage2_remainder_intermediate_reg[15]_i_12_n_0
+    SLICE_X26Y20         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    89.697 r  datapath/rf/stage2_remainder_intermediate_reg[19]_i_12/CO[3]
+                         net (fo=1, routed)           0.000    89.697    datapath/rf/stage2_remainder_intermediate_reg[19]_i_12_n_0
+    SLICE_X26Y21         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    89.814 r  datapath/rf/stage2_remainder_intermediate_reg[23]_i_12/CO[3]
+                         net (fo=1, routed)           0.000    89.814    datapath/rf/stage2_remainder_intermediate_reg[23]_i_12_n_0
+    SLICE_X26Y22         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    89.931 r  datapath/rf/stage2_remainder_intermediate_reg[27]_i_12/CO[3]
+                         net (fo=1, routed)           0.000    89.931    datapath/rf/stage2_remainder_intermediate_reg[27]_i_12_n_0
+    SLICE_X26Y23         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    90.048 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_27/CO[3]
+                         net (fo=1, routed)           0.000    90.048    datapath/rf/stage2_remainder_intermediate_reg[30]_i_27_n_0
+    SLICE_X26Y24         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117    90.165 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_22/CO[3]
+                         net (fo=1, routed)           0.009    90.174    datapath/rf/stage2_remainder_intermediate_reg[30]_i_22_n_0
+    SLICE_X26Y25         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323    90.497 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_18/O[1]
+                         net (fo=4, routed)           0.896    91.393    datapath/rf/divider_instance/stage1_remainder[13]_12[25]
+    SLICE_X24Y25         LUT4 (Prop_lut4_I1_O)        0.306    91.699 r  datapath/rf/stage2_quotient_intermediate[2]_i_10/O
+                         net (fo=1, routed)           0.000    91.699    datapath/rf/stage2_quotient_intermediate[2]_i_10_n_0
+    SLICE_X24Y25         CARRY4 (Prop_carry4_S[1]_CO[3])
+                                                      0.550    92.249 r  datapath/rf/stage2_quotient_intermediate_reg[2]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    92.249    datapath/rf/stage2_quotient_intermediate_reg[2]_i_2_n_0
+    SLICE_X24Y26         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    92.484 r  datapath/rf/stage2_quotient_intermediate_reg[2]_i_1/O[0]
+                         net (fo=33, routed)          0.693    93.177    mem/stage2_remainder_intermediate_reg[30]_i_7[0]
+    SLICE_X25Y25         LUT3 (Prop_lut3_I2_O)        0.299    93.476 r  mem/stage2_remainder_intermediate[11]_i_16/O
+                         net (fo=1, routed)           0.000    93.476    datapath/rf/stage2_quotient_intermediate[1]_i_33[0]
+    SLICE_X25Y25         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    94.008 r  datapath/rf/stage2_remainder_intermediate_reg[11]_i_7/CO[3]
+                         net (fo=1, routed)           0.000    94.008    datapath/rf/stage2_remainder_intermediate_reg[11]_i_7_n_0
+    SLICE_X25Y26         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    94.122 r  datapath/rf/stage2_remainder_intermediate_reg[15]_i_7/CO[3]
+                         net (fo=1, routed)           0.000    94.122    datapath/rf/stage2_remainder_intermediate_reg[15]_i_7_n_0
+    SLICE_X25Y27         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    94.236 r  datapath/rf/stage2_remainder_intermediate_reg[19]_i_7/CO[3]
+                         net (fo=1, routed)           0.000    94.236    datapath/rf/stage2_remainder_intermediate_reg[19]_i_7_n_0
+    SLICE_X25Y28         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    94.350 r  datapath/rf/stage2_remainder_intermediate_reg[23]_i_7/CO[3]
+                         net (fo=1, routed)           0.000    94.350    datapath/rf/stage2_remainder_intermediate_reg[23]_i_7_n_0
+    SLICE_X25Y29         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    94.464 r  datapath/rf/stage2_remainder_intermediate_reg[27]_i_7/CO[3]
+                         net (fo=1, routed)           0.000    94.464    datapath/rf/stage2_remainder_intermediate_reg[27]_i_7_n_0
+    SLICE_X25Y30         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    94.578 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_12/CO[3]
+                         net (fo=1, routed)           0.000    94.578    datapath/rf/stage2_remainder_intermediate_reg[30]_i_12_n_0
+    SLICE_X25Y31         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    94.692 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_8/CO[3]
+                         net (fo=1, routed)           0.000    94.692    datapath/rf/stage2_remainder_intermediate_reg[30]_i_8_n_0
+    SLICE_X25Y32         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    95.026 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_7/O[1]
+                         net (fo=3, routed)           0.666    95.692    mem/stage2_quotient_intermediate_reg[1]_i_2[1]
+    SLICE_X27Y31         LUT4 (Prop_lut4_I1_O)        0.303    95.995 r  mem/stage2_quotient_intermediate[1]_i_8/O
+                         net (fo=1, routed)           0.000    95.995    datapath/rf/stage2_quotient_intermediate_reg[1]_1[0]
+    SLICE_X27Y31         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.401    96.396 r  datapath/rf/stage2_quotient_intermediate_reg[1]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    96.396    datapath/rf/stage2_quotient_intermediate_reg[1]_i_2_n_0
+    SLICE_X27Y32         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235    96.631 r  datapath/rf/stage2_quotient_intermediate_reg[1]_i_1/O[0]
+                         net (fo=33, routed)          0.649    97.280    mem/stage2_remainder_intermediate_reg[30]_i_2[0]
+    SLICE_X24Y31         LUT3 (Prop_lut3_I2_O)        0.299    97.579 r  mem/stage2_remainder_intermediate[7]_i_11/O
+                         net (fo=1, routed)           0.000    97.579    datapath/rf/stage2_remainder_intermediate_reg[7][0]
+    SLICE_X24Y31         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.532    98.111 r  datapath/rf/stage2_remainder_intermediate_reg[7]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    98.111    datapath/rf/stage2_remainder_intermediate_reg[7]_i_2_n_0
+    SLICE_X24Y32         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    98.225 r  datapath/rf/stage2_remainder_intermediate_reg[11]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    98.225    datapath/rf/stage2_remainder_intermediate_reg[11]_i_2_n_0
+    SLICE_X24Y33         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    98.339 r  datapath/rf/stage2_remainder_intermediate_reg[15]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    98.339    datapath/rf/stage2_remainder_intermediate_reg[15]_i_2_n_0
+    SLICE_X24Y34         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    98.453 r  datapath/rf/stage2_remainder_intermediate_reg[19]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    98.453    datapath/rf/stage2_remainder_intermediate_reg[19]_i_2_n_0
+    SLICE_X24Y35         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    98.567 r  datapath/rf/stage2_remainder_intermediate_reg[23]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    98.567    datapath/rf/stage2_remainder_intermediate_reg[23]_i_2_n_0
+    SLICE_X24Y36         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    98.681 r  datapath/rf/stage2_remainder_intermediate_reg[27]_i_2/CO[3]
+                         net (fo=1, routed)           0.000    98.681    datapath/rf/stage2_remainder_intermediate_reg[27]_i_2_n_0
+    SLICE_X24Y37         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.114    98.795 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_3/CO[3]
+                         net (fo=1, routed)           0.000    98.795    datapath/rf/stage2_remainder_intermediate_reg[30]_i_3_n_0
+    SLICE_X24Y38         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.334    99.129 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_2/O[1]
+                         net (fo=3, routed)           0.742    99.871    mem/stage2_quotient_intermediate_reg[0]_i_2[1]
+    SLICE_X25Y37         LUT4 (Prop_lut4_I1_O)        0.303   100.174 r  mem/stage2_quotient_intermediate[0]_i_8/O
+                         net (fo=1, routed)           0.000   100.174    datapath/rf/stage2_quotient_intermediate_reg[0]_0[0]
+    SLICE_X25Y37         CARRY4 (Prop_carry4_S[3]_CO[3])
+                                                      0.401   100.575 r  datapath/rf/stage2_quotient_intermediate_reg[0]_i_2/CO[3]
+                         net (fo=1, routed)           0.000   100.575    datapath/rf/stage2_quotient_intermediate_reg[0]_i_2_n_0
+    SLICE_X25Y38         CARRY4 (Prop_carry4_CI_O[0])
+                                                      0.235   100.810 r  datapath/rf/stage2_quotient_intermediate_reg[0]_i_1/O[0]
+                         net (fo=33, routed)          0.784   101.594    mem/stage2_remainder_intermediate_reg[3][0]
+    SLICE_X26Y35         LUT3 (Prop_lut3_I2_O)        0.299   101.893 r  mem/stage2_remainder_intermediate[3]_i_6/O
+                         net (fo=1, routed)           0.000   101.893    datapath/rf/stage2_remainder_intermediate_reg[3][0]
+    SLICE_X26Y35         CARRY4 (Prop_carry4_S[0]_CO[3])
+                                                      0.513   102.406 r  datapath/rf/stage2_remainder_intermediate_reg[3]_i_1/CO[3]
+                         net (fo=1, routed)           0.000   102.406    datapath/rf/stage2_remainder_intermediate_reg[3]_i_1_n_0
+    SLICE_X26Y36         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117   102.523 r  datapath/rf/stage2_remainder_intermediate_reg[7]_i_1/CO[3]
+                         net (fo=1, routed)           0.000   102.523    datapath/rf/stage2_remainder_intermediate_reg[7]_i_1_n_0
+    SLICE_X26Y37         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117   102.640 r  datapath/rf/stage2_remainder_intermediate_reg[11]_i_1/CO[3]
+                         net (fo=1, routed)           0.000   102.640    datapath/rf/stage2_remainder_intermediate_reg[11]_i_1_n_0
+    SLICE_X26Y38         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117   102.757 r  datapath/rf/stage2_remainder_intermediate_reg[15]_i_1/CO[3]
+                         net (fo=1, routed)           0.000   102.757    datapath/rf/stage2_remainder_intermediate_reg[15]_i_1_n_0
+    SLICE_X26Y39         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117   102.874 r  datapath/rf/stage2_remainder_intermediate_reg[19]_i_1/CO[3]
+                         net (fo=1, routed)           0.000   102.874    datapath/rf/stage2_remainder_intermediate_reg[19]_i_1_n_0
+    SLICE_X26Y40         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117   102.991 r  datapath/rf/stage2_remainder_intermediate_reg[23]_i_1/CO[3]
+                         net (fo=1, routed)           0.000   102.991    datapath/rf/stage2_remainder_intermediate_reg[23]_i_1_n_0
+    SLICE_X26Y41         CARRY4 (Prop_carry4_CI_CO[3])
+                                                      0.117   103.108 r  datapath/rf/stage2_remainder_intermediate_reg[27]_i_1/CO[3]
+                         net (fo=1, routed)           0.000   103.108    datapath/rf/stage2_remainder_intermediate_reg[27]_i_1_n_0
+    SLICE_X26Y42         CARRY4 (Prop_carry4_CI_O[1])
+                                                      0.323   103.431 r  datapath/rf/stage2_remainder_intermediate_reg[30]_i_1/O[1]
+                         net (fo=1, routed)           0.000   103.431    datapath/divider_instance/stage2_remainder_intermediate_reg[30]_0[29]
+    SLICE_X26Y42         FDRE                                         r  datapath/divider_instance/stage2_remainder_intermediate_reg[29]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_proc_clk_wiz_0 rise edge)
+                                                     76.923    76.923 r  
+    Y9                                                0.000    76.923 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000    76.923    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         1.420    78.343 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           1.162    79.505    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -7.438    72.067 r  mmcm/mmcm_adv_inst/CLKOUT0
+                         net (fo=2, routed)           1.691    73.758    mmcm/clk_proc_clk_wiz_0
+    BUFGCTRL_X0Y0        BUFGCTRL (Prop_bufgctrl_I0_O)
+                                                      0.091    73.849 r  mmcm/clkout1_buf/O
+                         net (fo=1120, routed)        1.568    75.418    datapath/divider_instance/clock_processor
+    SLICE_X26Y42         FDRE                                         r  datapath/divider_instance/stage2_remainder_intermediate_reg[29]/C
+                         clock pessimism              0.288    75.706    
+                         clock uncertainty           -0.221    75.485    
+    SLICE_X26Y42         FDRE (Setup_fdre_C_D)        0.109    75.594    datapath/divider_instance/stage2_remainder_intermediate_reg[29]
+  -------------------------------------------------------------------
+                         required time                         75.594    
+                         arrival time                        -103.431    
+  -------------------------------------------------------------------
+                         slack                                -27.838    
+
+
+
+
+
+Min Delay Paths
+--------------------------------------------------------------------------------------
+Slack (MET) :             19.916ns  (arrival time - required time)
+  Source:                 mem/mem_reg_1_0/CLKBWRCLK
+                            (rising edge-triggered cell RAMB36E1 clocked by clk_mem_clk_wiz_0  {rise@19.231ns fall@57.692ns period=76.923ns})
+  Destination:            datapath/pcCurrent_reg[3]/D
+                            (rising edge-triggered cell FDRE clocked by clk_proc_clk_wiz_0  {rise@0.000ns fall@38.462ns period=76.923ns})
+  Path Group:             clk_proc_clk_wiz_0
+  Path Type:              Hold (Min at Fast Process Corner)
+  Requirement:            -19.231ns  (clk_proc_clk_wiz_0 rise@0.000ns - clk_mem_clk_wiz_0 rise@19.231ns)
+  Data Path Delay:        1.306ns  (logic 0.805ns (61.653%)  route 0.501ns (38.347%))
+  Logic Levels:           3  (CARRY4=1 LUT2=1 LUT5=1)
+  Clock Path Skew:        0.279ns (DCD - SCD - CPR)
+    Destination Clock Delay (DCD):    -0.829ns
+    Source Clock Delay      (SCD):    -0.552ns = ( 18.679 - 19.231 ) 
+    Clock Pessimism Removal (CPR):    -0.556ns
+  Clock Uncertainty:      0.221ns  ((TSJ^2 + DJ^2)^1/2) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Discrete Jitter          (DJ):    0.189ns
+    Phase Error              (PE):    0.120ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock clk_mem_clk_wiz_0 rise edge)
+                                                     19.231    19.231 r  
+    Y9                                                0.000    19.231 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000    19.231    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         0.258    19.489 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           0.440    19.929    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT1)
+                                                     -2.421    17.509 r  mmcm/mmcm_adv_inst/CLKOUT1
+                         net (fo=2, routed)           0.518    18.027    mmcm/clk_mem_clk_wiz_0
+    BUFGCTRL_X0Y1        BUFGCTRL (Prop_bufgctrl_I0_O)
+                                                      0.026    18.053 r  mmcm/clkout2_buf/O
+                         net (fo=768, routed)         0.626    18.679    mem/clock_mem
+    RAMB36_X0Y4          RAMB36E1                                     r  mem/mem_reg_1_0/CLKBWRCLK
+  -------------------------------------------------------------------    -------------------
+    RAMB36_X0Y4          RAMB36E1 (Prop_ramb36e1_CLKBWRCLK_DOBDO[2])
+                                                      0.585    19.264 r  mem/mem_reg_1_0/DOBDO[2]
+                         net (fo=34, routed)          0.382    19.645    datapath/insn_from_imem[3]
+    SLICE_X16Y17         LUT2 (Prop_lut2_I1_O)        0.045    19.690 r  datapath/pcCurrent[3]_i_4/O
+                         net (fo=1, routed)           0.000    19.690    datapath/pcCurrent[3]_i_4_n_0
+    SLICE_X16Y17         CARRY4 (Prop_carry4_S[3]_O[3])
+                                                      0.064    19.754 r  datapath/pcCurrent_reg[3]_i_3/O[3]
+                         net (fo=1, routed)           0.119    19.873    mem/pcNext0[3]
+    SLICE_X14Y16         LUT5 (Prop_lut5_I3_O)        0.111    19.984 r  mem/pcCurrent[3]_i_1/O
+                         net (fo=1, routed)           0.000    19.984    datapath/D[3]
+    SLICE_X14Y16         FDRE                                         r  datapath/pcCurrent_reg[3]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock clk_proc_clk_wiz_0 rise edge)
+                                                      0.000     0.000 r  
+    Y9                                                0.000     0.000 r  CLOCK_100MHz (IN)
+                         net (fo=0)                   0.000     0.000    mmcm/CLOCK_100MHz
+    Y9                   IBUF (Prop_ibuf_I_O)         0.446     0.446 r  mmcm/clkin1_ibufg/O
+                         net (fo=1, routed)           0.480     0.926    mmcm/clk_in1_clk_wiz_0
+    MMCME2_ADV_X0Y0      MMCME2_ADV (Prop_mmcme2_adv_CLKIN1_CLKOUT0)
+                                                     -3.204    -2.278 r  mmcm/mmcm_adv_inst/CLKOUT0
+                         net (fo=2, routed)           0.564    -1.714    mmcm/clk_proc_clk_wiz_0
+    BUFGCTRL_X0Y0        BUFGCTRL (Prop_bufgctrl_I0_O)
+                                                      0.029    -1.685 r  mmcm/clkout1_buf/O
+                         net (fo=1120, routed)        0.856    -0.829    datapath/clock_processor
+    SLICE_X14Y16         FDRE                                         r  datapath/pcCurrent_reg[3]/C
+                         clock pessimism              0.556    -0.273    
+                         clock uncertainty            0.221    -0.052    
+    SLICE_X14Y16         FDRE (Hold_fdre_C_D)         0.120     0.068    datapath/pcCurrent_reg[3]
+  -------------------------------------------------------------------
+                         required time                         -0.068    
+                         arrival time                          19.984    
+  -------------------------------------------------------------------
+                         slack                                 19.916    
+
+
+
+
+
