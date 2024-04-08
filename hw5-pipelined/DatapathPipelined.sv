@@ -158,7 +158,7 @@ typedef struct packed {
 
 // Memory stage
 typedef struct packed {
-  logic [`REG_SIZE] inputbCLA32;
+  // logic [`REG_SIZE] inputbCLA32;
   logic [`INSN_SIZE] insn;
   logic [`REG_SIZE] rd_data; // Data to be written to the destination register
   logic [4:0] rd; // Destination register address
@@ -172,7 +172,7 @@ typedef struct packed {
 
 // Writeback stage
 typedef struct packed {
-  logic [`REG_SIZE] inputbCLA32;
+  // logic [`REG_SIZE] inputbCLA32;
   logic [`INSN_SIZE] insn;
   logic [`REG_SIZE] rd_data; // Data to be written to the destination register
   logic [4:0] rd; // Destination register address
@@ -428,8 +428,8 @@ module DatapathPipelined (
       }; 
     end else begin
       execute_state <= '{
-        pc: f_pc_current,
-        insn: f_insn,
+        pc: decode_state.pc,
+        insn: decode_state.insn,
         cycle_status: decode_state.cycle_status,
         rd_data: rd_data,
         rd: rd,
@@ -472,22 +472,22 @@ module DatapathPipelined (
   /* MEMORY STAGE*/
   /****************/
   // Memory stage wires
-  wire [`REG_SIZE] inputbCLA32_mem;
-  wire [`INSN_SIZE] insn_mem;
-  wire [`REG_SIZE] rd_data_mem;
-  wire [4:0] rd_mem;
-  wire [4:0] rs1_mem, rs2_mem;
-  wire [`REG_SIZE] rs1_data_mem, rs2_data_mem;
-  wire write_enable_mem;
-  wire reset_mem;
-  wire illegal_insn_mem;
+  // wire [`REG_SIZE] inputbCLA32_mem;
+  // wire [`INSN_SIZE] insn_mem;
+  // wire [`REG_SIZE] rd_data_mem;
+  // wire [4:0] rd_mem;
+  // wire [4:0] rs1_mem, rs2_mem;
+  // wire [`REG_SIZE] rs1_data_mem, rs2_data_mem;
+  // wire write_enable_mem;
+  // wire reset_mem;
+  // wire illegal_insn_mem;
 
   // Memory stage
   stage_memory_t memory_state;
   always_ff @(posedge clk) begin
     if (rst) begin
       memory_state <= '{
-        inputbCLA32: 0,
+        // inputbCLA32: 0,
         insn: 0,
         rd_data: 0,
         rd: 0,
@@ -502,17 +502,17 @@ module DatapathPipelined (
       };
     end else begin
       memory_state <= '{
-        inputbCLA32: inputbCLA32_mem,
-        insn: insn_mem,
-        rd_data: rd_data_mem,
-        rd: rd_mem,
-        rs1: rs1_mem,
-        rs2: rs2_mem,
-        rs1_data: rs1_data_mem,
-        rs2_data: rs2_data_mem,
-        write_enable: write_enable_mem,
-        reset: reset_mem,
-        illegal_insn: illegal_insn_mem,
+        // inputbCLA32: inputbCLA32_mem,
+        insn: execute_state.insn,
+        rd_data: execute_state.rd_data,
+        rd: execute_state.rd,
+        rs1: execute_state.rs1,
+        rs2: execute_state.rs2,
+        rs1_data: execute_state.rs1_data,
+        rs2_data: execute_state.rs2_data,
+        write_enable: execute_state.write_enable,
+        reset: execute_state.reset,
+        illegal_insn: execute_state.illegal_insn,
         cycle_status: execute_state.cycle_status
       };
     end
@@ -533,7 +533,7 @@ module DatapathPipelined (
   always_ff @(posedge clk) begin
     if (rst) begin
       writeback_state <= '{
-        inputbCLA32: 0,
+        // inputbCLA32: 0,
         insn: 0,
         rd_data: 0,
         rd: 0,
@@ -548,7 +548,7 @@ module DatapathPipelined (
       };
     end else begin
       writeback_state <= '{
-        inputbCLA32: memory_state.inputbCLA32,
+        // inputbCLA32: memory_state.inputbCLA32,
         insn: memory_state.insn,
         rd_data: memory_state.rd_data,
         rd: memory_state.rd,
