@@ -51,12 +51,25 @@ module RegFile (
     input logic we,
     input logic rst
 );
+  // TODO: your code here
   localparam int NumRegs = 32;
-  genvar i;
   logic [`REG_SIZE] regs[NumRegs];
 
-  // TODO: your code here
+  // Assuming regs[0] should always read as 0
+  assign rs1_data = (rs1 == 0) ? 32'd0 : regs[rs1];
+  assign rs2_data = (rs2 == 0) ? 32'd0 : regs[rs2];
 
+  always_ff @(posedge clk) begin
+    if (rst) begin
+        for (int i = 0; i < NumRegs; i++) begin
+            regs[i] <= 32'd0;
+        end
+    end else begin
+      if (we && rd != 0) begin
+        regs[rd] <= rd_data;
+      end
+    end
+  end
 endmodule
 
 /**
@@ -96,6 +109,80 @@ typedef struct packed {
   cycle_status_e cycle_status;
 } stage_decode_t;
 
+/** state at the start of execute stage */
+typedef struct packed {
+  logic [`REG_SIZE] pc;
+  logic [`INSN_SIZE] insn;
+  cycle_status_e cycle_status;
+
+  logic [`REG_SIZE] rd_data; // Data to be written to the destination register
+  logic [4:0] rd; // Destination register address
+  logic [4:0] rs1, rs2; // Source register addresses
+  logic [`REG_SIZE] rs1_data, rs2_data; // Data read from the source registers
+  logic write_enable; // Write enable signal
+  logic reset; // Reset signal
+  logic illegal_insn; // Reset signal
+
+  // Storing the instruction itself
+  logic [`INSN_SIZE] insn_from_imem;
+
+  // Instruction subsets
+  logic [6:0] insn_funct7;
+  logic [4:0] insn_rs2;
+  logic [4:0] insn_rs1;
+  logic [2:0] insn_funct3;
+  logic [4:0] insn_rd;
+  logic [`OPCODE_SIZE] insn_opcode;
+
+  logic [11:0] imm_i;
+  logic [11:0] imm_s;
+  logic [12:0] imm_b;
+  logic [20:0] imm_j;
+
+  logic [31:0] imm_i_sext;
+  logic [31:0] imm_s_sext;
+  logic [31:0] imm_b_sext;
+  logic [31:0] imm_j_sext;
+
+  // Instruction type flags
+  // logic is_lui, is_auipc, is_jal, is_jalr;
+  // logic is_beq, is_bne, is_blt, is_bge, is_bltu, is_bgeu;
+  // logic is_lb, is_lh, is_lw, is_lbu, is_lhu;
+  // logic is_sb, is_sh, is_sw;
+  // logic is_addi, is_slti, is_sltiu, is_xori, is_ori, is_andi;
+  // logic is_slli, is_srli, is_srai;
+  // logic is_add, is_sub, is_sll, is_slt, is_sltu, is_xor, is_srl, is_sra, is_or, is_and;
+  // logic is_mul, is_mulh, is_mulhsu, is_mulhu, is_div, is_divu, is_rem, is_remu;
+  // logic is_ecall, is_fence;
+} stage_execute_t;
+
+// Memory stage
+typedef struct packed {
+  logic [`REG_SIZE] inputbCLA32;
+  logic [`INSN_SIZE] insn;
+  logic [`REG_SIZE] rd_data; // Data to be written to the destination register
+  logic [4:0] rd; // Destination register address
+  logic [4:0] rs1, rs2; // Source register addresses
+  logic [`REG_SIZE] rs1_data, rs2_data; // Data read from the source registers
+  logic write_enable; // Write enable signal
+  logic reset; // Reset signal
+  logic illegal_insn; // Reset signal
+  cycle_status_e cycle_status;
+} stage_memory_t;
+
+// Writeback stage
+typedef struct packed {
+  logic [`REG_SIZE] inputbCLA32;
+  logic [`INSN_SIZE] insn;
+  logic [`REG_SIZE] rd_data; // Data to be written to the destination register
+  logic [4:0] rd; // Destination register address
+  logic [4:0] rs1, rs2; // Source register addresses
+  logic [`REG_SIZE] rs1_data, rs2_data; // Data read from the source registers
+  logic write_enable; // Write enable signal
+  logic reset; // Reset signal
+  logic illegal_insn; // Reset signal
+  cycle_status_e cycle_status;
+} stage_writeback_t;
 
 module DatapathPipelined (
     input wire clk,
@@ -117,21 +204,6 @@ module DatapathPipelined (
     // The status of the insn (or stall) currently in Writeback. See cycle_status_e enum for valid values.
     output cycle_status_e trace_writeback_cycle_status
 );
-
-  // opcodes - see section 19 of RiscV spec
-  localparam bit [`OPCODE_SIZE] OpcodeLoad = 7'b00_000_11;
-  localparam bit [`OPCODE_SIZE] OpcodeStore = 7'b01_000_11;
-  localparam bit [`OPCODE_SIZE] OpcodeBranch = 7'b11_000_11;
-  localparam bit [`OPCODE_SIZE] OpcodeJalr = 7'b11_001_11;
-  localparam bit [`OPCODE_SIZE] OpcodeMiscMem = 7'b00_011_11;
-  localparam bit [`OPCODE_SIZE] OpcodeJal = 7'b11_011_11;
-
-  localparam bit [`OPCODE_SIZE] OpcodeRegImm = 7'b00_100_11;
-  localparam bit [`OPCODE_SIZE] OpcodeRegReg = 7'b01_100_11;
-  localparam bit [`OPCODE_SIZE] OpcodeEnviron = 7'b11_100_11;
-
-  localparam bit [`OPCODE_SIZE] OpcodeAuipc = 7'b00_101_11;
-  localparam bit [`OPCODE_SIZE] OpcodeLui = 7'b01_101_11;
 
   // cycle counter, not really part of any stage but useful for orienting within GtkWave
   // do not rename this as the testbench uses this value
@@ -211,6 +283,353 @@ module DatapathPipelined (
   // TODO: your code here, though you will also need to modify some of the code above
   // TODO: the testbench requires that your register file instance is named `rf`
 
+
+
+  /****************/
+  /* EXECUTE STAGE*/
+  /****************/
+
+  // components of the instruction
+  wire [6:0] insn_funct7;
+  wire [4:0] insn_rs2;
+  wire [4:0] insn_rs1;
+  wire [2:0] insn_funct3;
+  wire [4:0] insn_rd;
+  wire [`OPCODE_SIZE] insn_opcode;
+
+  // split R-type instruction - see section 2.2 of RiscV spec
+  assign {insn_funct7, insn_rs2, insn_rs1, insn_funct3, insn_rd, insn_opcode} = insn_from_imem;
+
+  // setup for I, S, B & J type instructions
+  // I - short immediates and loads
+  wire [11:0] imm_i;
+  assign imm_i = insn_from_imem[31:20];
+  wire [ 4:0] imm_shamt = insn_from_imem[24:20];
+
+  // S - stores
+  wire [11:0] imm_s;
+  assign imm_s[11:5] = insn_funct7, imm_s[4:0] = insn_rd;
+
+  // B - conditionals
+  wire [12:0] imm_b;
+  assign {imm_b[12], imm_b[10:5]} = insn_funct7, {imm_b[4:1], imm_b[11]} = insn_rd, imm_b[0] = 1'b0;
+
+  // J - unconditional jumps
+  wire [20:0] imm_j;
+  assign {imm_j[20], imm_j[10:1], imm_j[11], imm_j[19:12], imm_j[0]} = {insn_from_imem[31:12], 1'b0};
+
+  wire [`REG_SIZE] imm_i_sext = {{20{imm_i[11]}}, imm_i[11:0]};
+  wire [`REG_SIZE] imm_s_sext = {{20{imm_s[11]}}, imm_s[11:0]};
+  wire [`REG_SIZE] imm_b_sext = {{19{imm_b[12]}}, imm_b[12:0]};
+  wire [`REG_SIZE] imm_j_sext = {{11{imm_j[20]}}, imm_j[20:0]};
+
+  // opcodes - see section 19 of RiscV spec
+  localparam bit [`OPCODE_SIZE] OpLoad = 7'b00_000_11;
+  localparam bit [`OPCODE_SIZE] OpStore = 7'b01_000_11;
+  localparam bit [`OPCODE_SIZE] OpBranch = 7'b11_000_11;
+  localparam bit [`OPCODE_SIZE] OpJalr = 7'b11_001_11;
+  localparam bit [`OPCODE_SIZE] OpMiscMem = 7'b00_011_11;
+  localparam bit [`OPCODE_SIZE] OpJal = 7'b11_011_11;
+
+  localparam bit [`OPCODE_SIZE] OpRegImm = 7'b00_100_11;
+  localparam bit [`OPCODE_SIZE] OpRegReg = 7'b01_100_11;
+  localparam bit [`OPCODE_SIZE] OpEnviron = 7'b11_100_11;
+
+  localparam bit [`OPCODE_SIZE] OpAuipc = 7'b00_101_11;
+  localparam bit [`OPCODE_SIZE] OpLui = 7'b01_101_11;
+
+  wire insn_lui = insn_opcode == OpLui;
+  wire insn_auipc = insn_opcode == OpAuipc;
+  wire insn_jal = insn_opcode == OpJal;
+  wire insn_jalr = insn_opcode == OpJalr;
+
+  wire insn_beq = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b000;
+  wire insn_bne = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b001;
+  wire insn_blt = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b100;
+  wire insn_bge = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b101;
+  wire insn_bltu = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b110;
+  wire insn_bgeu = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b111;
+
+  wire insn_lb = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b000;
+  wire insn_lh = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b001;
+  wire insn_lw = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b010;
+  wire insn_lbu = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b100;
+  wire insn_lhu = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b101;
+
+  wire insn_sb = insn_opcode == OpStore && insn_from_imem[14:12] == 3'b000;
+  wire insn_sh = insn_opcode == OpStore && insn_from_imem[14:12] == 3'b001;
+  wire insn_sw = insn_opcode == OpStore && insn_from_imem[14:12] == 3'b010;
+
+  wire insn_addi = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b000;
+  wire insn_slti = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b010;
+  wire insn_sltiu = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b011;
+  wire insn_xori = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b100;
+  wire insn_ori = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b110;
+  wire insn_andi = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b111;
+
+  wire insn_slli = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b001 && insn_from_imem[31:25] == 7'd0;
+  wire insn_srli = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b101 && insn_from_imem[31:25] == 7'd0;
+  wire insn_srai = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b101 && insn_from_imem[31:25] == 7'b0100000;
+
+  wire insn_add = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b000 && insn_from_imem[31:25] == 7'd0;
+  wire insn_sub  = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b000 && insn_from_imem[31:25] == 7'b0100000;
+  wire insn_sll = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b001 && insn_from_imem[31:25] == 7'd0;
+  wire insn_slt = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b010 && insn_from_imem[31:25] == 7'd0;
+  wire insn_sltu = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b011 && insn_from_imem[31:25] == 7'd0;
+  wire insn_xor = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b100 && insn_from_imem[31:25] == 7'd0;
+  wire insn_srl = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b101 && insn_from_imem[31:25] == 7'd0;
+  wire insn_sra  = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b101 && insn_from_imem[31:25] == 7'b0100000;
+  wire insn_or = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b110 && insn_from_imem[31:25] == 7'd0;
+  wire insn_and = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b111 && insn_from_imem[31:25] == 7'd0;
+
+  wire insn_mul    = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b000;
+  wire insn_mulh   = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b001;
+  wire insn_mulhsu = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b010;
+  wire insn_mulhu  = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b011;
+  wire insn_div    = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b100;
+  wire insn_divu   = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b101;
+  wire insn_rem    = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b110;
+  wire insn_remu   = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b111;
+
+  wire insn_ecall = insn_opcode == OpEnviron && insn_from_imem[31:7] == 25'd0;
+  wire insn_fence = insn_opcode == OpMiscMem;
+
+  stage_execute_t execute_state;
+  always_ff @(posedge clk) begin
+    if (rst) begin
+      execute_state <= '{
+        pc: 0,
+        insn: 0,
+        cycle_status: CYCLE_RESET,
+        rd_data: 0,
+        rd: 0,
+        rs1: 0,
+        rs2: 0,
+        rs1_data: 0,
+        rs2_data: 0,
+        write_enable: 0,
+        reset: 0,
+        illegal_insn: 0,
+        insn_from_imem: 0,
+        insn_funct7: 0,
+        insn_rs2: 0,
+        insn_rs1: 0,
+        insn_funct3: 0,
+        insn_rd: 0,
+        insn_opcode: 0,
+        imm_i: 0,
+        imm_s: 0,
+        imm_b: 0,
+        imm_j: 0,
+        imm_i_sext: 0,
+        imm_s_sext: 0,
+        imm_b_sext: 0,
+        imm_j_sext: 0
+      }; 
+    end else begin
+      execute_state <= '{
+        pc: f_pc_current,
+        insn: f_insn,
+        cycle_status: decode_state.cycle_status,
+        rd_data: rd_data,
+        rd: rd,
+        rs1: rs1,
+        rs2: rs2,
+        rs1_data: rs1_data,
+        rs2_data: rs2_data,
+        write_enable: write_enable,
+        reset: reset,
+        illegal_insn: illegal_insn,
+        insn_from_imem: insn_from_imem,
+        insn_funct7: insn_funct7,
+        insn_rs2: insn_rs2,
+        insn_rs1: insn_rs1,
+        insn_funct3: insn_funct3,
+        insn_rd: insn_rd,
+        insn_opcode: insn_opcode,
+        imm_i: imm_i,
+        imm_s: imm_s,
+        imm_b: imm_b,
+        imm_j: imm_j,
+        imm_i_sext: imm_i_sext,
+        imm_s_sext: imm_s_sext,
+        imm_b_sext: imm_b_sext,
+        imm_j_sext: imm_j_sext
+      };
+    end
+  end
+
+
+  wire [255:0] e_disasm;
+  Disasm #(
+      .PREFIX("E")
+  ) disasm_2execute (
+      .insn  (execute_state.insn),
+      .disasm(e_disasm)
+  );
+
+  /****************/
+  /* MEMORY STAGE*/
+  /****************/
+  // Memory stage wires
+  wire [`REG_SIZE] inputbCLA32_mem;
+  wire [`INSN_SIZE] insn_mem;
+  wire [`REG_SIZE] rd_data_mem;
+  wire [4:0] rd_mem;
+  wire [4:0] rs1_mem, rs2_mem;
+  wire [`REG_SIZE] rs1_data_mem, rs2_data_mem;
+  wire write_enable_mem;
+  wire reset_mem;
+  wire illegal_insn_mem;
+
+  // Memory stage
+  stage_memory_t memory_state;
+  always_ff @(posedge clk) begin
+    if (rst) begin
+      memory_state <= '{
+        inputbCLA32: 0,
+        insn: 0,
+        rd_data: 0,
+        rd: 0,
+        rs1: 0,
+        rs2: 0,
+        rs1_data: 0,
+        rs2_data: 0,
+        write_enable: 0,
+        reset: 0,
+        illegal_insn: 0,
+        cycle_status: CYCLE_RESET
+      };
+    end else begin
+      memory_state <= '{
+        inputbCLA32: inputbCLA32_mem,
+        insn: insn_mem,
+        rd_data: rd_data_mem,
+        rd: rd_mem,
+        rs1: rs1_mem,
+        rs2: rs2_mem,
+        rs1_data: rs1_data_mem,
+        rs2_data: rs2_data_mem,
+        write_enable: write_enable_mem,
+        reset: reset_mem,
+        illegal_insn: illegal_insn_mem,
+        cycle_status: execute_state.cycle_status
+      };
+    end
+  end
+
+  wire [255:0] m_disasm;
+  Disasm #(
+      .PREFIX("M")
+  ) disasm_3memory (
+      .insn  (memory_state.insn),
+      .disasm(m_disasm)
+  );
+
+  /****************/
+  /* WRITEBACK STAGE*/
+  /****************/
+  stage_writeback_t writeback_state;
+  always_ff @(posedge clk) begin
+    if (rst) begin
+      writeback_state <= '{
+        inputbCLA32: 0,
+        insn: 0,
+        rd_data: 0,
+        rd: 0,
+        rs1: 0,
+        rs2: 0,
+        rs1_data: 0,
+        rs2_data: 0,
+        write_enable: 0,
+        reset: 0,
+        illegal_insn: 0,
+        cycle_status: CYCLE_RESET
+      };
+    end else begin
+      writeback_state <= '{
+        inputbCLA32: memory_state.inputbCLA32,
+        insn: memory_state.insn,
+        rd_data: memory_state.rd_data,
+        rd: memory_state.rd,
+        rs1: memory_state.rs1,
+        rs2: memory_state.rs2,
+        rs1_data: memory_state.rs1_data,
+        rs2_data: memory_state.rs2_data,
+        write_enable: memory_state.write_enable,
+        reset: memory_state.reset,
+        illegal_insn: memory_state.illegal_insn,
+        cycle_status: memory_state.cycle_status
+      };
+    end
+  end
+
+
+  // Always_comb happens here
+  // (1) This is for all the bypassing
+  always_comb begin
+  end
+
+  // (2) This is for all the datapath logic
+  logic illegal_insn;
+
+  // rf values
+  logic [`REG_SIZE] rd_data; // Data to be written to the destination register
+  logic [4:0] rd; // Destination register address
+  logic [4:0] rs1, rs2; // Source register addresses
+  logic [`REG_SIZE] rs1_data, rs2_data; // Data read from the source registers
+  logic write_enable; // Write enable signal
+  logic reset; // Reset signal
+
+  logic [`REG_SIZE] immediateShiftedLeft;
+  logic [`REG_SIZE] inputbCLA32;
+  logic [`REG_SIZE] cla_sum;
+  logic adder_carry_in;
+
+  always_comb begin
+    rd_data = 32'b0;
+    rd = 5'b0; // Default to an invalid register address
+    rs1 = 5'b0;
+    rs2 = 5'b0;
+    // rs1_data = 32'b0;
+    // rs2_data = 32'b0;
+    write_enable = 1'b0; // Default to not writing
+
+    immediateShiftedLeft = 32'b0;
+    inputbCLA32 = 32'b0;
+    cla_sum = 32'b0;
+    adder_carry_in = 1'b0;
+
+    reset = 1'b0;
+
+    illegal_insn = 1'b0;
+
+    // Execute stage operations
+    case (insn_opcode)
+      OpLui: begin
+        if (insn_lui) begin
+          rd_data = {insn_from_imem[31:12], 12'b0};
+          rd = insn_rd;
+          write_enable = 1'b1;
+        end
+      end
+        default: begin
+        // illegal_insn = 1'b1;
+      end
+    endcase
+  end
+
+  RegFile rf (
+    .rd(writeback_state.rd),
+    .rd_data(writeback_state.rd_data),
+    .rs1(writeback_state.rs1),
+    .rs1_data(rs1_data),
+    .rs2(writeback_state.rs2),
+    .rs2_data(rs2_data),
+    .clk(clk),
+    .we(writeback_state.write_enable),
+    .rst(writeback_state.reset)
+  );
 endmodule
 
 module MemorySingleCycle #(
