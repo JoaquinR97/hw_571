@@ -466,6 +466,11 @@ module DatapathPipelined (
   logic [4:0] next_xm_rd;
   logic next_xm_write_enable;
 
+  // Declaration of intermediate signals
+  logic [4:0] rf_rd, rf_rs1, rf_rs2, rf_wb_rd;
+  logic [`REG_SIZE] rf_rd_data, rf_rs1_data, rf_rs2_data, rf_wb_data;
+  logic rf_wb_we, rf_we, rf_rst;
+
   always_comb begin
     // write_enable = 1'b0;
     // reset = 1'b0;
@@ -534,43 +539,66 @@ module DatapathPipelined (
         // illegal_insn = 1'b1;
       end
     endcase
+
+      rf_rd = 0;
+      rf_rd_data = 0;
+      rf_rs1 = 0;
+      rf_rs1_data = 0;
+      rf_rs2 = 0;
+      rf_rs2_data = 0;
+      rf_wb_rd = 0;
+      rf_wb_data = 0;
+      rf_wb_we = 0;
+      rf_we = 0;
+      rf_rst = 0;
+
+    // Update intermediate signals based on pipeline logic
+    rf_rd = w_reg.rd;
+    rf_rd_data = w_reg.rd_data;
+    rf_rs1 = w_reg.rs1;
+    rf_rs1_data = w_reg.rs1_data;
+    rf_rs2 = w_reg.rs2;
+    rf_rs2_data = w_reg.rs2_data;
+    rf_wb_rd = wb_rd; // Assuming wb_rd, wb_data, and wb_we are properly updated elsewhere
+    rf_wb_data = wb_data;
+    rf_wb_we = wb_we;
+    rf_we = w_reg.write_enable;
+    rf_rst = w_reg.reset;
   end
 
-  // Declaration of intermediate signals
-  logic [4:0] rf_rd, rf_rs1, rf_rs2, rf_wb_rd;
-  logic [`REG_SIZE] rf_rd_data, rf_rs1_data, rf_rs2_data, rf_wb_data;
-  logic rf_wb_we, rf_we, rf_rst;
+  // RegFile rf (
+  //   .rd(w_reg.rd),
+  //   .rd_data(w_reg.rd_data),
+  //   .rs1(w_reg.rs1),
+  //   .rs1_data(w_reg.rs1_data),
+  //   .rs2(w_reg.rs2),
+  //   .rs2_data(w_reg.rs2_data),
+  //   .wb_rd(wb_rd),
+  //   .wb_data(wb_data),
+  //   .wb_we(wb_we),
+  //   .clk(clk),
+  //   .we(w_reg.write_enable),
+  //   .rst(w_reg.reset)
+  // );
 
   // Updating intermediate signals in always_ff block
-  always_ff @(posedge clk or posedge rst) begin
-      if (rst) begin
-          // Reset intermediate signals
-          rf_rd <= 0;
-          rf_rd_data <= 0;
-          rf_rs1 <= 0;
-          rf_rs1_data <= 0;
-          rf_rs2 <= 0;
-          rf_rs2_data <= 0;
-          rf_wb_rd <= 0;
-          rf_wb_data <= 0;
-          rf_wb_we <= 0;
-          rf_we <= 0;
-          rf_rst <= 0;
-      end else begin
-          // Update intermediate signals based on pipeline logic
-          rf_rd <= w_reg.rd;
-          rf_rd_data <= w_reg.rd_data;
-          rf_rs1 <= w_reg.rs1;
-          rf_rs1_data <= w_reg.rs1_data;
-          rf_rs2 <= w_reg.rs2;
-          rf_rs2_data <= w_reg.rs2_data;
-          rf_wb_rd <= wb_rd; // Assuming wb_rd, wb_data, and wb_we are properly updated elsewhere
-          rf_wb_data <= wb_data;
-          rf_wb_we <= wb_we;
-          rf_we <= w_reg.write_enable;
-          rf_rst <= w_reg.reset;
-      end
-  end
+  // always_ff @(posedge clk or posedge rst) begin
+  //   if (rst) begin
+  //     // Reset intermediate signals
+  //     rf_rd = 0;
+  //     rf_rd_data = 0;
+  //     rf_rs1 = 0;
+  //     rf_rs1_data = 0;
+  //     rf_rs2 = 0;
+  //     rf_rs2_data = 0;
+  //     rf_wb_rd = 0;
+  //     rf_wb_data = 0;
+  //     rf_wb_we = 0;
+  //     rf_we = 0;
+  //     rf_rst = 0;
+
+  //   end
+  // end
 
   // Update register instruction by using w_reg logic
   RegFile rf (
