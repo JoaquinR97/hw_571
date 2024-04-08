@@ -47,11 +47,6 @@ module RegFile (
     input logic [4:0] rs2,
     output logic [`REG_SIZE] rs2_data,
 
-    // Writeback inputs
-    input logic [4:0] wb_rd, 
-    input logic [`REG_SIZE] wb_data,
-    input logic wb_we,
-
     input logic clk,
     input logic we,
     input logic rst
@@ -61,26 +56,6 @@ module RegFile (
   logic [`REG_SIZE] regs[NumRegs];
 
   // TODO: your code here
-  assign regs[0] = 32'd0; // x0 is always zero
-
-  // // Logic to determine if we are in a writeback stage
-  always_ff @(posedge clk) begin
-    rs1_data <= (rs1 == wb_rd && wb_we) ? wb_data : regs[rs1];
-    rs2_data <= (rs2 == wb_rd && wb_we) ? wb_data : regs[rs2];
-  end
-
-  // Update data
-  always_ff @(posedge clk) begin
-    if (rst) begin
-        for (int i = 0; i < NumRegs; i++) begin
-            regs[i] <= 32'd0;
-        end
-    end else begin
-      if (we && rd != 0) begin
-        regs[rd] <= rd_data;
-      end
-    end
-  end
 
 endmodule
 
@@ -116,184 +91,6 @@ typedef enum {
 
 /** state at the start of Decode stage */
 typedef struct packed {
-  // logic [`REG_SIZE] pc;
-
-  // Instruction data passed from instruction to instruction
-  logic [`REG_SIZE] rd_data; // Data to be written to the destination register
-  logic [4:0] rd; // Destination register address
-  logic [4:0] rs1, rs2; // Source register addresses
-  logic [`REG_SIZE] rs1_data, rs2_data; // Data read from the source registers
-  logic write_enable; // Write enable signal
-  logic reset; // Reset signal
-  logic illegal_insn; // Reset signal
-
-  // Storing the instruction itself
-  logic [`INSN_SIZE] insn_from_imem;
-
-  // Instruction subsets
-  logic [6:0] insn_funct7;
-  logic [4:0] insn_rs2;
-  logic [4:0] insn_rs1;
-  logic [2:0] insn_funct3;
-  logic [4:0] insn_rd;
-  logic [`OPCODE_SIZE] insn_opcode;
-
-  logic [11:0] imm_i;
-  logic [11:0] imm_s;
-  logic [12:0] imm_b;
-  logic [20:0] imm_j;
-
-  logic [31:0] imm_i_sext;
-  logic [31:0] imm_s_sext;
-  logic [31:0] imm_b_sext;
-  logic [31:0] imm_j_sext;
-
-  // Instruction type flags
-  logic is_lui, is_auipc, is_jal, is_jalr;
-  logic is_beq, is_bne, is_blt, is_bge, is_bltu, is_bgeu;
-  logic is_lb, is_lh, is_lw, is_lbu, is_lhu;
-  logic is_sb, is_sh, is_sw;
-  logic is_addi, is_slti, is_sltiu, is_xori, is_ori, is_andi;
-  logic is_slli, is_srli, is_srai;
-  logic is_add, is_sub, is_sll, is_slt, is_sltu, is_xor, is_srl, is_sra, is_or, is_and;
-  logic is_mul, is_mulh, is_mulhsu, is_mulhu, is_div, is_divu, is_rem, is_remu;
-  logic is_ecall, is_fence;
-
-  // logic [`REG_SIZE] alu_result;
-  // logic [`REG_SIZE] mem_data;
-  // logic [4:0] rd_scr_1;
-  // logic [4:0] rd_scr_2;
-  // logic [4:0] rd_dest;
-  // logic we;
-} pipeline_registers_t;
-
-pipeline_registers_t fd_reg; // Holds state between Fetch and Decode stages
-pipeline_registers_t dx_reg; // Holds state between Decode and Execute stages
-pipeline_registers_t xm_reg; // Holds state between Execute and Memory stages
-pipeline_registers_t mw_reg; // Holds state between Memory and Writeback stages
-pipeline_registers_t w_reg; // Holds state after writeback stage (to write to registers after clock cycle)
-
-// opcodes - see section 19 of RiscV spec
-localparam bit [`OPCODE_SIZE] OpLoad = 7'b00_000_11;
-localparam bit [`OPCODE_SIZE] OpStore = 7'b01_000_11;
-localparam bit [`OPCODE_SIZE] OpBranch = 7'b11_000_11;
-localparam bit [`OPCODE_SIZE] OpJalr = 7'b11_001_11;
-localparam bit [`OPCODE_SIZE] OpMiscMem = 7'b00_011_11;
-localparam bit [`OPCODE_SIZE] OpJal = 7'b11_011_11;
-
-localparam bit [`OPCODE_SIZE] OpRegImm = 7'b00_100_11;
-localparam bit [`OPCODE_SIZE] OpRegReg = 7'b01_100_11;
-localparam bit [`OPCODE_SIZE] OpEnviron = 7'b11_100_11;
-
-localparam bit [`OPCODE_SIZE] OpAuipc = 7'b00_101_11;
-localparam bit [`OPCODE_SIZE] OpLui = 7'b01_101_11;
-
-// Function to decode the instruction
-function void decode_instruction(
-    logic [`INSN_SIZE] insn,
-    ref pipeline_registers_t decoded_values
-);
-    decoded_values.rd_data = 32'b0;
-    decoded_values.rd = 5'd0;
-    decoded_values.rs1 = 5'd0;
-    decoded_values.rs2 = 5'd0;
-    decoded_values.rs1_data = 32'b0;
-    decoded_values.rs2_data = 32'b0;
-    decoded_values.write_enable = 1'b0;
-    decoded_values.reset = 1'b0;
-    decoded_values.illegal_insn = 1'b0;
-
-    // Storing full instruction in decode struct
-    decoded_values.insn_from_imem = insn;
-
-    // Decode R-type instruction components
-    decoded_values.insn_funct7 = insn[31:25];
-    decoded_values.insn_rs2 = insn[24:20];
-    decoded_values.insn_rs1 = insn[19:15];
-    decoded_values.insn_funct3 = insn[14:12];
-    decoded_values.insn_rd = insn[11:7];
-    decoded_values.insn_opcode = insn[6:0];
-    
-    // Depending on your design, you may include additional decoding logic here
-    decoded_values.imm_i = insn[31:20];
-    decoded_values.imm_s = {insn[31:25], insn[11:7]};
-    decoded_values.imm_b = {insn[31], insn[7], insn[30:25], insn[11:8], 1'b0};
-    decoded_values.imm_j = {insn[31], insn[19:12], insn[20], insn[30:21], 1'b0};
-
-    // Sign-extend the immediate values
-    decoded_values.imm_i_sext = {{20{decoded_values.imm_i[11]}}, decoded_values.imm_i};
-    decoded_values.imm_s_sext = {{20{decoded_values.imm_s[11]}}, decoded_values.imm_s};
-    decoded_values.imm_b_sext = {{19{decoded_values.imm_b[12]}}, decoded_values.imm_b};
-    decoded_values.imm_j_sext = {{11{decoded_values.imm_j[20]}}, decoded_values.imm_j};
-
-    // insn[6:0] is the instruction opcode
-    decoded_values.is_lui = insn[6:0] == OpLui;
-    decoded_values.is_auipc = insn[6:0] == OpAuipc;
-    decoded_values.is_jal = insn[6:0] == OpJal;
-    decoded_values.is_jalr = insn[6:0] == OpJalr;
-
-    // Branch instructions
-    decoded_values.is_beq = (insn[6:0] == OpBranch) && (insn[14:12] == 3'b000);
-    decoded_values.is_bne = (insn[6:0] == OpBranch) && (insn[14:12] == 3'b001);
-    decoded_values.is_blt = (insn[6:0] == OpBranch) && (insn[14:12] == 3'b100);
-    decoded_values.is_bge = (insn[6:0] == OpBranch) && (insn[14:12] == 3'b101);
-    decoded_values.is_bltu = (insn[6:0] == OpBranch) && (insn[14:12] == 3'b110);
-    decoded_values.is_bgeu = (insn[6:0] == OpBranch) && (insn[14:12] == 3'b111);
-
-    // Load instructions 
-    decoded_values.is_lb = (insn[6:0] == OpLoad) && (insn[14:12] == 3'b000);
-    decoded_values.is_lh = (insn[6:0] == OpLoad) && (insn[14:12] == 3'b001);
-    decoded_values.is_lw = (insn[6:0] == OpLoad) && (insn[14:12] == 3'b010);
-    decoded_values.is_lbu = (insn[6:0] == OpLoad) && (insn[14:12] == 3'b100);
-    decoded_values.is_lhu = (insn[6:0] == OpLoad) && (insn[14:12] == 3'b101);
-
-    // Store instructions
-    decoded_values.is_sb = (insn[6:0] == OpStore) && (insn[14:12] == 3'b000);
-    decoded_values.is_sh = (insn[6:0] == OpStore) && (insn[14:12] == 3'b001);
-    decoded_values.is_sw = (insn[6:0] == OpStore) && (insn[14:12] == 3'b010);
-
-    // Immediate instructions continued
-    decoded_values.is_addi = (insn[6:0] == OpRegImm) && (insn[14:12] == 3'b000);
-    decoded_values.is_slti = (insn[6:0] == OpRegImm) && (insn[14:12] == 3'b010);
-    decoded_values.is_sltiu = (insn[6:0] == OpRegImm) && (insn[14:12] == 3'b011);
-    decoded_values.is_xori = (insn[6:0] == OpRegImm) && (insn[14:12] == 3'b100);
-    decoded_values.is_ori = (insn[6:0] == OpRegImm) && (insn[14:12] == 3'b110);
-    decoded_values.is_andi = (insn[6:0] == OpRegImm) && (insn[14:12] == 3'b111);
-
-    // Shift Immediate instructions
-    decoded_values.is_slli = (insn[6:0] == OpRegImm) && (insn[14:12] == 3'b001) && (insn[31:25] == 7'd0);
-    decoded_values.is_srli = (insn[6:0] == OpRegImm) && (insn[14:12] == 3'b101) && (insn[31:25] == 7'd0);
-    decoded_values.is_srai = (insn[6:0] == OpRegImm) && (insn[14:12] == 3'b101) && (insn[31:25] == 7'b0100000);
-
-    // R-type arithmetic instructions
-    decoded_values.is_add = (insn[6:0] == OpRegReg) && (insn[14:12] == 3'b000) && (insn[31:25] == 7'd0);
-    decoded_values.is_sub = (insn[6:0] == OpRegReg) && (insn[14:12] == 3'b000) && (insn[31:25] == 7'b0100000);
-    decoded_values.is_sll = (insn[6:0] == OpRegReg) && (insn[14:12] == 3'b001) && (insn[31:25] == 7'd0);
-    decoded_values.is_slt = (insn[6:0] == OpRegReg) && (insn[14:12] == 3'b010) && (insn[31:25] == 7'd0);
-    decoded_values.is_sltu = (insn[6:0] == OpRegReg) && (insn[14:12] == 3'b011) && (insn[31:25] == 7'd0);
-    decoded_values.is_xor = (insn[6:0] == OpRegReg) && (insn[14:12] == 3'b100) && (insn[31:25] == 7'd0);
-    decoded_values.is_srl = (insn[6:0] == OpRegReg) && (insn[14:12] == 3'b101) && (insn[31:25] == 7'd0);
-    decoded_values.is_sra = (insn[6:0] == OpRegReg) && (insn[14:12] == 3'b101) && (insn[31:25] == 7'b0100000);
-    decoded_values.is_or = (insn[6:0] == OpRegReg) && (insn[14:12] == 3'b110) && (insn[31:25] == 7'd0);
-    decoded_values.is_and = (insn[6:0] == OpRegReg) && (insn[14:12] == 3'b111) && (insn[31:25] == 7'd0);
-
-    // Multiplication and division instructions
-    decoded_values.is_mul = (insn[6:0] == OpRegReg) && (insn[31:25] == 7'd1) && (insn[14:12] == 3'b000);
-    decoded_values.is_mulh = (insn[6:0] == OpRegReg) && (insn[31:25] == 7'd1) && (insn[14:12] == 3'b001);
-    decoded_values.is_mulhsu = (insn[6:0] == OpRegReg) && (insn[31:25] == 7'd1) && (insn[14:12] == 3'b010);
-    decoded_values.is_mulhu = (insn[6:0] == OpRegReg) && (insn[31:25] == 7'd1) && (insn[14:12] == 3'b011);
-    decoded_values.is_div = (insn[6:0] == OpRegReg) && (insn[31:25] == 7'd1) && (insn[14:12] == 3'b100);
-    decoded_values.is_divu = (insn[6:0] == OpRegReg) && (insn[31:25] == 7'd1) && (insn[14:12] == 3'b101);
-    decoded_values.is_rem = (insn[6:0] == OpRegReg) && (insn[31:25] == 7'd1) && (insn[14:12] == 3'b110);
-    decoded_values.is_remu = (insn[6:0] == OpRegReg) && (insn[31:25] == 7'd1) && (insn[14:12] == 3'b111);
-
-    // System instructions
-    decoded_values.is_ecall = (insn[6:0] == OpEnviron) && (insn[31:7] == 25'd0);
-    decoded_values.is_fence = (insn[6:0] == OpMiscMem);
-
-endfunction
-
-typedef struct packed {
   logic [`REG_SIZE] pc;
   logic [`INSN_SIZE] insn;
   cycle_status_e cycle_status;
@@ -320,6 +117,22 @@ module DatapathPipelined (
     // The status of the insn (or stall) currently in Writeback. See cycle_status_e enum for valid values.
     output cycle_status_e trace_writeback_cycle_status
 );
+
+  // opcodes - see section 19 of RiscV spec
+  localparam bit [`OPCODE_SIZE] OpcodeLoad = 7'b00_000_11;
+  localparam bit [`OPCODE_SIZE] OpcodeStore = 7'b01_000_11;
+  localparam bit [`OPCODE_SIZE] OpcodeBranch = 7'b11_000_11;
+  localparam bit [`OPCODE_SIZE] OpcodeJalr = 7'b11_001_11;
+  localparam bit [`OPCODE_SIZE] OpcodeMiscMem = 7'b00_011_11;
+  localparam bit [`OPCODE_SIZE] OpcodeJal = 7'b11_011_11;
+
+  localparam bit [`OPCODE_SIZE] OpcodeRegImm = 7'b00_100_11;
+  localparam bit [`OPCODE_SIZE] OpcodeRegReg = 7'b01_100_11;
+  localparam bit [`OPCODE_SIZE] OpcodeEnviron = 7'b11_100_11;
+
+  localparam bit [`OPCODE_SIZE] OpcodeAuipc = 7'b00_101_11;
+  localparam bit [`OPCODE_SIZE] OpcodeLui = 7'b01_101_11;
+
   // cycle counter, not really part of any stage but useful for orienting within GtkWave
   // do not rename this as the testbench uses this value
   logic [`REG_SIZE] cycles_current;
@@ -356,17 +169,17 @@ module DatapathPipelined (
 
   // Here's how to disassemble an insn into a string you can view in GtkWave.
   // Use PREFIX to provide a 1-character tag to identify which stage the insn comes from.
+  wire [255:0] f_disasm;
   Disasm #(
       .PREFIX("F")
   ) disasm_0fetch (
       .insn  (f_insn),
-      .disasm()
+      .disasm(f_disasm)
   );
 
   /****************/
   /* DECODE STAGE */
   /****************/
-  logic [`INSN_SIZE] logic_insn_from_imem;
 
   // this shows how to package up state in a `struct packed`, and how to pass it between stages
   stage_decode_t decode_state;
@@ -377,243 +190,22 @@ module DatapathPipelined (
         insn: 0,
         cycle_status: CYCLE_RESET
       };
-
-      // Set all input reg bits to zero
-      // fd_reg <= '0;
-      // dx_reg <= '0;
-      // xm_reg <= '0;
-      // mw_reg <= '0;
-
-      // decode_instruction(32'b0, fd_reg);
-      // decode_instruction(32'b0, dx_reg);
-      // decode_instruction(32'b0, xm_reg);
-      // decode_instruction(32'b0, mw_reg);
-      // decode_instruction(32'b0, w_reg);
     end else begin
-        // Save incoming instruction at clock edge
-        logic_insn_from_imem <= insn_from_imem;
-
+      begin
         decode_state <= '{
           pc: f_pc_current,
           insn: f_insn,
           cycle_status: f_cycle_status
         };
-
-        // Updating next regs as we loop
-        decode_instruction(logic_insn_from_imem, fd_reg);
-
-        xm_reg.rd_data <= next_xm_rd_data; // Use non-blocking assignment here
-        xm_reg.rd <= next_xm_rd; // Use non-blocking assignment here
-        xm_reg.write_enable <= next_xm_write_enable; // Use non-blocking assignment here
-
-        // Propagating down (the previous fd_reg is decoded down)
-        dx_reg <= fd_reg;
-        xm_reg <= dx_reg;
-        mw_reg <= xm_reg;
-        w_reg <= mw_reg;
-
-        // case (xm_reg.insn_opcode)
-        //     OpLui: begin
-        //         if (xm_reg.is_lui) begin
-        //             xm_reg.rd_data <= {dx_reg.insn_from_imem[31:12], 12'b0}; 
-        //             xm_reg.rd <= dx_reg.insn_rd; 
-        //             xm_reg.write_enable <= 1'b1;
-        //         end
-        //     end
-        //     // Add other cases as necessary, following the same pattern
-        //     default: begin
-        //         // Handle the default case, potentially a NOP or error handling
-        //     end
-        // endcase
-
+      end
     end
   end
-
+  wire [255:0] d_disasm;
   Disasm #(
       .PREFIX("D")
   ) disasm_1decode (
       .insn  (decode_state.insn),
-      .disasm()
-  );
-
-  // rf values
-  // logic [`REG_SIZE] rd_data; // Data to be written to the destination register
-  // logic [4:0] rd; // Destination register address
-  // logic [4:0] rs1, rs2; // Source register addresses
-  // logic [`REG_SIZE] rs1_data, rs2_data; // Data read from the source registers
-  // logic write_enable; // Write enable signal
-  // logic reset; // Reset signal
-  // logic illegal_insn; // Reset signal
-
-  logic [`REG_SIZE] inputbCLA32;
-  logic [`REG_SIZE] cla_sum;
-  logic adder_carry_in;
-  
-  // Register Inputs in Writeback Stage
-  logic [4:0] wb_rd;
-  logic [`REG_SIZE] wb_data;
-  logic wb_we;
-
-  // Our CLA
-  // cla cla_instance(
-  //     .a(rs1_data), 
-  //     .b(inputbCLA32), 
-  //     .cin(adder_carry_in), 
-  //     .sum(cla_sum)
-  // );
-
-  logic [`REG_SIZE] next_xm_rd_data;
-  logic [4:0] next_xm_rd;
-  logic next_xm_write_enable;
-
-  // Declaration of intermediate signals
-  logic [4:0] rf_rd, rf_rs1, rf_rs2, rf_wb_rd;
-  logic [`REG_SIZE] rf_rd_data, rf_rs1_data, rf_rs2_data, rf_wb_data;
-  logic rf_wb_we, rf_we, rf_rst;
-
-  always_comb begin
-    // write_enable = 1'b0;
-    // reset = 1'b0;
-    // illegal_insn = 0'b0;
-
-    // rd = 5'b0; // Default to an invalid register address
-    // rs1 = 5'b0;
-    // rs2 = 5'b0
-
-    adder_carry_in = 1'b0;
-    inputbCLA32 = 32'b0;
-
-    // Writeback stage inputs
-    wb_rd = 5'b0;
-    wb_data = 32'b0;
-    wb_we = 1'b0;
-  
-    // Execute stage
-    case (xm_reg.insn_opcode)
-      OpLui: begin
-        if (xm_reg.is_lui) begin
-          // rd = insn_rd; // RD field
-          // write_enable = 1'b1;
-          // rd_data = {insn_from_imem[31:12], 12'b0}; // Immediate shifted left
-
-          // // Since LUI is a simple operation, it could technically be 'executed' right here,
-          // // by preparing its result for the next stage.
-          next_xm_rd_data = {dx_reg.insn_from_imem[31:12], 12'b0}; // Constructing the value to load into the register.
-          next_xm_rd = dx_reg.insn_rd; // Passing along the destination register.
-          next_xm_write_enable = 1'b1; // Enabling write for the next stage.
-        end
-      end
-      
-      // OpRegReg: begin
-      //   // Adding the 
-
-      //   rs1 = insn_rs1;
-      //   rs2 = insn_rs2;
-      //   rd = insn_rd;
-      //   write_enable = 1'b1;
-
-      //   if (insn_add) begin
-      //     if () begin
-      //       // This is already set to zero above
-      //       wb_we = 1'b1;
-      //       wb_rd;
-      //       wb_data
-      //     end
-      //     inputbCLA32 = rs2_data;
-      //     rd_data = cla_sum;
-      //   end
-      // end
-
-      // OpRegImm: begin
-      //   write_enable = 1'b1;
-      //   rd = insn_rd; 
-      //   rs1 = insn_rs1;
-
-      //   if (insn_addi) begin
-      //     inputbCLA32 = imm_i_sext;
-      //     rd_data = cla_sum;
-      //   end
-      // end
-    
-      default: begin
-        // illegal_insn = 1'b1;
-      end
-    endcase
-
-      rf_rd = 0;
-      rf_rd_data = 0;
-      rf_rs1 = 0;
-      rf_rs1_data = 0;
-      rf_rs2 = 0;
-      rf_rs2_data = 0;
-      rf_wb_rd = 0;
-      rf_wb_data = 0;
-      rf_wb_we = 0;
-      rf_we = 0;
-      rf_rst = 0;
-
-    // Update intermediate signals based on pipeline logic
-    rf_rd = w_reg.rd;
-    rf_rd_data = w_reg.rd_data;
-    rf_rs1 = w_reg.rs1;
-    rf_rs1_data = w_reg.rs1_data;
-    rf_rs2 = w_reg.rs2;
-    rf_rs2_data = w_reg.rs2_data;
-    rf_wb_rd = wb_rd; // Assuming wb_rd, wb_data, and wb_we are properly updated elsewhere
-    rf_wb_data = wb_data;
-    rf_wb_we = wb_we;
-    rf_we = w_reg.write_enable;
-    rf_rst = w_reg.reset;
-  end
-
-  // RegFile rf (
-  //   .rd(w_reg.rd),
-  //   .rd_data(w_reg.rd_data),
-  //   .rs1(w_reg.rs1),
-  //   .rs1_data(w_reg.rs1_data),
-  //   .rs2(w_reg.rs2),
-  //   .rs2_data(w_reg.rs2_data),
-  //   .wb_rd(wb_rd),
-  //   .wb_data(wb_data),
-  //   .wb_we(wb_we),
-  //   .clk(clk),
-  //   .we(w_reg.write_enable),
-  //   .rst(w_reg.reset)
-  // );
-
-  // Updating intermediate signals in always_ff block
-  // always_ff @(posedge clk or posedge rst) begin
-  //   if (rst) begin
-  //     // Reset intermediate signals
-  //     rf_rd = 0;
-  //     rf_rd_data = 0;
-  //     rf_rs1 = 0;
-  //     rf_rs1_data = 0;
-  //     rf_rs2 = 0;
-  //     rf_rs2_data = 0;
-  //     rf_wb_rd = 0;
-  //     rf_wb_data = 0;
-  //     rf_wb_we = 0;
-  //     rf_we = 0;
-  //     rf_rst = 0;
-
-  //   end
-  // end
-
-  // Update register instruction by using w_reg logic
-  RegFile rf (
-      .rd(rf_rd),
-      .rd_data(rf_rd_data),
-      .rs1(rf_rs1),
-      .rs1_data(rf_rs1_data),
-      .rs2(rf_rs2),
-      .rs2_data(rf_rs2_data),
-      .wb_rd(rf_wb_rd),
-      .wb_data(rf_wb_data),
-      .wb_we(rf_wb_we),
-      .clk(clk),
-      .we(rf_we),
-      .rst(rf_rst)
+      .disasm(d_disasm)
   );
 
   // TODO: your code here, though you will also need to modify some of the code above
@@ -710,7 +302,7 @@ module RiscvProcessor (
 
   MemorySingleCycle #(
       .NUM_WORDS(8192)
-  ) mem (
+  ) the_mem (
       .rst                (rst),
       .clk                (clk),
       // imem is read-only
