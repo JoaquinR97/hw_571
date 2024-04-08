@@ -63,12 +63,13 @@ module RegFile (
   // TODO: your code here
   assign regs[0] = 32'd0; // x0 is always zero
 
-  // Logic to determine if we are in a writeback stage
-  always_comb begin
-    rs1_data = (rs1 == wb_rd && wb_we) ? wb_data : regs[rs1];
-    rs2_data = (rs2 == wb_rd && wb_we) ? wb_data : regs[rs2];
+  // // Logic to determine if we are in a writeback stage
+  always_ff @(posedge clk) begin
+    rs1_data <= (rs1 == wb_rd && wb_we) ? wb_data : regs[rs1];
+    rs2_data <= (rs2 == wb_rd && wb_we) ? wb_data : regs[rs2];
   end
 
+  // Update data
   always_ff @(posedge clk) begin
     if (rst) begin
         for (int i = 0; i < NumRegs; i++) begin
@@ -401,11 +402,30 @@ module DatapathPipelined (
         // Updating next regs as we loop
         decode_instruction(logic_insn_from_imem, fd_reg);
 
+        xm_reg.rd_data <= next_xm_rd_data; // Use non-blocking assignment here
+        xm_reg.rd <= next_xm_rd; // Use non-blocking assignment here
+        xm_reg.write_enable <= next_xm_write_enable; // Use non-blocking assignment here
+
         // Propagating down (the previous fd_reg is decoded down)
         dx_reg <= fd_reg;
         xm_reg <= dx_reg;
         mw_reg <= xm_reg;
         w_reg <= mw_reg;
+
+        // case (xm_reg.insn_opcode)
+        //     OpLui: begin
+        //         if (xm_reg.is_lui) begin
+        //             xm_reg.rd_data <= {dx_reg.insn_from_imem[31:12], 12'b0}; 
+        //             xm_reg.rd <= dx_reg.insn_rd; 
+        //             xm_reg.write_enable <= 1'b1;
+        //         end
+        //     end
+        //     // Add other cases as necessary, following the same pattern
+        //     default: begin
+        //         // Handle the default case, potentially a NOP or error handling
+        //     end
+        // endcase
+
     end
   end
 
@@ -441,7 +461,10 @@ module DatapathPipelined (
   //     .cin(adder_carry_in), 
   //     .sum(cla_sum)
   // );
-logic [`REG_SIZE] next_xm_rd_data;
+
+  logic [`REG_SIZE] next_xm_rd_data;
+  logic [4:0] next_xm_rd;
+  logic next_xm_write_enable;
 
   always_comb begin
     // write_enable = 1'b0;
@@ -450,7 +473,7 @@ logic [`REG_SIZE] next_xm_rd_data;
 
     // rd = 5'b0; // Default to an invalid register address
     // rs1 = 5'b0;
-    // rs2 = 5'b0;
+    // rs2 = 5'b0
 
     adder_carry_in = 1'b0;
     inputbCLA32 = 32'b0;
@@ -470,10 +493,9 @@ logic [`REG_SIZE] next_xm_rd_data;
 
           // // Since LUI is a simple operation, it could technically be 'executed' right here,
           // // by preparing its result for the next stage.
-          xm_reg.rd_data = {dx_reg.insn_from_imem[31:12], 12'b0}; // Constructing the value to load into the register.
-          xm_reg.write_enable = 1'b1; // Enabling write for the next stage.
-          xm_reg.rd = dx_reg.insn_rd; // Passing along the destination register.
-
+          next_xm_rd_data = {dx_reg.insn_from_imem[31:12], 12'b0}; // Constructing the value to load into the register.
+          next_xm_rd = dx_reg.insn_rd; // Passing along the destination register.
+          next_xm_write_enable = 1'b1; // Enabling write for the next stage.
         end
       end
       
@@ -508,27 +530,62 @@ logic [`REG_SIZE] next_xm_rd_data;
       //   end
       // end
     
-    default: begin
-      // illegal_insn = 1'b1;
-    end
-    
-    endcase 
+      default: begin
+        // illegal_insn = 1'b1;
+      end
+    endcase
+  end
+
+  // Declaration of intermediate signals
+  logic [4:0] rf_rd, rf_rs1, rf_rs2, rf_wb_rd;
+  logic [`REG_SIZE] rf_rd_data, rf_rs1_data, rf_rs2_data, rf_wb_data;
+  logic rf_wb_we, rf_we, rf_rst;
+
+  // Updating intermediate signals in always_ff block
+  always_ff @(posedge clk or posedge rst) begin
+      if (rst) begin
+          // Reset intermediate signals
+          rf_rd <= 0;
+          rf_rd_data <= 0;
+          rf_rs1 <= 0;
+          rf_rs1_data <= 0;
+          rf_rs2 <= 0;
+          rf_rs2_data <= 0;
+          rf_wb_rd <= 0;
+          rf_wb_data <= 0;
+          rf_wb_we <= 0;
+          rf_we <= 0;
+          rf_rst <= 0;
+      end else begin
+          // Update intermediate signals based on pipeline logic
+          rf_rd <= w_reg.rd;
+          rf_rd_data <= w_reg.rd_data;
+          rf_rs1 <= w_reg.rs1;
+          rf_rs1_data <= w_reg.rs1_data;
+          rf_rs2 <= w_reg.rs2;
+          rf_rs2_data <= w_reg.rs2_data;
+          rf_wb_rd <= wb_rd; // Assuming wb_rd, wb_data, and wb_we are properly updated elsewhere
+          rf_wb_data <= wb_data;
+          rf_wb_we <= wb_we;
+          rf_we <= w_reg.write_enable;
+          rf_rst <= w_reg.reset;
+      end
   end
 
   // Update register instruction by using w_reg logic
   RegFile rf (
-    .rd(w_reg.rd),
-    .rd_data(w_reg.rd_data),
-    .rs1(w_reg.rs1),
-    .rs1_data(w_reg.rs1_data),
-    .rs2(w_reg.rs2),
-    .rs2_data(w_reg.rs2_data),
-    .wb_rd(wb_rd),
-    .wb_data(wb_data),
-    .wb_we(wb_we),
-    .clk(clk),
-    .we(w_reg.write_enable),
-    .rst(w_reg.reset)
+      .rd(rf_rd),
+      .rd_data(rf_rd_data),
+      .rs1(rf_rs1),
+      .rs1_data(rf_rs1_data),
+      .rs2(rf_rs2),
+      .rs2_data(rf_rs2_data),
+      .wb_rd(rf_wb_rd),
+      .wb_data(rf_wb_data),
+      .wb_we(rf_wb_we),
+      .clk(clk),
+      .we(rf_we),
+      .rst(rf_rst)
   );
 
   // TODO: your code here, though you will also need to modify some of the code above
