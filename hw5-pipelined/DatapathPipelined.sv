@@ -466,8 +466,8 @@ module DatapathPipelined (
         rd: rd,
         rs1: rs1,
         rs2: rs2,
-        rs1_data: rs1_data,
-        rs2_data: rs2_data,
+        rs1_data: rs1_data_bypass,
+        rs2_data: rs2_data_bypass,
         write_enable: write_enable,
         alu_value: alu_value,
         reset: reset,
@@ -616,6 +616,23 @@ module DatapathPipelined (
       };
     end
   end
+
+  wire [255:0] w_disasm;
+  Disasm #(
+      .PREFIX("W")
+  ) disasm_4write (
+      .insn  (writeback_state.insn),
+      .rd   (writeback_state.rd),
+      .rs1  (writeback_state.rs1),
+      .rs2  (writeback_state.rs2),
+      .rd_data   (writeback_state.rd_data),
+      .rs1_data  (writeback_state.rs1_data),
+      .rs2_data  (writeback_state.rs2_data),
+      .alu_value  (writeback_state.alu_value),
+      .flag  (flag),
+      .flag2  (flag2),
+      .disasm(w_disasm)
+  );
 
   // For all the datapath logic
   logic illegal_insn;
@@ -849,26 +866,31 @@ module DatapathPipelined (
     // MX Bypass
     if (execute_state.rs1 == memory_state.rd) begin
       inputaCLA32 = execute_state.alu_value;
+      flag = 32'd7;
     end else if (execute_state.rs2 == memory_state.rd) begin
       inputbCLA32 = execute_state.alu_value;
-    end
+    end 
+    
+    else
 
     // WX Bypass
     if (execute_state.rs1 == writeback_state.rd) begin
-      inputaCLA32 = writeback_state.alu_value;
+      inputaCLA32 = execute_state.alu_value;
     end else if (execute_state.rs2 == writeback_state.rd) begin
-      inputbCLA32 = writeback_state.alu_value;
-    end
+      inputbCLA32 = execute_state.alu_value;
+    end 
+    
+    else
 
-    // WB Bypass
-    if (writeback_state.rd == execute_state.rs1) begin
-        inputaCLA32 = writeback_state.alu_value;
-    end else if (writeback_state.rd == execute_state.rs2) begin
-        inputbCLA32 = writeback_state.alu_value;
+    // WD Bypass
+    if (writeback_state.rd == insn_rs1) begin
+      rs1_data_bypass = writeback_state.alu_value;
+      flag = 32'd9;
+      // flag = 32'd4;
+    end else if (writeback_state.rd == insn_rs2) begin
+      rs2_data_bypass = writeback_state.alu_value;
     end
   end
-
-  
 
   // Our CLA
   cla cla_instance(
