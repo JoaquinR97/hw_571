@@ -19,6 +19,15 @@ module Disasm #(
     byte PREFIX = "D"
 ) (
     input wire [31:0] insn,
+    input wire [4:0] rd, 
+    input wire [4:0] rs1,
+    input wire [4:0] rs2, 
+    input wire [31:0] rd_data, 
+    input wire [31:0] rs1_data,
+    input wire [31:0] rs2_data, 
+    input wire [31:0] alu_value, 
+    input wire [31:0] flag,
+    input wire [31:0] flag2,
     output wire [(8*32)-1:0] disasm
 );
   // synthesis translate_off
@@ -120,6 +129,7 @@ typedef struct packed {
   logic [4:0] rs1, rs2; // Source register addresses
   logic [`REG_SIZE] rs1_data, rs2_data; // Data read from the source registers
   logic write_enable; // Write enable signal
+  logic [`REG_SIZE] alu_value;
   logic reset; // Reset signal
   logic illegal_insn; // Reset signal
 
@@ -165,6 +175,7 @@ typedef struct packed {
   logic [4:0] rs1, rs2; // Source register addresses
   logic [`REG_SIZE] rs1_data, rs2_data; // Data read from the source registers
   logic write_enable; // Write enable signal
+  logic [`REG_SIZE] alu_value;
   logic reset; // Reset signal
   logic illegal_insn; // Reset signal
   cycle_status_e cycle_status;
@@ -179,6 +190,7 @@ typedef struct packed {
   logic [4:0] rs1, rs2; // Source register addresses
   logic [`REG_SIZE] rs1_data, rs2_data; // Data read from the source registers
   logic write_enable; // Write enable signal
+  logic [`REG_SIZE] alu_value;
   logic reset; // Reset signal
   logic illegal_insn; // Reset signal
   cycle_status_e cycle_status;
@@ -246,6 +258,15 @@ module DatapathPipelined (
       .PREFIX("F")
   ) disasm_0fetch (
       .insn  (f_insn),
+      .rd   (5'b0),
+      .rs1  (5'b0),
+      .rs2  (5'b0),
+      .rd_data   (32'b0),
+      .rs1_data  (32'b0),
+      .rs2_data  (32'b0),
+      .alu_value  (32'b0),
+      .flag  (flag),
+      .flag2  (flag2),
       .disasm(f_disasm)
   );
 
@@ -277,6 +298,15 @@ module DatapathPipelined (
       .PREFIX("D")
   ) disasm_1decode (
       .insn  (decode_state.insn),
+      .rd   (5'b0),
+      .rs1  (5'b0),
+      .rs2  (5'b0),
+      .rd_data   (32'b0),
+      .rs1_data  (32'b0),
+      .rs2_data  (32'b0),
+      .alu_value  (32'b0),
+      .flag  (flag),
+      .flag2  (flag2),
       .disasm(d_disasm)
   );
 
@@ -408,6 +438,7 @@ module DatapathPipelined (
         rs1_data: 0,
         rs2_data: 0,
         write_enable: 0,
+        alu_value: 0,
         reset: 0,
         illegal_insn: 0,
         insn_from_imem: 0,
@@ -438,6 +469,7 @@ module DatapathPipelined (
         rs1_data: rs1_data,
         rs2_data: rs2_data,
         write_enable: write_enable,
+        alu_value: alu_value,
         reset: reset,
         illegal_insn: illegal_insn,
         insn_from_imem: insn_from_imem,
@@ -459,12 +491,20 @@ module DatapathPipelined (
     end
   end
 
-
   wire [255:0] e_disasm;
   Disasm #(
       .PREFIX("E")
   ) disasm_2execute (
       .insn  (execute_state.insn),
+      .rd  (execute_state.rd),
+      .rs1  (execute_state.rs1),
+      .rs2  (execute_state.rs2),
+      .rd_data   (execute_state.rd_data),
+      .rs1_data  (execute_state.rs1_data),
+      .rs2_data  (execute_state.rs2_data),
+      .alu_value  (execute_state.alu_value),
+      .flag  (flag),
+      .flag2  (flag2),
       .disasm(e_disasm)
   );
 
@@ -496,6 +536,7 @@ module DatapathPipelined (
         rs1_data: 0,
         rs2_data: 0,
         write_enable: 0,
+        alu_value: 0,
         reset: 0,
         illegal_insn: 0,
         cycle_status: CYCLE_RESET
@@ -511,6 +552,7 @@ module DatapathPipelined (
         rs1_data: execute_state.rs1_data,
         rs2_data: execute_state.rs2_data,
         write_enable: execute_state.write_enable,
+        alu_value: execute_state.alu_value,
         reset: execute_state.reset,
         illegal_insn: execute_state.illegal_insn,
         cycle_status: execute_state.cycle_status
@@ -523,6 +565,15 @@ module DatapathPipelined (
       .PREFIX("M")
   ) disasm_3memory (
       .insn  (memory_state.insn),
+      .rd   (memory_state.rd),
+      .rs1  (memory_state.rs1),
+      .rs2  (memory_state.rs2),
+      .rd_data   (memory_state.rd_data),
+      .rs1_data  (memory_state.rs1_data),
+      .rs2_data  (memory_state.rs2_data),
+      .alu_value  (memory_state.alu_value),
+      .flag  (flag),
+      .flag2  (flag2),
       .disasm(m_disasm)
   );
 
@@ -541,6 +592,7 @@ module DatapathPipelined (
         rs2: 0,
         rs1_data: 0,
         rs2_data: 0,
+        alu_value: 0,
         write_enable: 0,
         reset: 0,
         illegal_insn: 0,
@@ -557,6 +609,7 @@ module DatapathPipelined (
         rs1_data: memory_state.rs1_data,
         rs2_data: memory_state.rs2_data,
         write_enable: memory_state.write_enable,
+        alu_value: memory_state.alu_value,
         reset: memory_state.reset,
         illegal_insn: memory_state.illegal_insn,
         cycle_status: memory_state.cycle_status
@@ -564,40 +617,44 @@ module DatapathPipelined (
     end
   end
 
-
-  // Always_comb happens here
-  // (1) This is for all the bypassing
-  always_comb begin
-  end
-
-  // (2) This is for all the datapath logic
+  // For all the datapath logic
   logic illegal_insn;
 
   // rf values
   logic [`REG_SIZE] rd_data; // Data to be written to the destination register
+  logic [`REG_SIZE] alu_value; // Alu value to then be written
   logic [4:0] rd; // Destination register address
   logic [4:0] rs1, rs2; // Source register addresses
   logic [`REG_SIZE] rs1_data, rs2_data; // Data read from the source registers
+  logic [`REG_SIZE] rs1_data_bypass, rs2_data_bypass; // Data read from the source registers
   logic write_enable; // Write enable signal
   logic reset; // Reset signal
+  logic [`REG_SIZE] flag; // Reset signal
+  logic [`REG_SIZE] flag2; // Reset signal
 
   logic [`REG_SIZE] immediateShiftedLeft;
+  logic [`REG_SIZE] inputaCLA32;
   logic [`REG_SIZE] inputbCLA32;
   logic [`REG_SIZE] cla_sum;
   logic adder_carry_in;
 
   always_comb begin
     rd_data = 32'b0;
+    alu_value = cla_sum;
     rd = 5'b0; // Default to an invalid register address
     rs1 = 5'b0;
     rs2 = 5'b0;
-    // rs1_data = 32'b0;
-    // rs2_data = 32'b0;
+    flag = 32'd1;
+    flag2 = 32'd5;
+    // flag2 = inputaCLA32;
+    rs1_data_bypass = rs1_data;
+    rs2_data_bypass = rs2_data;
     write_enable = 1'b0; // Default to not writing
 
     immediateShiftedLeft = 32'b0;
+    inputaCLA32 = 32'b0;
     inputbCLA32 = 32'b0;
-    cla_sum = 32'b0;
+    // cla_sum = 32'b0; // Not needed as we are outputting this value
     adder_carry_in = 1'b0;
 
     reset = 1'b0;
@@ -613,11 +670,213 @@ module DatapathPipelined (
           write_enable = 1'b1;
         end
       end
-        default: begin
+
+      OpRegImm: begin
+        write_enable = 1'b1;
+        rd = insn_rd; 
+        rs1 = insn_rs1;
+
+        if (insn_addi) begin
+          inputaCLA32 = rs1_data;
+          inputbCLA32 = imm_i_sext;
+          rd_data = cla_sum;
+        end
+        
+        if (insn_slti) begin
+          rd_data = $signed(rs1_data) < $signed(imm_i_sext) ? 32'b1 : 32'b0;
+        end
+        
+        // if (insn_sltiu) begin
+        //   rd_data = $unsigned(rs1_data) < $unsigned(imm_i_sext) ? 32'b1 : 32'b0;
+        // end
+        
+        // if (insn_xori) begin
+        //   rd_data = rs1_data ^ imm_i_sext;
+        // end
+
+        // if (insn_ori) begin
+        //   rd_data = rs1_data | imm_i_sext;
+        // end
+
+        // if (insn_andi) begin
+        //   rd_data = rs1_data & imm_i_sext;
+        // end
+
+        // if (insn_slli) begin
+        //   rd_data = rs1_data << imm_i[4:0];
+        // end
+
+        // if (insn_srli) begin
+        //   rd_data = rs1_data >> imm_i[4:0];
+        // end
+
+        // if (insn_srai) begin
+        //   rd_data = $signed(rs1_data) >>> imm_i[4:0];
+        // end
+      end
+
+
+      OpRegReg: begin
+        rd = insn_rd;
+        rs1 = insn_rs1;
+        rs2 = insn_rs2;
+        write_enable = 1'b1;
+
+        if (insn_add) begin
+          inputaCLA32 = rs1_data;
+          inputbCLA32 = rs2_data;
+          rd_data = cla_sum;
+        end
+
+        // if (insn_sub) begin
+        //   inputbCLA32 = ~rs2_data;  // two's compliment
+        //   adder_carry_in = 1'b1;   // Set carry in to 1 for two's complement addition
+        //   rd_data = cla_sum;
+        // end
+
+        // if (insn_sll) begin
+        //   rd_data = rs1_data << rs2_data[4:0];
+        // end
+
+        // if (insn_slt) begin
+        //   rd_data = $signed(rs1_data) < $signed(rs2_data) ? 32'b1 : 32'b0;
+        // end
+
+        // if (insn_sltu) begin
+        //   rd_data = $unsigned(rs1_data) < $unsigned(rs2_data) ? 32'b1 : 32'b0;
+        // end
+
+        // if (insn_xor) begin
+        //   rd_data = rs1_data ^ rs2_data;
+        // end
+
+        // if (insn_srl) begin
+        //   rd_data = rs1_data >> rs2_data[4:0];
+        // end
+
+        // if (insn_sra) begin
+        //   rd_data = $signed(rs1_data) >>> rs2_data[4:0];
+        // end
+
+        // if (insn_or) begin
+        //   rd_data = rs1_data | rs2_data;
+        // end
+
+        // if (insn_and) begin
+        //   rd_data = rs1_data & rs2_data;
+        // end
+
+        // if (insn_mul) begin
+        //   rd_data = $signed(rs1_data) * $signed(rs2_data);
+        // end
+
+        // if (insn_mulh) begin
+        //   multiplication = $signed(rs1_data) * $signed(rs2_data);
+        //   rd_data = multiplication[63:32];
+        // end
+
+        // if (insn_mulhsu) begin
+        //   extended_rs1_data = $signed({{32{rs1_data[31]}}, rs1_data});
+        //   extended_rs2_data = {32'd0, rs2_data};
+
+        //   multiplication = extended_rs1_data * extended_rs2_data;
+        //   rd_data = multiplication[63:32];
+        // end
+
+        // if (insn_mulhu) begin
+        //   multiplication = $unsigned(rs1_data) * $unsigned(rs2_data);
+        //   rd_data = multiplication[63:32];
+        // end
+
+        // if (insn_div) begin
+        //   logic sign_result = (rs1_data[31] != rs2_data[31]); 
+
+        //   // Compute absolute values handling two's complement edge case
+        //   abs_a = rs1_data[31] ? (~rs1_data + 1) : rs1_data;
+        //   abs_b = rs2_data[31] ? (~rs2_data + 1) : rs2_data;
+
+        //   // Assign absolute values for division
+        //   divider_input_a = abs_a;
+        //   divider_input_b = abs_b;
+
+        //   if (sign_result) begin
+        //     rd_data = ((~divider_quotient) + (1'b1 * (|(~divider_quotient))) + (&divider_quotient * ({32{1'b1}})));
+        //   end else begin
+        //     rd_data = divider_quotient;
+        //   end
+        // end
+
+        // if (insn_divu) begin
+        //   divider_input_a = rs1_data;
+        //   divider_input_b = rs2_data;
+        //   rd_data = divider_quotient;
+        // end
+
+        // if (insn_rem) begin
+        //   logic sign_result = rs1_data[31]; 
+
+        //   // Compute absolute values handling two's complement edge case
+        //   abs_a = rs1_data[31] ? (~rs1_data + 1) : rs1_data;
+        //   abs_b = rs2_data[31] ? (~rs2_data + 1) : rs2_data;
+
+        //   // Assign absolute values for division
+        //   divider_input_a = abs_a;
+        //   divider_input_b = abs_b;
+
+        //   if (sign_result) begin
+        //     rd_data = ((~divider_remainder) + 1'b1);
+        //   end else begin
+        //     rd_data = divider_remainder;
+        //   end
+        // end
+
+        // if (insn_remu) begin
+        //   if (rs2_data == 0) begin
+        //     rd_data = rs1_data;
+        //   end else begin
+        //     divider_input_a = rs1_data;
+        //     divider_input_b = rs2_data;
+        //     rd_data = divider_remainder;
+        //   end
+        // end
+      end
+
+      default: begin
         // illegal_insn = 1'b1;
       end
     endcase
+
+    // MX Bypass
+    if (execute_state.rs1 == memory_state.rd) begin
+      inputaCLA32 = execute_state.alu_value;
+    end else if (execute_state.rs2 == memory_state.rd) begin
+      inputbCLA32 = execute_state.alu_value;
+    end
+
+    // WX Bypass
+    if (execute_state.rs1 == writeback_state.rd) begin
+      inputaCLA32 = writeback_state.alu_value;
+    end else if (execute_state.rs2 == writeback_state.rd) begin
+      inputbCLA32 = writeback_state.alu_value;
+    end
+
+    // WB Bypass
+    if (writeback_state.rd == execute_state.rs1) begin
+        inputaCLA32 = writeback_state.alu_value;
+    end else if (writeback_state.rd == execute_state.rs2) begin
+        inputbCLA32 = writeback_state.alu_value;
+    end
   end
+
+  
+
+  // Our CLA
+  cla cla_instance(
+      .a(inputaCLA32), 
+      .b(inputbCLA32), 
+      .cin(adder_carry_in), 
+      .sum(cla_sum)
+  );
 
   RegFile rf (
     .rd(writeback_state.rd),
