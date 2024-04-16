@@ -124,14 +124,14 @@ typedef struct packed {
   logic [`INSN_SIZE] insn;
   cycle_status_e cycle_status;
 
-  logic [`REG_SIZE] rd_data; // Data to be written to the destination register
-  logic [4:0] rd; // Destination register address
-  logic [4:0] rs1, rs2; // Source register addresses
+  // logic [`REG_SIZE] rd_data; // Data to be written to the destination register
+  // logic [4:0] rd; // Destination register address
+  // logic [4:0] rs1, rs2; // Source register addresses
   logic [`REG_SIZE] rs1_data, rs2_data; // Data read from the source registers
-  logic write_enable; // Write enable signal
-  logic [`REG_SIZE] alu_value;
-  logic reset; // Reset signal
-  logic illegal_insn; // Reset signal
+  // logic write_enable; // Write enable signal
+  // logic [`REG_SIZE] alu_value;
+  // logic reset; // Reset signal
+  // logic illegal_insn; // Reset signal
 
   // Storing the instruction itself
   logic [`INSN_SIZE] insn_from_imem;
@@ -155,15 +155,15 @@ typedef struct packed {
   logic [31:0] imm_j_sext;
 
   // Instruction type flags
-  // logic is_lui, is_auipc, is_jal, is_jalr;
-  // logic is_beq, is_bne, is_blt, is_bge, is_bltu, is_bgeu;
-  // logic is_lb, is_lh, is_lw, is_lbu, is_lhu;
-  // logic is_sb, is_sh, is_sw;
-  // logic is_addi, is_slti, is_sltiu, is_xori, is_ori, is_andi;
-  // logic is_slli, is_srli, is_srai;
-  // logic is_add, is_sub, is_sll, is_slt, is_sltu, is_xor, is_srl, is_sra, is_or, is_and;
-  // logic is_mul, is_mulh, is_mulhsu, is_mulhu, is_div, is_divu, is_rem, is_remu;
-  // logic is_ecall, is_fence;
+  logic is_lui, is_auipc, is_jal, is_jalr;
+  logic is_beq, is_bne, is_blt, is_bge, is_bltu, is_bgeu;
+  logic is_lb, is_lh, is_lw, is_lbu, is_lhu;
+  logic is_sb, is_sh, is_sw;
+  logic is_addi, is_slti, is_sltiu, is_xori, is_ori, is_andi;
+  logic is_slli, is_srli, is_srai;
+  logic is_add, is_sub, is_sll, is_slt, is_sltu, is_xor, is_srl, is_sra, is_or, is_and;
+  logic is_mul, is_mulh, is_mulhsu, is_mulhu, is_div, is_divu, is_rem, is_remu;
+  logic is_ecall, is_fence;
 } stage_execute_t;
 
 // Memory stage
@@ -313,12 +313,6 @@ module DatapathPipelined (
   // TODO: your code here, though you will also need to modify some of the code above
   // TODO: the testbench requires that your register file instance is named `rf`
 
-
-
-  /****************/
-  /* EXECUTE STAGE*/
-  /****************/
-
   // components of the instruction
   wire [6:0] insn_funct7;
   wire [4:0] insn_rs2;
@@ -424,6 +418,15 @@ module DatapathPipelined (
   wire insn_ecall = insn_opcode == OpEnviron && insn_from_imem[31:7] == 25'd0;
   wire insn_fence = insn_opcode == OpMiscMem;
 
+  // Reading from registers
+  logic [`REG_SIZE] rs1_data_decode, rs2_data_decode; // Data read from the source registers (in case of overwrite)
+
+  logic [`REG_SIZE] rs1_data_out, rs2_data_out; // Data read from the source registers
+
+  /****************/
+  /* EXECUTE STAGE*/
+  /****************/
+
   stage_execute_t execute_state;
   always_ff @(posedge clk) begin
     if (rst) begin
@@ -431,20 +434,12 @@ module DatapathPipelined (
         pc: 0,
         insn: 0,
         cycle_status: CYCLE_RESET,
-        rd_data: 0,
-        rd: 0,
-        rs1: 0,
-        rs2: 0,
-        rs1_data: 0,
-        rs2_data: 0,
-        write_enable: 0,
-        alu_value: 0,
-        reset: 0,
-        illegal_insn: 0,
         insn_from_imem: 0,
         insn_funct7: 0,
         insn_rs2: 0,
         insn_rs1: 0,
+        rs1_data: 0,
+        rs2_data: 0,
         insn_funct3: 0,
         insn_rd: 0,
         insn_opcode: 0,
@@ -455,27 +450,28 @@ module DatapathPipelined (
         imm_i_sext: 0,
         imm_s_sext: 0,
         imm_b_sext: 0,
-        imm_j_sext: 0
+        imm_j_sext: 0,
+        is_lui: 0, is_auipc: 0, is_jal: 0, is_jalr: 0,
+        is_beq: 0, is_bne: 0, is_blt: 0, is_bge: 0, is_bltu: 0, is_bgeu: 0,
+        is_lb: 0, is_lh: 0, is_lw: 0, is_lbu: 0, is_lhu: 0,
+        is_sb: 0, is_sh: 0, is_sw: 0,
+        is_addi: 0, is_slti: 0, is_sltiu: 0, is_xori: 0, is_ori: 0, is_andi: 0,
+        is_slli: 0, is_srli: 0, is_srai: 0,
+        is_add: 0, is_sub: 0, is_sll: 0, is_slt: 0, is_sltu: 0, is_xor: 0, is_srl: 0, is_sra: 0, is_or: 0, is_and: 0,
+        is_mul: 0, is_mulh: 0, is_mulhsu: 0, is_mulhu: 0, is_div: 0, is_divu: 0, is_rem: 0, is_remu: 0,
+        is_ecall: 0, is_fence: 0
       }; 
     end else begin
       execute_state <= '{
         pc: decode_state.pc,
         insn: decode_state.insn,
         cycle_status: decode_state.cycle_status,
-        rd_data: rd_data,
-        rd: rd,
-        rs1: rs1,
-        rs2: rs2,
-        rs1_data: rs1_data_bypass,
-        rs2_data: rs2_data_bypass,
-        write_enable: write_enable,
-        alu_value: alu_value,
-        reset: reset,
-        illegal_insn: illegal_insn,
         insn_from_imem: insn_from_imem,
         insn_funct7: insn_funct7,
-        insn_rs2: insn_rs2,
         insn_rs1: insn_rs1,
+        rs1_data: rs1_data_decode,
+        insn_rs2: insn_rs2,
+        rs2_data: rs2_data_decode,
         insn_funct3: insn_funct3,
         insn_rd: insn_rd,
         insn_opcode: insn_opcode,
@@ -486,7 +482,54 @@ module DatapathPipelined (
         imm_i_sext: imm_i_sext,
         imm_s_sext: imm_s_sext,
         imm_b_sext: imm_b_sext,
-        imm_j_sext: imm_j_sext
+        imm_j_sext: imm_j_sext,
+        is_lui: insn_lui,
+        is_auipc: insn_auipc,
+        is_jal: insn_jal,
+        is_jalr: insn_jalr,
+        is_beq: insn_beq,
+        is_bne: insn_bne,
+        is_blt: insn_blt,
+        is_bge: insn_bge,
+        is_bltu: insn_bltu,
+        is_bgeu: insn_bgeu,
+        is_lb: insn_lb,
+        is_lh: insn_lh,
+        is_lw: insn_lw,
+        is_lbu: insn_lbu,
+        is_lhu: insn_lhu,
+        is_sb: insn_sb,
+        is_sh: insn_sh,
+        is_sw: insn_sw,
+        is_addi: insn_addi,
+        is_slti: insn_slti,
+        is_sltiu: insn_sltiu,
+        is_xori: insn_xori,
+        is_ori: insn_ori,
+        is_andi: insn_andi,
+        is_slli: insn_slli,
+        is_srli: insn_srli,
+        is_srai: insn_srai,
+        is_add: insn_add,
+        is_sub: insn_sub,
+        is_sll: insn_sll,
+        is_slt: insn_slt,
+        is_sltu: insn_sltu,
+        is_xor: insn_xor,
+        is_srl: insn_srl,
+        is_sra: insn_sra,
+        is_or: insn_or,
+        is_and: insn_and,
+        is_mul: insn_mul,
+        is_mulh: insn_mulh,
+        is_mulhsu: insn_mulhsu,
+        is_mulhu: insn_mulhu,
+        is_div: insn_div,
+        is_divu: insn_divu,
+        is_rem: insn_rem,
+        is_remu: insn_remu,
+        is_ecall: insn_ecall,
+        is_fence: insn_fence
       };
     end
   end
@@ -496,153 +539,26 @@ module DatapathPipelined (
       .PREFIX("E")
   ) disasm_2execute (
       .insn  (execute_state.insn),
-      .rd  (execute_state.rd),
-      .rs1  (execute_state.rs1),
-      .rs2  (execute_state.rs2),
-      .rd_data   (execute_state.rd_data),
+      .rd  (execute_state.insn_rd),
+      .rs1  (execute_state.insn_rs1),
+      .rs2  (execute_state.insn_rs2),
+      .rd_data   (32'b0),
       .rs1_data  (execute_state.rs1_data),
       .rs2_data  (execute_state.rs2_data),
-      .alu_value  (execute_state.alu_value),
+      .alu_value  (32'b0),
       .flag  (flag),
       .flag2  (flag2),
       .disasm(e_disasm)
   );
 
-  /****************/
-  /* MEMORY STAGE*/
-  /****************/
-  // Memory stage wires
-  // wire [`REG_SIZE] inputbCLA32_mem;
-  // wire [`INSN_SIZE] insn_mem;
-  // wire [`REG_SIZE] rd_data_mem;
-  // wire [4:0] rd_mem;
-  // wire [4:0] rs1_mem, rs2_mem;
-  // wire [`REG_SIZE] rs1_data_mem, rs2_data_mem;
-  // wire write_enable_mem;
-  // wire reset_mem;
-  // wire illegal_insn_mem;
-
-  // Memory stage
-  stage_memory_t memory_state;
-  always_ff @(posedge clk) begin
-    if (rst) begin
-      memory_state <= '{
-        // inputbCLA32: 0,
-        insn: 0,
-        rd_data: 0,
-        rd: 0,
-        rs1: 0,
-        rs2: 0,
-        rs1_data: 0,
-        rs2_data: 0,
-        write_enable: 0,
-        alu_value: 0,
-        reset: 0,
-        illegal_insn: 0,
-        cycle_status: CYCLE_RESET
-      };
-    end else begin
-      memory_state <= '{
-        // inputbCLA32: inputbCLA32_mem,
-        insn: execute_state.insn,
-        rd_data: execute_state.rd_data,
-        rd: execute_state.rd,
-        rs1: execute_state.rs1,
-        rs2: execute_state.rs2,
-        rs1_data: execute_state.rs1_data,
-        rs2_data: execute_state.rs2_data,
-        write_enable: execute_state.write_enable,
-        alu_value: execute_state.alu_value,
-        reset: execute_state.reset,
-        illegal_insn: execute_state.illegal_insn,
-        cycle_status: execute_state.cycle_status
-      };
-    end
-  end
-
-  wire [255:0] m_disasm;
-  Disasm #(
-      .PREFIX("M")
-  ) disasm_3memory (
-      .insn  (memory_state.insn),
-      .rd   (memory_state.rd),
-      .rs1  (memory_state.rs1),
-      .rs2  (memory_state.rs2),
-      .rd_data   (memory_state.rd_data),
-      .rs1_data  (memory_state.rs1_data),
-      .rs2_data  (memory_state.rs2_data),
-      .alu_value  (memory_state.alu_value),
-      .flag  (flag),
-      .flag2  (flag2),
-      .disasm(m_disasm)
-  );
-
-  /****************/
-  /* WRITEBACK STAGE*/
-  /****************/
-  stage_writeback_t writeback_state;
-  always_ff @(posedge clk) begin
-    if (rst) begin
-      writeback_state <= '{
-        // inputbCLA32: 0,
-        insn: 0,
-        rd_data: 0,
-        rd: 0,
-        rs1: 0,
-        rs2: 0,
-        rs1_data: 0,
-        rs2_data: 0,
-        alu_value: 0,
-        write_enable: 0,
-        reset: 0,
-        illegal_insn: 0,
-        cycle_status: CYCLE_RESET
-      };
-    end else begin
-      writeback_state <= '{
-        // inputbCLA32: memory_state.inputbCLA32,
-        insn: memory_state.insn,
-        rd_data: memory_state.rd_data,
-        rd: memory_state.rd,
-        rs1: memory_state.rs1,
-        rs2: memory_state.rs2,
-        rs1_data: memory_state.rs1_data,
-        rs2_data: memory_state.rs2_data,
-        write_enable: memory_state.write_enable,
-        alu_value: memory_state.alu_value,
-        reset: memory_state.reset,
-        illegal_insn: memory_state.illegal_insn,
-        cycle_status: memory_state.cycle_status
-      };
-    end
-  end
-
-  wire [255:0] w_disasm;
-  Disasm #(
-      .PREFIX("W")
-  ) disasm_4write (
-      .insn  (writeback_state.insn),
-      .rd   (writeback_state.rd),
-      .rs1  (writeback_state.rs1),
-      .rs2  (writeback_state.rs2),
-      .rd_data   (writeback_state.rd_data),
-      .rs1_data  (writeback_state.rs1_data),
-      .rs2_data  (writeback_state.rs2_data),
-      .alu_value  (writeback_state.alu_value),
-      .flag  (flag),
-      .flag2  (flag2),
-      .disasm(w_disasm)
-  );
-
   // For all the datapath logic
   logic illegal_insn;
-
+  
   // rf values
-  logic [`REG_SIZE] rd_data; // Data to be written to the destination register
-  logic [`REG_SIZE] alu_value; // Alu value to then be written
   logic [4:0] rd; // Destination register address
   logic [4:0] rs1, rs2; // Source register addresses
-  logic [`REG_SIZE] rs1_data, rs2_data; // Data read from the source registers
+  logic [`REG_SIZE] rd_data; // Data to be written to the destination register
+  logic [`REG_SIZE] alu_value; // Alu value to then be written
   logic [`REG_SIZE] rs1_data_bypass, rs2_data_bypass; // Data read from the source registers
   logic write_enable; // Write enable signal
   logic reset; // Reset signal
@@ -664,8 +580,8 @@ module DatapathPipelined (
     flag = 32'd1;
     flag2 = 32'd5;
     // flag2 = inputaCLA32;
-    rs1_data_bypass = rs1_data;
-    rs2_data_bypass = rs2_data;
+    rs1_data_bypass = execute_state.rs1_data;
+    rs2_data_bypass = execute_state.rs2_data;
     write_enable = 1'b0; // Default to not writing
 
     immediateShiftedLeft = 32'b0;
@@ -675,32 +591,30 @@ module DatapathPipelined (
     adder_carry_in = 1'b0;
 
     reset = 1'b0;
-
     illegal_insn = 1'b0;
 
-    // Execute stage operations
-    case (insn_opcode)
+    case (execute_state.insn_opcode)
       OpLui: begin
-        if (insn_lui) begin
-          rd_data = {insn_from_imem[31:12], 12'b0};
-          rd = insn_rd;
+        if (execute_state.is_lui) begin
+          rd_data = {execute_state.insn_from_imem[31:12], 12'b0};
+          rd = execute_state.insn_rd;
           write_enable = 1'b1;
         end
       end
 
       OpRegImm: begin
         write_enable = 1'b1;
-        rd = insn_rd; 
-        rs1 = insn_rs1;
+        rd = execute_state.insn_rd; 
+        rs1 = execute_state.insn_rs1;
 
-        if (insn_addi) begin
-          inputaCLA32 = rs1_data;
-          inputbCLA32 = imm_i_sext;
+        if (execute_state.is_addi) begin
+          inputaCLA32 = execute_state.rs1_data;
+          inputbCLA32 = execute_state.imm_i_sext;
           rd_data = cla_sum;
         end
         
-        if (insn_slti) begin
-          rd_data = $signed(rs1_data) < $signed(imm_i_sext) ? 32'b1 : 32'b0;
+        if (execute_state.is_slti) begin
+          rd_data = $signed(execute_state.rs1_data) < $signed(execute_state.imm_i_sext) ? 32'b1 : 32'b0;
         end
         
         // if (insn_sltiu) begin
@@ -734,14 +648,14 @@ module DatapathPipelined (
 
 
       OpRegReg: begin
-        rd = insn_rd;
-        rs1 = insn_rs1;
-        rs2 = insn_rs2;
+        rd = execute_state.insn_rd;
+        rs1 = execute_state.insn_rs1;
+        rs2 = execute_state.insn_rs2;
         write_enable = 1'b1;
 
-        if (insn_add) begin
-          inputaCLA32 = rs1_data;
-          inputbCLA32 = rs2_data;
+        if (execute_state.is_add) begin
+          inputaCLA32 = execute_state.rs1_data;
+          inputbCLA32 = execute_state.rs2_data;
           rd_data = cla_sum;
         end
 
@@ -864,34 +778,35 @@ module DatapathPipelined (
     endcase
 
     // MX Bypass
-    if (execute_state.rs1 == memory_state.rd) begin
-      inputaCLA32 = execute_state.alu_value;
+    if ((execute_state.insn_rs1 == memory_state.rd) && (execute_state.insn_rs1 != 0)) begin
+      inputaCLA32 = memory_state.rd_data;
       flag = 32'd7;
-    end else if (execute_state.rs2 == memory_state.rd) begin
-      inputbCLA32 = execute_state.alu_value;
+    end else if (execute_state.insn_rs2 == memory_state.rd && (execute_state.insn_rs2 != 0)) begin
+      inputbCLA32 = memory_state.rd_data;
     end 
     
     else
 
     // WX Bypass
-    if (execute_state.rs1 == writeback_state.rd) begin
-      inputaCLA32 = execute_state.alu_value;
-    end else if (execute_state.rs2 == writeback_state.rd) begin
-      inputbCLA32 = execute_state.alu_value;
+    if (execute_state.insn_rs1 == writeback_state.rd && (execute_state.insn_rs1 != 0)) begin
+      inputaCLA32 = writeback_state.rd_data;
+    end else if (execute_state.insn_rs2 == writeback_state.rd && (execute_state.insn_rs2 != 0)) begin
+      inputbCLA32 = writeback_state.rd_data;
     end 
-    
-    else
-
-    // WD Bypass
-    if (writeback_state.rd == insn_rs1) begin
-      rs1_data_bypass = writeback_state.alu_value;
-      flag = 32'd9;
-      // flag = 32'd4;
-    end else if (writeback_state.rd == insn_rs2) begin
-      rs2_data_bypass = writeback_state.alu_value;
-    end
   end
 
+  always_comb begin
+    // WD Bypass
+    rs1_data_decode = rs1_data_out;
+    rs2_data_decode = rs2_data_out;
+
+    if (writeback_state.rd == insn_rs1 && (insn_rs1 != 0)) begin
+      rs1_data_decode = writeback_state.rd_data;
+      // flag = 32'd9;
+    end else if (writeback_state.rd == insn_rs2 && (insn_rs1 != 0)) begin
+      rs2_data_decode = writeback_state.rd_data;
+    end
+  end
   // Our CLA
   cla cla_instance(
       .a(inputaCLA32), 
@@ -900,13 +815,140 @@ module DatapathPipelined (
       .sum(cla_sum)
   );
 
+  /****************/
+  /* MEMORY STAGE*/
+  /****************/
+  // Memory stage wires
+  // wire [`REG_SIZE] inputbCLA32_mem;
+  // wire [`INSN_SIZE] insn_mem;
+  // wire [`REG_SIZE] rd_data_mem;
+  // wire [4:0] rd_mem;
+  // wire [4:0] rs1_mem, rs2_mem;
+  // wire [`REG_SIZE] rs1_data_mem, rs2_data_mem;
+  // wire write_enable_mem;
+  // wire reset_mem;
+  // wire illegal_insn_mem;
+
+  // Memory stage
+  stage_memory_t memory_state;
+  always_ff @(posedge clk) begin
+    if (rst) begin
+      memory_state <= '{
+        // inputbCLA32: 0,
+        insn: 0,
+        rd_data: 0,
+        rd: 0,
+        rs1: 0,
+        rs2: 0,
+        rs1_data: 0,
+        rs2_data: 0,
+        write_enable: 0,
+        alu_value: 0,
+        reset: 0,
+        illegal_insn: 0,
+        cycle_status: CYCLE_RESET
+      };
+    end else begin
+      memory_state <= '{
+        // inputbCLA32: inputbCLA32_mem,
+        insn: execute_state.insn,
+        rd_data: rd_data,
+        rd: execute_state.insn_rd,
+        rs1: execute_state.insn_rs1,
+        rs2: execute_state.insn_rs2,
+        rs1_data: execute_state.rs1_data,
+        rs2_data: execute_state.rs2_data,
+        write_enable: write_enable,
+        alu_value: alu_value,
+        reset: reset,
+        illegal_insn: illegal_insn,
+        cycle_status: execute_state.cycle_status
+      };
+    end
+  end
+
+  wire [255:0] m_disasm;
+  Disasm #(
+      .PREFIX("M")
+  ) disasm_3memory (
+      .insn  (memory_state.insn),
+      .rd   (memory_state.rd),
+      .rs1  (memory_state.rs1),
+      .rs2  (memory_state.rs2),
+      .rd_data   (memory_state.rd_data),
+      .rs1_data  (memory_state.rs1_data),
+      .rs2_data  (memory_state.rs2_data),
+      .alu_value  (memory_state.alu_value),
+      .flag  (flag),
+      .flag2  (flag2),
+      .disasm(m_disasm)
+  );
+
+  /****************/
+  /*WRITEBACK STAGE*/
+  /****************/
+  stage_writeback_t writeback_state;
+  always_ff @(posedge clk) begin
+    if (rst) begin
+      writeback_state <= '{
+        // inputbCLA32: 0,
+        insn: 0,
+        rd_data: 0,
+        rd: 0,
+        rs1: 0,
+        rs2: 0,
+        rs1_data: 0,
+        rs2_data: 0,
+        alu_value: 0,
+        write_enable: 0,
+        reset: 0,
+        illegal_insn: 0,
+        cycle_status: CYCLE_RESET
+      };
+    end else begin
+      writeback_state <= '{
+        // inputbCLA32: memory_state.inputbCLA32,
+        insn: memory_state.insn,
+        rd_data: memory_state.rd_data,
+        rd: memory_state.rd,
+        rs1: memory_state.rs1,
+        rs2: memory_state.rs2,
+        rs1_data: memory_state.rs1_data,
+        rs2_data: memory_state.rs2_data,
+        write_enable: memory_state.write_enable,
+        alu_value: memory_state.alu_value,
+        reset: memory_state.reset,
+        illegal_insn: memory_state.illegal_insn,
+        cycle_status: memory_state.cycle_status
+      };
+    end
+  end
+
+  wire [255:0] w_disasm;
+  Disasm #(
+      .PREFIX("W")
+  ) disasm_4write (
+      .insn  (writeback_state.insn),
+      .rd   (writeback_state.rd),
+      .rs1  (writeback_state.rs1),
+      .rs2  (writeback_state.rs2),
+      .rd_data   (writeback_state.rd_data),
+      .rs1_data  (writeback_state.rs1_data),
+      .rs2_data  (writeback_state.rs2_data),
+      .alu_value  (writeback_state.alu_value),
+      .flag  (flag),
+      .flag2  (flag2),
+      .disasm(w_disasm)
+  );
+
+  // Register file to output to writeback and read into rs1
   RegFile rf (
     .rd(writeback_state.rd),
     .rd_data(writeback_state.rd_data),
     .rs1(writeback_state.rs1),
-    .rs1_data(rs1_data),
+    .rs1_data(rs1_data_out),
     .rs2(writeback_state.rs2),
-    .rs2_data(rs2_data),
+    .rs2_data(rs2_data_out),
     .clk(clk),
     .we(writeback_state.write_enable),
     .rst(writeback_state.reset)
