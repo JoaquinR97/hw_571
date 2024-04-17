@@ -325,7 +325,7 @@ async def testBneTaken(dut):
     await preTestSetup(dut)
 
     await ClockCycles(dut.clk, 9)
-    assert dut.datapath.rf.regs[1].value == 0x12345000, f'failed at cycle {dut.datapath.cycles_current.value.integer}'
+    assert dut.datapath.rf.regs[1].value == 0x12345000, f'failed at cycle {dut.datapath.rf.regs[1].value.integer}'
     pass
 
 @cocotb.test()

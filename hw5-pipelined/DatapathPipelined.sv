@@ -233,8 +233,15 @@ module DatapathPipelined (
   /***************/
 
   logic [`REG_SIZE] f_pc_current;
-  wire [`REG_SIZE] f_insn;
+  logic [`REG_SIZE] f_insn;
   cycle_status_e f_cycle_status;
+
+  // send PC to imem for next cycle
+  logic [`REG_SIZE] pc_temp;
+  assign pc_to_imem = pc_temp;
+
+  // Making temp variable to overwrite in always comb
+  cycle_status_e temp_cycle_status_f;
 
   // program counter
   always_ff @(posedge clk) begin
@@ -243,13 +250,10 @@ module DatapathPipelined (
       // NB: use CYCLE_NO_STALL since this is the value that will persist after the last reset cycle
       f_cycle_status <= CYCLE_NO_STALL;
     end else begin
-      f_cycle_status <= CYCLE_NO_STALL;
+      f_cycle_status <= temp_cycle_status_f;
       f_pc_current <= f_pc_current + 4;
     end
   end
-  // send PC to imem
-  assign pc_to_imem = f_pc_current;
-  assign f_insn = insn_from_imem;
 
   // Here's how to disassemble an insn into a string you can view in GtkWave.
   // Use PREFIX to provide a 1-character tag to identify which stage the insn comes from.
@@ -275,6 +279,11 @@ module DatapathPipelined (
   /****************/
 
   // this shows how to package up state in a `struct packed`, and how to pass it between stages
+
+  // Making temp variable to overwrite in always comb
+  // This is for skipping in case of a branch
+  cycle_status_e temp_cycle_status_d;
+
   stage_decode_t decode_state;
   always_ff @(posedge clk) begin
     if (rst) begin
@@ -288,7 +297,7 @@ module DatapathPipelined (
         decode_state <= '{
           pc: f_pc_current,
           insn: f_insn,
-          cycle_status: f_cycle_status
+          cycle_status: temp_cycle_status_d
         };
       end
     end
@@ -465,7 +474,7 @@ module DatapathPipelined (
       execute_state <= '{
         pc: decode_state.pc,
         insn: decode_state.insn,
-        cycle_status: decode_state.cycle_status,
+        cycle_status: temp_cycle_status_d,
         insn_from_imem: insn_from_imem,
         insn_funct7: insn_funct7,
         insn_rs1: insn_rs1,
@@ -572,6 +581,16 @@ module DatapathPipelined (
   logic adder_carry_in;
 
   always_comb begin
+    // PC Current Update
+    pc_temp = f_pc_current;
+
+    // Set f instruction (pushed to decode)
+    f_insn = insn_from_imem;
+
+    // Cycle temp variable update
+    temp_cycle_status_f = CYCLE_NO_STALL;
+    temp_cycle_status_d = f_cycle_status;
+
     rd_data = 32'b0;
     alu_value = cla_sum;
     rd = 5'b0; // Default to an invalid register address
@@ -593,194 +612,9 @@ module DatapathPipelined (
     reset = 1'b0;
     illegal_insn = 1'b0;
 
-    case (execute_state.insn_opcode)
-      OpLui: begin
-        if (execute_state.is_lui) begin
-          rd_data = {execute_state.insn_from_imem[31:12], 12'b0};
-          rd = execute_state.insn_rd;
-          write_enable = 1'b1;
-        end
-      end
-
-      OpRegImm: begin
-        write_enable = 1'b1;
-        rd = execute_state.insn_rd; 
-        rs1 = execute_state.insn_rs1;
-
-        if (execute_state.is_addi) begin
-          inputaCLA32 = execute_state.rs1_data;
-          inputbCLA32 = execute_state.imm_i_sext;
-          rd_data = cla_sum;
-        end
-        
-        if (execute_state.is_slti) begin
-          rd_data = $signed(execute_state.rs1_data) < $signed(execute_state.imm_i_sext) ? 32'b1 : 32'b0;
-        end
-        
-        // if (insn_sltiu) begin
-        //   rd_data = $unsigned(rs1_data) < $unsigned(imm_i_sext) ? 32'b1 : 32'b0;
-        // end
-        
-        // if (insn_xori) begin
-        //   rd_data = rs1_data ^ imm_i_sext;
-        // end
-
-        // if (insn_ori) begin
-        //   rd_data = rs1_data | imm_i_sext;
-        // end
-
-        // if (insn_andi) begin
-        //   rd_data = rs1_data & imm_i_sext;
-        // end
-
-        // if (insn_slli) begin
-        //   rd_data = rs1_data << imm_i[4:0];
-        // end
-
-        // if (insn_srli) begin
-        //   rd_data = rs1_data >> imm_i[4:0];
-        // end
-
-        // if (insn_srai) begin
-        //   rd_data = $signed(rs1_data) >>> imm_i[4:0];
-        // end
-      end
-
-
-      OpRegReg: begin
-        rd = execute_state.insn_rd;
-        rs1 = execute_state.insn_rs1;
-        rs2 = execute_state.insn_rs2;
-        write_enable = 1'b1;
-
-        if (execute_state.is_add) begin
-          inputaCLA32 = execute_state.rs1_data;
-          inputbCLA32 = execute_state.rs2_data;
-          rd_data = cla_sum;
-        end
-
-        // if (insn_sub) begin
-        //   inputbCLA32 = ~rs2_data;  // two's compliment
-        //   adder_carry_in = 1'b1;   // Set carry in to 1 for two's complement addition
-        //   rd_data = cla_sum;
-        // end
-
-        // if (insn_sll) begin
-        //   rd_data = rs1_data << rs2_data[4:0];
-        // end
-
-        // if (insn_slt) begin
-        //   rd_data = $signed(rs1_data) < $signed(rs2_data) ? 32'b1 : 32'b0;
-        // end
-
-        // if (insn_sltu) begin
-        //   rd_data = $unsigned(rs1_data) < $unsigned(rs2_data) ? 32'b1 : 32'b0;
-        // end
-
-        // if (insn_xor) begin
-        //   rd_data = rs1_data ^ rs2_data;
-        // end
-
-        // if (insn_srl) begin
-        //   rd_data = rs1_data >> rs2_data[4:0];
-        // end
-
-        // if (insn_sra) begin
-        //   rd_data = $signed(rs1_data) >>> rs2_data[4:0];
-        // end
-
-        // if (insn_or) begin
-        //   rd_data = rs1_data | rs2_data;
-        // end
-
-        // if (insn_and) begin
-        //   rd_data = rs1_data & rs2_data;
-        // end
-
-        // if (insn_mul) begin
-        //   rd_data = $signed(rs1_data) * $signed(rs2_data);
-        // end
-
-        // if (insn_mulh) begin
-        //   multiplication = $signed(rs1_data) * $signed(rs2_data);
-        //   rd_data = multiplication[63:32];
-        // end
-
-        // if (insn_mulhsu) begin
-        //   extended_rs1_data = $signed({{32{rs1_data[31]}}, rs1_data});
-        //   extended_rs2_data = {32'd0, rs2_data};
-
-        //   multiplication = extended_rs1_data * extended_rs2_data;
-        //   rd_data = multiplication[63:32];
-        // end
-
-        // if (insn_mulhu) begin
-        //   multiplication = $unsigned(rs1_data) * $unsigned(rs2_data);
-        //   rd_data = multiplication[63:32];
-        // end
-
-        // if (insn_div) begin
-        //   logic sign_result = (rs1_data[31] != rs2_data[31]); 
-
-        //   // Compute absolute values handling two's complement edge case
-        //   abs_a = rs1_data[31] ? (~rs1_data + 1) : rs1_data;
-        //   abs_b = rs2_data[31] ? (~rs2_data + 1) : rs2_data;
-
-        //   // Assign absolute values for division
-        //   divider_input_a = abs_a;
-        //   divider_input_b = abs_b;
-
-        //   if (sign_result) begin
-        //     rd_data = ((~divider_quotient) + (1'b1 * (|(~divider_quotient))) + (&divider_quotient * ({32{1'b1}})));
-        //   end else begin
-        //     rd_data = divider_quotient;
-        //   end
-        // end
-
-        // if (insn_divu) begin
-        //   divider_input_a = rs1_data;
-        //   divider_input_b = rs2_data;
-        //   rd_data = divider_quotient;
-        // end
-
-        // if (insn_rem) begin
-        //   logic sign_result = rs1_data[31]; 
-
-        //   // Compute absolute values handling two's complement edge case
-        //   abs_a = rs1_data[31] ? (~rs1_data + 1) : rs1_data;
-        //   abs_b = rs2_data[31] ? (~rs2_data + 1) : rs2_data;
-
-        //   // Assign absolute values for division
-        //   divider_input_a = abs_a;
-        //   divider_input_b = abs_b;
-
-        //   if (sign_result) begin
-        //     rd_data = ((~divider_remainder) + 1'b1);
-        //   end else begin
-        //     rd_data = divider_remainder;
-        //   end
-        // end
-
-        // if (insn_remu) begin
-        //   if (rs2_data == 0) begin
-        //     rd_data = rs1_data;
-        //   end else begin
-        //     divider_input_a = rs1_data;
-        //     divider_input_b = rs2_data;
-        //     rd_data = divider_remainder;
-        //   end
-        // end
-      end
-
-      default: begin
-        // illegal_insn = 1'b1;
-      end
-    endcase
-
     // MX Bypass
     if ((execute_state.insn_rs1 == memory_state.rd) && (execute_state.insn_rs1 != 0)) begin
       inputaCLA32 = memory_state.rd_data;
-      flag = 32'd7;
     end else if (execute_state.insn_rs2 == memory_state.rd && (execute_state.insn_rs2 != 0)) begin
       inputbCLA32 = memory_state.rd_data;
     end 
@@ -792,7 +626,250 @@ module DatapathPipelined (
       inputaCLA32 = writeback_state.rd_data;
     end else if (execute_state.insn_rs2 == writeback_state.rd && (execute_state.insn_rs2 != 0)) begin
       inputbCLA32 = writeback_state.rd_data;
+    end
+
+    if (temp_cycle_status_d == CYCLE_TAKEN_BRANCH) begin
+      // Inser the NOP bubble
+      f_insn = 32'h00000013;
     end 
+    
+    
+    if (execute_state.cycle_status == CYCLE_TAKEN_BRANCH) begin
+      // Do nothing for
+    end else begin
+      case (execute_state.insn_opcode)
+        OpLui: begin
+          if (execute_state.is_lui) begin
+            rd_data = {execute_state.insn_from_imem[31:12], 12'b0};
+            rd = execute_state.insn_rd;
+            write_enable = 1'b1;
+          end
+        end
+
+        OpRegImm: begin
+          write_enable = 1'b1;
+          rd = execute_state.insn_rd; 
+          rs1 = execute_state.insn_rs1;
+
+          if (execute_state.is_addi) begin
+            inputaCLA32 = execute_state.rs1_data;
+            inputbCLA32 = execute_state.imm_i_sext;
+            rd_data = cla_sum;
+          end
+          
+          if (execute_state.is_slti) begin
+            rd_data = $signed(execute_state.rs1_data) < $signed(execute_state.imm_i_sext) ? 32'b1 : 32'b0;
+          end
+          
+          // if (insn_sltiu) begin
+          //   rd_data = $unsigned(rs1_data) < $unsigned(imm_i_sext) ? 32'b1 : 32'b0;
+          // end
+          
+          // if (insn_xori) begin
+          //   rd_data = rs1_data ^ imm_i_sext;
+          // end
+
+          // if (insn_ori) begin
+          //   rd_data = rs1_data | imm_i_sext;
+          // end
+
+          // if (insn_andi) begin
+          //   rd_data = rs1_data & imm_i_sext;
+          // end
+
+          // if (insn_slli) begin
+          //   rd_data = rs1_data << imm_i[4:0];
+          // end
+
+          // if (insn_srli) begin
+          //   rd_data = rs1_data >> imm_i[4:0];
+          // end
+
+          // if (insn_srai) begin
+          //   rd_data = $signed(rs1_data) >>> imm_i[4:0];
+          // end
+        end
+
+
+        OpRegReg: begin
+          rd = execute_state.insn_rd;
+          rs1 = execute_state.insn_rs1;
+          rs2 = execute_state.insn_rs2;
+          write_enable = 1'b1;
+
+          if (execute_state.is_add) begin
+            inputaCLA32 = execute_state.rs1_data;
+            inputbCLA32 = execute_state.rs2_data;
+            rd_data = cla_sum;
+          end
+
+          // if (insn_sub) begin
+          //   inputbCLA32 = ~rs2_data;  // two's compliment
+          //   adder_carry_in = 1'b1;   // Set carry in to 1 for two's complement addition
+          //   rd_data = cla_sum;
+          // end
+
+          // if (insn_sll) begin
+          //   rd_data = rs1_data << rs2_data[4:0];
+          // end
+
+          // if (insn_slt) begin
+          //   rd_data = $signed(rs1_data) < $signed(rs2_data) ? 32'b1 : 32'b0;
+          // end
+
+          // if (insn_sltu) begin
+          //   rd_data = $unsigned(rs1_data) < $unsigned(rs2_data) ? 32'b1 : 32'b0;
+          // end
+
+          // if (insn_xor) begin
+          //   rd_data = rs1_data ^ rs2_data;
+          // end
+
+          // if (insn_srl) begin
+          //   rd_data = rs1_data >> rs2_data[4:0];
+          // end
+
+          // if (insn_sra) begin
+          //   rd_data = $signed(rs1_data) >>> rs2_data[4:0];
+          // end
+
+          // if (insn_or) begin
+          //   rd_data = rs1_data | rs2_data;
+          // end
+
+          // if (insn_and) begin
+          //   rd_data = rs1_data & rs2_data;
+          // end
+
+          // if (insn_mul) begin
+          //   rd_data = $signed(rs1_data) * $signed(rs2_data);
+          // end
+
+          // if (insn_mulh) begin
+          //   multiplication = $signed(rs1_data) * $signed(rs2_data);
+          //   rd_data = multiplication[63:32];
+          // end
+
+          // if (insn_mulhsu) begin
+          //   extended_rs1_data = $signed({{32{rs1_data[31]}}, rs1_data});
+          //   extended_rs2_data = {32'd0, rs2_data};
+
+          //   multiplication = extended_rs1_data * extended_rs2_data;
+          //   rd_data = multiplication[63:32];
+          // end
+
+          // if (insn_mulhu) begin
+          //   multiplication = $unsigned(rs1_data) * $unsigned(rs2_data);
+          //   rd_data = multiplication[63:32];
+          // end
+
+          // if (insn_div) begin
+          //   logic sign_result = (rs1_data[31] != rs2_data[31]); 
+
+          //   // Compute absolute values handling two's complement edge case
+          //   abs_a = rs1_data[31] ? (~rs1_data + 1) : rs1_data;
+          //   abs_b = rs2_data[31] ? (~rs2_data + 1) : rs2_data;
+
+          //   // Assign absolute values for division
+          //   divider_input_a = abs_a;
+          //   divider_input_b = abs_b;
+
+          //   if (sign_result) begin
+          //     rd_data = ((~divider_quotient) + (1'b1 * (|(~divider_quotient))) + (&divider_quotient * ({32{1'b1}})));
+          //   end else begin
+          //     rd_data = divider_quotient;
+          //   end
+          // end
+
+          // if (insn_divu) begin
+          //   divider_input_a = rs1_data;
+          //   divider_input_b = rs2_data;
+          //   rd_data = divider_quotient;
+          // end
+
+          // if (insn_rem) begin
+          //   logic sign_result = rs1_data[31]; 
+
+          //   // Compute absolute values handling two's complement edge case
+          //   abs_a = rs1_data[31] ? (~rs1_data + 1) : rs1_data;
+          //   abs_b = rs2_data[31] ? (~rs2_data + 1) : rs2_data;
+
+          //   // Assign absolute values for division
+          //   divider_input_a = abs_a;
+          //   divider_input_b = abs_b;
+
+          //   if (sign_result) begin
+          //     rd_data = ((~divider_remainder) + 1'b1);
+          //   end else begin
+          //     rd_data = divider_remainder;
+          //   end
+          // end
+
+          // if (insn_remu) begin
+          //   if (rs2_data == 0) begin
+          //     rd_data = rs1_data;
+          //   end else begin
+          //     divider_input_a = rs1_data;
+          //     divider_input_b = rs2_data;
+          //     rd_data = divider_remainder;
+          //   end
+          // end
+        end
+
+        OpBranch: begin
+          rs1 = execute_state.insn_rs1;
+          rs2 = execute_state.insn_rs2;
+          write_enable = 1'b0;
+
+          // if (execute_state.is_beq) begin
+          //     if (execute_state.rs1_data == execute_state.rs2_data) pcNext = pcCurrent + (execute_state.imm_b_sext);
+          // end
+          if (execute_state.is_bne) begin
+            flag = 32'd19;
+
+            // Why not working, and how to MX split in branch??
+            if (execute_state.rs1_data != execute_state.rs2_data || execute_state.rs2_data != alu_value) begin
+              flag = 32'd11;
+              
+              // Update PC to Next
+              pc_temp = execute_state.pc + (execute_state.imm_b_sext);
+              temp_cycle_status_f = CYCLE_TAKEN_BRANCH;
+
+              // Inser the NOP bubble
+              temp_cycle_status_d = CYCLE_TAKEN_BRANCH;
+              f_insn = 32'h00000013;
+            end
+          end
+          // end
+          // if (execute_state.is_blt) begin
+          //     if ($signed(execute_state.rs1_data) < $signed(execute_state.rs2_data)) pcNext = pcCurrent + (execute_state.imm_b_sext);
+          // end
+          // if (execute_state.is_bge) begin
+          //     if ($signed(execute_state.rs1_data) >= $signed(execute_state.rs2_data)) pcNext = pcCurrent + (execute_state.imm_b_sext);
+          // end
+          // if (execute_state.is_bltu) begin
+          //     if ($unsigned(execute_state.rs1_data) < $unsigned(execute_state.rs2_data)) pcNext = pcCurrent + (execute_state.imm_b_sext);
+          // end
+          // if (execute_state.is_bgeu) begin
+          //     if ($unsigned(execute_state.rs1_data) >= $unsigned(execute_state.rs2_data)) pcNext = pcCurrent + (execute_state.imm_b_sext);
+          // end
+
+
+          // if ((execute_state.is_beq && (execute_state.rs1_data == execute_state.rs2_data)) ||
+          //   (execute_state.is_bne && (execute_state.rs1_data != execute_state.rs2_data)) ||
+          //   (execute_state.is_blt && $signed(execute_state.rs1_data) < $signed(execute_state.rs2_data)) ||
+          //   (execute_state.is_bge && $signed(execute_state.rs1_data) >= $signed(execute_state.rs2_data)) ||
+          //   (execute_state.is_bltu && $unsigned(execute_state.rs1_data) < $unsigned(execute_state.rs2_data)) ||
+          //   (execute_state.is_bgeu && $unsigned(execute_state.rs1_data) >= $unsigned(execute_state.rs2_data))) begin
+
+          // end
+        end
+
+        default: begin
+          // illegal_insn = 1'b1;
+        end
+      endcase 
+    end
   end
 
   always_comb begin
@@ -802,7 +879,6 @@ module DatapathPipelined (
 
     if (writeback_state.rd == insn_rs1 && (insn_rs1 != 0)) begin
       rs1_data_decode = writeback_state.rd_data;
-      // flag = 32'd9;
     end else if (writeback_state.rd == insn_rs2 && (insn_rs1 != 0)) begin
       rs2_data_decode = writeback_state.rd_data;
     end
