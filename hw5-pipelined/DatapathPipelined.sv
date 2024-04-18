@@ -917,11 +917,9 @@ module DatapathPipelined (
     end
   end
 
-  always_comb begin
-    trace_writeback_pc = writeback_state.pc;
-    trace_writeback_insn = writeback_state.insn;
-    trace_writeback_cycle_status = writeback_state.cycle_status;
-  end
+  assign trace_writeback_pc = writeback_state.pc;
+  assign trace_writeback_insn = writeback_state.insn;
+  assign trace_writeback_cycle_status = writeback_state.cycle_status;
 
   wire [255:0] w_disasm;
   Disasm #(
