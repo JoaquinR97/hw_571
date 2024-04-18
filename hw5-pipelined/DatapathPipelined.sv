@@ -77,8 +77,12 @@ module RegFile (
       if (we && rd != 0) begin
         regs[rd] <= rd_data;
       end
+
+      regs[0] <= 0;
     end
   end
+
+  
 endmodule
 
 /**
@@ -161,6 +165,7 @@ typedef struct packed {
   logic is_add, is_sub, is_sll, is_slt, is_sltu, is_xor, is_srl, is_sra, is_or, is_and;
   logic is_mul, is_mulh, is_mulhsu, is_mulhu, is_div, is_divu, is_rem, is_remu;
   logic is_ecall, is_fence;
+  logic halt;
 } stage_execute_t;
 
 // Memory stage
@@ -175,6 +180,7 @@ typedef struct packed {
   logic write_enable; // Write enable signal
   // logic [`REG_SIZE] alu_value;
   logic reset; // Reset signal
+  logic halt;
   logic illegal_insn; // Reset signal
   cycle_status_e cycle_status;
 } stage_memory_t;
@@ -191,6 +197,7 @@ typedef struct packed {
   logic write_enable; // Write enable signal
   // logic [`REG_SIZE] alu_value;
   logic reset; // Reset signal
+  logic halt;
   logic illegal_insn; // Reset signal
   cycle_status_e cycle_status;
 } stage_writeback_t;
@@ -237,7 +244,8 @@ module DatapathPipelined (
 
   // send PC to imem for next cycle
   logic [`REG_SIZE] pc_temp;
-  assign pc_to_imem = pc_temp;
+
+  assign pc_to_imem = f_pc_current;
 
   // program counter
   always_ff @(posedge clk) begin
@@ -247,7 +255,7 @@ module DatapathPipelined (
       f_cycle_status <= CYCLE_NO_STALL;
     end else begin
       f_cycle_status <= CYCLE_NO_STALL;
-      f_pc_current <= f_pc_current + 4;
+      f_pc_current <= flag_taken ? pc_temp : f_pc_current + 4;
     end
   end
 
@@ -463,7 +471,8 @@ module DatapathPipelined (
         is_slli: 0, is_srli: 0, is_srai: 0,
         is_add: 0, is_sub: 0, is_sll: 0, is_slt: 0, is_sltu: 0, is_xor: 0, is_srl: 0, is_sra: 0, is_or: 0, is_and: 0,
         is_mul: 0, is_mulh: 0, is_mulhsu: 0, is_mulhu: 0, is_div: 0, is_divu: 0, is_rem: 0, is_remu: 0,
-        is_ecall: 0, is_fence: 0
+        is_ecall: 0, is_fence: 0,
+        halt: 0
       }; 
     end else begin
       execute_state <= '{
@@ -532,7 +541,8 @@ module DatapathPipelined (
         is_rem: insn_rem,
         is_remu: insn_remu,
         is_ecall: insn_ecall,
-        is_fence: insn_fence
+        is_fence: insn_fence,
+        halt: halt_e
       };
     end
   end
@@ -577,6 +587,7 @@ module DatapathPipelined (
   // Alu flag has added to avoid a circular input into the CLA error
   logic flag_taken;
   logic alu_flag1;
+  logic halt_e;
 
   always_comb begin
     // PC Current Update
@@ -594,6 +605,8 @@ module DatapathPipelined (
     flag = 32'd1;
     flag2 = 32'd5;
 
+    halt_e = 1'b0;
+
     flag_taken = 1'b0;
     alu_flag1 = 1'b0;
 
@@ -610,43 +623,30 @@ module DatapathPipelined (
 
     reset = 1'b0;
     illegal_insn = 1'b0;
-
-    // MX Bypass
-    if ((execute_state.insn_rs1 == memory_state.rd) && (execute_state.insn_rs1 != 0)) begin
-      rs1_data_bypass = memory_state.rd_data;
-
-      // If they are the same
-      if (execute_state.insn_rs1 == execute_state.insn_rs2) begin
-        rs2_data_bypass = memory_state.rd_data;
-      end
-
-    end else if (execute_state.insn_rs2 == memory_state.rd && (execute_state.insn_rs2 != 0)) begin
-      rs2_data_bypass = memory_state.rd_data;
-
-      // If they are the same
-      if (execute_state.insn_rs1 == execute_state.insn_rs2) begin
-        rs1_data_bypass = memory_state.rd_data;
-      end
-    end 
     
-    else begin
+    // if (execute_state.insn_opcode) begin
       // WX Bypass
-      if (execute_state.insn_rs1 == writeback_state.rd && (execute_state.insn_rs1 != 0)) begin
+      if (execute_state.insn_rs1 == writeback_state.rd) begin
         rs1_data_bypass = writeback_state.rd_data;
-
-        // If they are the same
-        if (execute_state.insn_rs1 == execute_state.insn_rs2) begin
-          rs2_data_bypass = memory_state.rd_data;
-        end
-      end else if (execute_state.insn_rs2 == writeback_state.rd && (execute_state.insn_rs2 != 0)) begin
-        rs2_data_bypass = writeback_state.rd_data;
-
-        // If they are the same
-        if (execute_state.insn_rs1 == execute_state.insn_rs2) begin
-          rs1_data_bypass = memory_state.rd_data;
-        end
+        if (execute_state.insn_rs1 == 0) rs1_data_bypass = 0;
       end  
-    end
+      
+      if (execute_state.insn_rs2 == writeback_state.rd) begin
+        rs2_data_bypass = writeback_state.rd_data;
+        if (execute_state.insn_rs2 == 0) rs2_data_bypass = 0;
+      end  
+
+      // MX Bypass
+      if (execute_state.insn_rs1 == memory_state.rd) begin
+        rs1_data_bypass = memory_state.rd_data;
+        if (execute_state.insn_rs1 == 0) rs1_data_bypass = 0;
+      end  
+      
+      if (execute_state.insn_rs2 == memory_state.rd) begin
+        rs2_data_bypass = memory_state.rd_data;
+        if (execute_state.insn_rs2 == 0) rs2_data_bypass = 0;
+      end 
+    // end
 
     case (execute_state.insn_opcode)
       OpLui: begin
@@ -698,6 +698,7 @@ module DatapathPipelined (
 
         if (execute_state.is_srai) begin
           rd_data = $signed(rs1_data_bypass) >>> execute_state.imm_i[4:0];
+          flag = $signed(rs1_data_bypass) >>> execute_state.imm_i[4:0];
         end
       end
 
@@ -771,12 +772,17 @@ module DatapathPipelined (
 
           // Flag to update to NOP
           flag_taken = 1'b1;
+          end
+      end
+
+      OpEnviron: begin
+        if (execute_state.is_ecall) begin
+          halt_e = 1'b1;
         end
       end
 
       default: begin
-        flag = 32'd10;
-        // illegal_insn = 1'b1;
+        illegal_insn = 1'b1;
       end
     endcase 
   end
@@ -786,20 +792,14 @@ module DatapathPipelined (
     rs1_data_decode = rs1_data_out;
     rs2_data_decode = rs2_data_out;
 
-    if (writeback_state.rd == insn_rs1 && (insn_rs1 != 0)) begin
+    if (writeback_state.rd == insn_rs1) begin
       rs1_data_decode = writeback_state.rd_data;
-
-      // If they are the same
-      if (insn_rs1 == insn_rs2) begin
-        rs2_data_decode = writeback_state.rd_data;
-      end
-    end else if (writeback_state.rd == insn_rs2 && (insn_rs2 != 0)) begin
+      if (insn_rs1 == 0) rs1_data_decode = 0;
+    end 
+    
+    if (writeback_state.rd == insn_rs2) begin
       rs2_data_decode = writeback_state.rd_data;
-
-      // If they are the same
-      if (insn_rs1 == insn_rs2) begin
-        rs1_data_decode = writeback_state.rd_data;
-      end
+      if (insn_rs2 == 0) rs2_data_decode = 0;
     end
   end
   // Our CLA
@@ -840,7 +840,8 @@ module DatapathPipelined (
         write_enable: 0,
         reset: 0,
         illegal_insn: 0,
-        cycle_status: CYCLE_RESET
+        cycle_status: CYCLE_RESET,
+        halt: 0
       };
     end else begin
       memory_state <= '{
@@ -850,12 +851,13 @@ module DatapathPipelined (
         rd: execute_state.insn_rd,
         rs1: execute_state.insn_rs1,
         rs2: execute_state.insn_rs2,
-        rs1_data: rs1_data_bypass,  // execute_state.rs1_data,
-        rs2_data: rs2_data_bypass, // execute_state.rs2_data,
+        rs1_data: rs1_data_bypass,
+        rs2_data: rs2_data_bypass,
         write_enable: write_enable,
         reset: reset,
         illegal_insn: illegal_insn,
-        cycle_status: execute_state.cycle_status
+        cycle_status: execute_state.cycle_status,
+        halt: halt_e
       };
     end
   end
@@ -896,7 +898,8 @@ module DatapathPipelined (
         write_enable: 0,
         reset: 0,
         illegal_insn: 0,
-        cycle_status: CYCLE_RESET
+        cycle_status: CYCLE_RESET,
+        halt: 0
       };
     end else begin
       writeback_state <= '{
@@ -912,7 +915,8 @@ module DatapathPipelined (
         write_enable: memory_state.write_enable,
         reset: memory_state.reset,
         illegal_insn: memory_state.illegal_insn,
-        cycle_status: memory_state.cycle_status
+        cycle_status: memory_state.cycle_status,
+        halt: memory_state.halt
       };
     end
   end
@@ -920,6 +924,7 @@ module DatapathPipelined (
   assign trace_writeback_pc = writeback_state.pc;
   assign trace_writeback_insn = writeback_state.insn;
   assign trace_writeback_cycle_status = writeback_state.cycle_status;
+  assign halt = writeback_state.halt;
 
   wire [255:0] w_disasm;
   Disasm #(
@@ -942,13 +947,13 @@ module DatapathPipelined (
   RegFile rf (
     .rd(writeback_state.rd),
     .rd_data(writeback_state.rd_data),
-    .rs1(writeback_state.rs1),
+    .rs1(insn_rs1),
     .rs1_data(rs1_data_out),
-    .rs2(writeback_state.rs2),
+    .rs2(insn_rs2),
     .rs2_data(rs2_data_out),
     .clk(clk),
     .we(writeback_state.write_enable),
-    .rst(writeback_state.reset)
+    .rst(rst)
   );
 endmodule
 
