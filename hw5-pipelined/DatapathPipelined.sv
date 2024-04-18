@@ -133,9 +133,6 @@ typedef struct packed {
   // logic reset; // Reset signal
   // logic illegal_insn; // Reset signal
 
-  // Storing the instruction itself
-  logic [`INSN_SIZE] insn_from_imem;
-
   // Instruction subsets
   logic [6:0] insn_funct7;
   logic [4:0] insn_rs2;
@@ -169,13 +166,14 @@ typedef struct packed {
 // Memory stage
 typedef struct packed {
   // logic [`REG_SIZE] inputbCLA32;
+  logic [`REG_SIZE] pc;
   logic [`INSN_SIZE] insn;
   logic [`REG_SIZE] rd_data; // Data to be written to the destination register
   logic [4:0] rd; // Destination register address
   logic [4:0] rs1, rs2; // Source register addresses
   logic [`REG_SIZE] rs1_data, rs2_data; // Data read from the source registers
   logic write_enable; // Write enable signal
-  logic [`REG_SIZE] alu_value;
+  // logic [`REG_SIZE] alu_value;
   logic reset; // Reset signal
   logic illegal_insn; // Reset signal
   cycle_status_e cycle_status;
@@ -184,13 +182,14 @@ typedef struct packed {
 // Writeback stage
 typedef struct packed {
   // logic [`REG_SIZE] inputbCLA32;
+  logic [`REG_SIZE] pc;
   logic [`INSN_SIZE] insn;
   logic [`REG_SIZE] rd_data; // Data to be written to the destination register
   logic [4:0] rd; // Destination register address
   logic [4:0] rs1, rs2; // Source register addresses
   logic [`REG_SIZE] rs1_data, rs2_data; // Data read from the source registers
   logic write_enable; // Write enable signal
-  logic [`REG_SIZE] alu_value;
+  // logic [`REG_SIZE] alu_value;
   logic reset; // Reset signal
   logic illegal_insn; // Reset signal
   cycle_status_e cycle_status;
@@ -240,9 +239,6 @@ module DatapathPipelined (
   logic [`REG_SIZE] pc_temp;
   assign pc_to_imem = pc_temp;
 
-  // Making temp variable to overwrite in always comb
-  cycle_status_e temp_cycle_status_f;
-
   // program counter
   always_ff @(posedge clk) begin
     if (rst) begin
@@ -250,7 +246,7 @@ module DatapathPipelined (
       // NB: use CYCLE_NO_STALL since this is the value that will persist after the last reset cycle
       f_cycle_status <= CYCLE_NO_STALL;
     end else begin
-      f_cycle_status <= temp_cycle_status_f;
+      f_cycle_status <= CYCLE_NO_STALL;
       f_pc_current <= f_pc_current + 4;
     end
   end
@@ -295,9 +291,9 @@ module DatapathPipelined (
     end else begin
       begin
         decode_state <= '{
-          pc: f_pc_current,
-          insn: f_insn,
-          cycle_status: temp_cycle_status_d
+          pc: flag_taken ? 0 : pc_to_imem,
+          insn: flag_taken ? 32'h00000000 : f_insn,
+          cycle_status: flag_taken ? CYCLE_TAKEN_BRANCH : f_cycle_status
         };
       end
     end
@@ -331,13 +327,13 @@ module DatapathPipelined (
   wire [`OPCODE_SIZE] insn_opcode;
 
   // split R-type instruction - see section 2.2 of RiscV spec
-  assign {insn_funct7, insn_rs2, insn_rs1, insn_funct3, insn_rd, insn_opcode} = insn_from_imem;
+  assign {insn_funct7, insn_rs2, insn_rs1, insn_funct3, insn_rd, insn_opcode} = decode_state.insn;
 
   // setup for I, S, B & J type instructions
   // I - short immediates and loads
   wire [11:0] imm_i;
-  assign imm_i = insn_from_imem[31:20];
-  wire [ 4:0] imm_shamt = insn_from_imem[24:20];
+  assign imm_i = decode_state.insn[31:20];
+  wire [ 4:0] imm_shamt = decode_state.insn[24:20];
 
   // S - stores
   wire [11:0] imm_s;
@@ -349,7 +345,7 @@ module DatapathPipelined (
 
   // J - unconditional jumps
   wire [20:0] imm_j;
-  assign {imm_j[20], imm_j[10:1], imm_j[11], imm_j[19:12], imm_j[0]} = {insn_from_imem[31:12], 1'b0};
+  assign {imm_j[20], imm_j[10:1], imm_j[11], imm_j[19:12], imm_j[0]} = {decode_state.insn[31:12], 1'b0};
 
   wire [`REG_SIZE] imm_i_sext = {{20{imm_i[11]}}, imm_i[11:0]};
   wire [`REG_SIZE] imm_s_sext = {{20{imm_s[11]}}, imm_s[11:0]};
@@ -376,55 +372,55 @@ module DatapathPipelined (
   wire insn_jal = insn_opcode == OpJal;
   wire insn_jalr = insn_opcode == OpJalr;
 
-  wire insn_beq = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b000;
-  wire insn_bne = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b001;
-  wire insn_blt = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b100;
-  wire insn_bge = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b101;
-  wire insn_bltu = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b110;
-  wire insn_bgeu = insn_opcode == OpBranch && insn_from_imem[14:12] == 3'b111;
+  wire insn_beq = insn_opcode == OpBranch && decode_state.insn[14:12] == 3'b000;
+  wire insn_bne = insn_opcode == OpBranch && decode_state.insn[14:12] == 3'b001;
+  wire insn_blt = insn_opcode == OpBranch && decode_state.insn[14:12] == 3'b100;
+  wire insn_bge = insn_opcode == OpBranch && decode_state.insn[14:12] == 3'b101;
+  wire insn_bltu = insn_opcode == OpBranch && decode_state.insn[14:12] == 3'b110;
+  wire insn_bgeu = insn_opcode == OpBranch && decode_state.insn[14:12] == 3'b111;
 
-  wire insn_lb = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b000;
-  wire insn_lh = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b001;
-  wire insn_lw = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b010;
-  wire insn_lbu = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b100;
-  wire insn_lhu = insn_opcode == OpLoad && insn_from_imem[14:12] == 3'b101;
+  wire insn_lb = insn_opcode == OpLoad && decode_state.insn[14:12] == 3'b000;
+  wire insn_lh = insn_opcode == OpLoad && decode_state.insn[14:12] == 3'b001;
+  wire insn_lw = insn_opcode == OpLoad && decode_state.insn[14:12] == 3'b010;
+  wire insn_lbu = insn_opcode == OpLoad && decode_state.insn[14:12] == 3'b100;
+  wire insn_lhu = insn_opcode == OpLoad && decode_state.insn[14:12] == 3'b101;
 
-  wire insn_sb = insn_opcode == OpStore && insn_from_imem[14:12] == 3'b000;
-  wire insn_sh = insn_opcode == OpStore && insn_from_imem[14:12] == 3'b001;
-  wire insn_sw = insn_opcode == OpStore && insn_from_imem[14:12] == 3'b010;
+  wire insn_sb = insn_opcode == OpStore && decode_state.insn[14:12] == 3'b000;
+  wire insn_sh = insn_opcode == OpStore && decode_state.insn[14:12] == 3'b001;
+  wire insn_sw = insn_opcode == OpStore && decode_state.insn[14:12] == 3'b010;
 
-  wire insn_addi = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b000;
-  wire insn_slti = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b010;
-  wire insn_sltiu = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b011;
-  wire insn_xori = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b100;
-  wire insn_ori = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b110;
-  wire insn_andi = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b111;
+  wire insn_addi = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b000;
+  wire insn_slti = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b010;
+  wire insn_sltiu = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b011;
+  wire insn_xori = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b100;
+  wire insn_ori = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b110;
+  wire insn_andi = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b111;
 
-  wire insn_slli = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b001 && insn_from_imem[31:25] == 7'd0;
-  wire insn_srli = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b101 && insn_from_imem[31:25] == 7'd0;
-  wire insn_srai = insn_opcode == OpRegImm && insn_from_imem[14:12] == 3'b101 && insn_from_imem[31:25] == 7'b0100000;
+  wire insn_slli = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b001 && decode_state.insn[31:25] == 7'd0;
+  wire insn_srli = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b101 && decode_state.insn[31:25] == 7'd0;
+  wire insn_srai = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b101 && decode_state.insn[31:25] == 7'b0100000;
 
-  wire insn_add = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b000 && insn_from_imem[31:25] == 7'd0;
-  wire insn_sub  = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b000 && insn_from_imem[31:25] == 7'b0100000;
-  wire insn_sll = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b001 && insn_from_imem[31:25] == 7'd0;
-  wire insn_slt = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b010 && insn_from_imem[31:25] == 7'd0;
-  wire insn_sltu = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b011 && insn_from_imem[31:25] == 7'd0;
-  wire insn_xor = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b100 && insn_from_imem[31:25] == 7'd0;
-  wire insn_srl = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b101 && insn_from_imem[31:25] == 7'd0;
-  wire insn_sra  = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b101 && insn_from_imem[31:25] == 7'b0100000;
-  wire insn_or = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b110 && insn_from_imem[31:25] == 7'd0;
-  wire insn_and = insn_opcode == OpRegReg && insn_from_imem[14:12] == 3'b111 && insn_from_imem[31:25] == 7'd0;
+  wire insn_add = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b000 && decode_state.insn[31:25] == 7'd0;
+  wire insn_sub  = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b000 && decode_state.insn[31:25] == 7'b0100000;
+  wire insn_sll = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b001 && decode_state.insn[31:25] == 7'd0;
+  wire insn_slt = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b010 && decode_state.insn[31:25] == 7'd0;
+  wire insn_sltu = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b011 && decode_state.insn[31:25] == 7'd0;
+  wire insn_xor = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b100 && decode_state.insn[31:25] == 7'd0;
+  wire insn_srl = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b101 && decode_state.insn[31:25] == 7'd0;
+  wire insn_sra  = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b101 && decode_state.insn[31:25] == 7'b0100000;
+  wire insn_or = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b110 && decode_state.insn[31:25] == 7'd0;
+  wire insn_and = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b111 && decode_state.insn[31:25] == 7'd0;
 
-  wire insn_mul    = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b000;
-  wire insn_mulh   = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b001;
-  wire insn_mulhsu = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b010;
-  wire insn_mulhu  = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b011;
-  wire insn_div    = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b100;
-  wire insn_divu   = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b101;
-  wire insn_rem    = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b110;
-  wire insn_remu   = insn_opcode == OpRegReg && insn_from_imem[31:25] == 7'd1 && insn_from_imem[14:12] == 3'b111;
+  wire insn_mul    = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b000;
+  wire insn_mulh   = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b001;
+  wire insn_mulhsu = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b010;
+  wire insn_mulhu  = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b011;
+  wire insn_div    = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b100;
+  wire insn_divu   = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b101;
+  wire insn_rem    = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b110;
+  wire insn_remu   = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b111;
 
-  wire insn_ecall = insn_opcode == OpEnviron && insn_from_imem[31:7] == 25'd0;
+  wire insn_ecall = insn_opcode == OpEnviron && decode_state.insn[31:7] == 25'd0;
   wire insn_fence = insn_opcode == OpMiscMem;
 
   // Reading from registers
@@ -443,7 +439,6 @@ module DatapathPipelined (
         pc: 0,
         insn: 0,
         cycle_status: CYCLE_RESET,
-        insn_from_imem: 0,
         insn_funct7: 0,
         insn_rs2: 0,
         insn_rs1: 0,
@@ -472,18 +467,17 @@ module DatapathPipelined (
       }; 
     end else begin
       execute_state <= '{
-        pc: decode_state.pc,
-        insn: decode_state.insn,
-        cycle_status: temp_cycle_status_d,
-        insn_from_imem: insn_from_imem,
+        pc: flag_taken ? 0 : decode_state.pc,
+        insn: flag_taken ? 32'h00000000 : decode_state.insn,
+        cycle_status: flag_taken ? CYCLE_TAKEN_BRANCH : decode_state.cycle_status,
         insn_funct7: insn_funct7,
-        insn_rs1: insn_rs1,
-        rs1_data: rs1_data_decode,
-        insn_rs2: insn_rs2,
-        rs2_data: rs2_data_decode,
+        insn_rs1: flag_taken ? 0 : insn_rs1,
+        rs1_data: flag_taken ? 0 : rs1_data_decode,
+        insn_rs2: flag_taken ? 0 : insn_rs2,
+        rs2_data: flag_taken ? 0 : rs2_data_decode,
         insn_funct3: insn_funct3,
-        insn_rd: insn_rd,
-        insn_opcode: insn_opcode,
+        insn_rd: flag_taken ? 0 : insn_rd,
+        insn_opcode: flag_taken ? 7'h0 : insn_opcode,
         imm_i: imm_i,
         imm_s: imm_s,
         imm_b: imm_b,
@@ -580,6 +574,10 @@ module DatapathPipelined (
   logic [`REG_SIZE] cla_sum;
   logic adder_carry_in;
 
+  // Alu flag has added to avoid a circular input into the CLA error
+  logic flag_taken;
+  logic alu_flag1;
+
   always_comb begin
     // PC Current Update
     pc_temp = f_pc_current;
@@ -587,17 +585,18 @@ module DatapathPipelined (
     // Set f instruction (pushed to decode)
     f_insn = insn_from_imem;
 
-    // Cycle temp variable update
-    temp_cycle_status_f = CYCLE_NO_STALL;
-    temp_cycle_status_d = f_cycle_status;
-
     rd_data = 32'b0;
     alu_value = cla_sum;
+
     rd = 5'b0; // Default to an invalid register address
     rs1 = 5'b0;
     rs2 = 5'b0;
     flag = 32'd1;
     flag2 = 32'd5;
+
+    flag_taken = 1'b0;
+    alu_flag1 = 1'b0;
+
     // flag2 = inputaCLA32;
     rs1_data_bypass = execute_state.rs1_data;
     rs2_data_bypass = execute_state.rs2_data;
@@ -614,262 +613,172 @@ module DatapathPipelined (
 
     // MX Bypass
     if ((execute_state.insn_rs1 == memory_state.rd) && (execute_state.insn_rs1 != 0)) begin
-      inputaCLA32 = memory_state.rd_data;
+      rs1_data_bypass = memory_state.rd_data;
+
+      // If they are the same
+      if (execute_state.insn_rs1 == execute_state.insn_rs2) begin
+        rs2_data_bypass = memory_state.rd_data;
+      end
+
     end else if (execute_state.insn_rs2 == memory_state.rd && (execute_state.insn_rs2 != 0)) begin
-      inputbCLA32 = memory_state.rd_data;
+      rs2_data_bypass = memory_state.rd_data;
+
+      // If they are the same
+      if (execute_state.insn_rs1 == execute_state.insn_rs2) begin
+        rs1_data_bypass = memory_state.rd_data;
+      end
     end 
     
-    else
+    else begin
+      // WX Bypass
+      if (execute_state.insn_rs1 == writeback_state.rd && (execute_state.insn_rs1 != 0)) begin
+        rs1_data_bypass = writeback_state.rd_data;
 
-    // WX Bypass
-    if (execute_state.insn_rs1 == writeback_state.rd && (execute_state.insn_rs1 != 0)) begin
-      inputaCLA32 = writeback_state.rd_data;
-    end else if (execute_state.insn_rs2 == writeback_state.rd && (execute_state.insn_rs2 != 0)) begin
-      inputbCLA32 = writeback_state.rd_data;
+        // If they are the same
+        if (execute_state.insn_rs1 == execute_state.insn_rs2) begin
+          rs2_data_bypass = memory_state.rd_data;
+        end
+      end else if (execute_state.insn_rs2 == writeback_state.rd && (execute_state.insn_rs2 != 0)) begin
+        rs2_data_bypass = writeback_state.rd_data;
+
+        // If they are the same
+        if (execute_state.insn_rs1 == execute_state.insn_rs2) begin
+          rs1_data_bypass = memory_state.rd_data;
+        end
+      end  
     end
 
-    if (temp_cycle_status_d == CYCLE_TAKEN_BRANCH) begin
-      // Inser the NOP bubble
-      f_insn = 32'h00000013;
-    end 
-    
-    
-    if (execute_state.cycle_status == CYCLE_TAKEN_BRANCH) begin
-      // Do nothing for
-    end else begin
-      case (execute_state.insn_opcode)
-        OpLui: begin
-          if (execute_state.is_lui) begin
-            rd_data = {execute_state.insn_from_imem[31:12], 12'b0};
-            rd = execute_state.insn_rd;
-            write_enable = 1'b1;
-          end
-        end
-
-        OpRegImm: begin
-          write_enable = 1'b1;
-          rd = execute_state.insn_rd; 
-          rs1 = execute_state.insn_rs1;
-
-          if (execute_state.is_addi) begin
-            inputaCLA32 = execute_state.rs1_data;
-            inputbCLA32 = execute_state.imm_i_sext;
-            rd_data = cla_sum;
-          end
-          
-          if (execute_state.is_slti) begin
-            rd_data = $signed(execute_state.rs1_data) < $signed(execute_state.imm_i_sext) ? 32'b1 : 32'b0;
-          end
-          
-          // if (insn_sltiu) begin
-          //   rd_data = $unsigned(rs1_data) < $unsigned(imm_i_sext) ? 32'b1 : 32'b0;
-          // end
-          
-          // if (insn_xori) begin
-          //   rd_data = rs1_data ^ imm_i_sext;
-          // end
-
-          // if (insn_ori) begin
-          //   rd_data = rs1_data | imm_i_sext;
-          // end
-
-          // if (insn_andi) begin
-          //   rd_data = rs1_data & imm_i_sext;
-          // end
-
-          // if (insn_slli) begin
-          //   rd_data = rs1_data << imm_i[4:0];
-          // end
-
-          // if (insn_srli) begin
-          //   rd_data = rs1_data >> imm_i[4:0];
-          // end
-
-          // if (insn_srai) begin
-          //   rd_data = $signed(rs1_data) >>> imm_i[4:0];
-          // end
-        end
-
-
-        OpRegReg: begin
+    case (execute_state.insn_opcode)
+      OpLui: begin
+        if (execute_state.is_lui) begin
+          rd_data = {execute_state.insn[31:12], 12'b0};
           rd = execute_state.insn_rd;
-          rs1 = execute_state.insn_rs1;
-          rs2 = execute_state.insn_rs2;
           write_enable = 1'b1;
+        end
+      end
 
-          if (execute_state.is_add) begin
-            inputaCLA32 = execute_state.rs1_data;
-            inputbCLA32 = execute_state.rs2_data;
-            rd_data = cla_sum;
-          end
+      OpRegImm: begin
+        write_enable = 1'b1;
+        rd = execute_state.insn_rd; 
+        rs1 = execute_state.insn_rs1;
 
-          // if (insn_sub) begin
-          //   inputbCLA32 = ~rs2_data;  // two's compliment
-          //   adder_carry_in = 1'b1;   // Set carry in to 1 for two's complement addition
-          //   rd_data = cla_sum;
-          // end
-
-          // if (insn_sll) begin
-          //   rd_data = rs1_data << rs2_data[4:0];
-          // end
-
-          // if (insn_slt) begin
-          //   rd_data = $signed(rs1_data) < $signed(rs2_data) ? 32'b1 : 32'b0;
-          // end
-
-          // if (insn_sltu) begin
-          //   rd_data = $unsigned(rs1_data) < $unsigned(rs2_data) ? 32'b1 : 32'b0;
-          // end
-
-          // if (insn_xor) begin
-          //   rd_data = rs1_data ^ rs2_data;
-          // end
-
-          // if (insn_srl) begin
-          //   rd_data = rs1_data >> rs2_data[4:0];
-          // end
-
-          // if (insn_sra) begin
-          //   rd_data = $signed(rs1_data) >>> rs2_data[4:0];
-          // end
-
-          // if (insn_or) begin
-          //   rd_data = rs1_data | rs2_data;
-          // end
-
-          // if (insn_and) begin
-          //   rd_data = rs1_data & rs2_data;
-          // end
-
-          // if (insn_mul) begin
-          //   rd_data = $signed(rs1_data) * $signed(rs2_data);
-          // end
-
-          // if (insn_mulh) begin
-          //   multiplication = $signed(rs1_data) * $signed(rs2_data);
-          //   rd_data = multiplication[63:32];
-          // end
-
-          // if (insn_mulhsu) begin
-          //   extended_rs1_data = $signed({{32{rs1_data[31]}}, rs1_data});
-          //   extended_rs2_data = {32'd0, rs2_data};
-
-          //   multiplication = extended_rs1_data * extended_rs2_data;
-          //   rd_data = multiplication[63:32];
-          // end
-
-          // if (insn_mulhu) begin
-          //   multiplication = $unsigned(rs1_data) * $unsigned(rs2_data);
-          //   rd_data = multiplication[63:32];
-          // end
-
-          // if (insn_div) begin
-          //   logic sign_result = (rs1_data[31] != rs2_data[31]); 
-
-          //   // Compute absolute values handling two's complement edge case
-          //   abs_a = rs1_data[31] ? (~rs1_data + 1) : rs1_data;
-          //   abs_b = rs2_data[31] ? (~rs2_data + 1) : rs2_data;
-
-          //   // Assign absolute values for division
-          //   divider_input_a = abs_a;
-          //   divider_input_b = abs_b;
-
-          //   if (sign_result) begin
-          //     rd_data = ((~divider_quotient) + (1'b1 * (|(~divider_quotient))) + (&divider_quotient * ({32{1'b1}})));
-          //   end else begin
-          //     rd_data = divider_quotient;
-          //   end
-          // end
-
-          // if (insn_divu) begin
-          //   divider_input_a = rs1_data;
-          //   divider_input_b = rs2_data;
-          //   rd_data = divider_quotient;
-          // end
-
-          // if (insn_rem) begin
-          //   logic sign_result = rs1_data[31]; 
-
-          //   // Compute absolute values handling two's complement edge case
-          //   abs_a = rs1_data[31] ? (~rs1_data + 1) : rs1_data;
-          //   abs_b = rs2_data[31] ? (~rs2_data + 1) : rs2_data;
-
-          //   // Assign absolute values for division
-          //   divider_input_a = abs_a;
-          //   divider_input_b = abs_b;
-
-          //   if (sign_result) begin
-          //     rd_data = ((~divider_remainder) + 1'b1);
-          //   end else begin
-          //     rd_data = divider_remainder;
-          //   end
-          // end
-
-          // if (insn_remu) begin
-          //   if (rs2_data == 0) begin
-          //     rd_data = rs1_data;
-          //   end else begin
-          //     divider_input_a = rs1_data;
-          //     divider_input_b = rs2_data;
-          //     rd_data = divider_remainder;
-          //   end
-          // end
+        if (execute_state.is_addi) begin
+          inputaCLA32 = rs1_data_bypass; // execute_state.rs1_data;
+          inputbCLA32 = execute_state.imm_i_sext;
+          alu_flag1 = 1'b1;
+        end 
+        
+        if (execute_state.is_slti) begin
+          rd_data = $signed(rs1_data_bypass) < $signed(execute_state.imm_i_sext) ? 32'b1 : 32'b0;
+        end
+        
+        if (execute_state.is_sltiu) begin
+          rd_data = $unsigned(rs1_data_bypass) < $unsigned(execute_state.imm_i_sext) ? 32'b1 : 32'b0;
+        end
+        
+        if (execute_state.is_xori) begin
+          rd_data = rs1_data_bypass ^ execute_state.imm_i_sext;
         end
 
-        OpBranch: begin
-          rs1 = execute_state.insn_rs1;
-          rs2 = execute_state.insn_rs2;
-          write_enable = 1'b0;
-
-          // if (execute_state.is_beq) begin
-          //     if (execute_state.rs1_data == execute_state.rs2_data) pcNext = pcCurrent + (execute_state.imm_b_sext);
-          // end
-          if (execute_state.is_bne) begin
-            flag = 32'd19;
-
-            // Why not working, and how to MX split in branch??
-            if (execute_state.rs1_data != execute_state.rs2_data || execute_state.rs2_data != alu_value) begin
-              flag = 32'd11;
-              
-              // Update PC to Next
-              pc_temp = execute_state.pc + (execute_state.imm_b_sext);
-              temp_cycle_status_f = CYCLE_TAKEN_BRANCH;
-
-              // Inser the NOP bubble
-              temp_cycle_status_d = CYCLE_TAKEN_BRANCH;
-              f_insn = 32'h00000013;
-            end
-          end
-          // end
-          // if (execute_state.is_blt) begin
-          //     if ($signed(execute_state.rs1_data) < $signed(execute_state.rs2_data)) pcNext = pcCurrent + (execute_state.imm_b_sext);
-          // end
-          // if (execute_state.is_bge) begin
-          //     if ($signed(execute_state.rs1_data) >= $signed(execute_state.rs2_data)) pcNext = pcCurrent + (execute_state.imm_b_sext);
-          // end
-          // if (execute_state.is_bltu) begin
-          //     if ($unsigned(execute_state.rs1_data) < $unsigned(execute_state.rs2_data)) pcNext = pcCurrent + (execute_state.imm_b_sext);
-          // end
-          // if (execute_state.is_bgeu) begin
-          //     if ($unsigned(execute_state.rs1_data) >= $unsigned(execute_state.rs2_data)) pcNext = pcCurrent + (execute_state.imm_b_sext);
-          // end
-
-
-          // if ((execute_state.is_beq && (execute_state.rs1_data == execute_state.rs2_data)) ||
-          //   (execute_state.is_bne && (execute_state.rs1_data != execute_state.rs2_data)) ||
-          //   (execute_state.is_blt && $signed(execute_state.rs1_data) < $signed(execute_state.rs2_data)) ||
-          //   (execute_state.is_bge && $signed(execute_state.rs1_data) >= $signed(execute_state.rs2_data)) ||
-          //   (execute_state.is_bltu && $unsigned(execute_state.rs1_data) < $unsigned(execute_state.rs2_data)) ||
-          //   (execute_state.is_bgeu && $unsigned(execute_state.rs1_data) >= $unsigned(execute_state.rs2_data))) begin
-
-          // end
+        if (execute_state.is_ori) begin
+          rd_data = rs1_data_bypass | execute_state.imm_i_sext;
         end
 
-        default: begin
-          // illegal_insn = 1'b1;
+        if (execute_state.is_andi) begin
+          rd_data = rs1_data_bypass & execute_state.imm_i_sext;
         end
-      endcase 
-    end
+
+        if (execute_state.is_slli) begin
+          rd_data = rs1_data_bypass << execute_state.imm_i[4:0];
+        end
+
+        if (execute_state.is_srli) begin
+          rd_data = rs1_data_bypass >> execute_state.imm_i[4:0];
+        end
+
+        if (execute_state.is_srai) begin
+          rd_data = $signed(rs1_data_bypass) >>> execute_state.imm_i[4:0];
+        end
+      end
+
+
+      OpRegReg: begin
+        rd = execute_state.insn_rd;
+        rs1 = execute_state.insn_rs1;
+        rs2 = execute_state.insn_rs2;
+        write_enable = 1'b1;
+
+        if (execute_state.is_add) begin
+          inputaCLA32 = rs1_data_bypass; // execute_state.rs1_data;
+          inputbCLA32 = rs2_data_bypass; // execute_state.rs2_data;
+          alu_flag1 = 1'b1;
+        end
+
+        if (execute_state.is_sub) begin
+          inputbCLA32 = ~rs2_data_bypass;  // two's compliment
+          adder_carry_in = 1'b1;   // Set carry in to 1 for two's complement addition
+          alu_flag1 = 1'b1;
+        end
+
+        if (execute_state.is_sll) begin
+          rd_data = rs1_data_bypass << rs2_data_bypass[4:0];
+        end
+
+        if (execute_state.is_slt) begin
+          rd_data = $signed(rs1_data_bypass) < $signed(rs2_data_bypass) ? 32'b1 : 32'b0;
+        end
+
+        if (execute_state.is_sltu) begin
+          rd_data = $unsigned(rs1_data_bypass) < $unsigned(rs2_data_bypass) ? 32'b1 : 32'b0;
+        end
+
+        if (execute_state.is_xor) begin
+          rd_data = rs1_data_bypass ^ rs2_data_bypass;
+        end
+
+        if (execute_state.is_srl) begin
+          rd_data = rs1_data_bypass >> rs2_data_bypass[4:0];
+        end
+
+        if (execute_state.is_sra) begin
+          rd_data = $signed(rs1_data_bypass) >>> rs2_data_bypass[4:0];
+        end
+
+        if (execute_state.is_or) begin
+          rd_data = rs1_data_bypass | rs2_data_bypass;
+        end
+
+        if (execute_state.is_and) begin
+          rd_data = rs1_data_bypass & rs2_data_bypass;
+        end
+
+      end
+
+      OpBranch: begin
+        rs1 = execute_state.insn_rs1;
+        rs2 = execute_state.insn_rs2;
+        write_enable = 1'b0;
+
+        if ((execute_state.is_beq && (rs1_data_bypass == rs2_data_bypass)) ||
+          (execute_state.is_bne && (rs1_data_bypass != rs2_data_bypass)) ||
+          (execute_state.is_blt && $signed(rs1_data_bypass) < $signed(rs2_data_bypass)) ||
+          (execute_state.is_bge && $signed(rs1_data_bypass) >= $signed(rs2_data_bypass)) ||
+          (execute_state.is_bltu && $unsigned(rs1_data_bypass) < $unsigned(rs2_data_bypass)) ||
+          (execute_state.is_bgeu && $unsigned(rs1_data_bypass) >= $unsigned(rs2_data_bypass))) begin
+          
+          // Update PC to Next
+          pc_temp = execute_state.pc + (execute_state.imm_b_sext);
+
+          // Flag to update to NOP
+          flag_taken = 1'b1;
+        end
+      end
+
+      default: begin
+        flag = 32'd10;
+        // illegal_insn = 1'b1;
+      end
+    endcase 
   end
 
   always_comb begin
@@ -879,8 +788,18 @@ module DatapathPipelined (
 
     if (writeback_state.rd == insn_rs1 && (insn_rs1 != 0)) begin
       rs1_data_decode = writeback_state.rd_data;
-    end else if (writeback_state.rd == insn_rs2 && (insn_rs1 != 0)) begin
+
+      // If they are the same
+      if (insn_rs1 == insn_rs2) begin
+        rs2_data_decode = writeback_state.rd_data;
+      end
+    end else if (writeback_state.rd == insn_rs2 && (insn_rs2 != 0)) begin
       rs2_data_decode = writeback_state.rd_data;
+
+      // If they are the same
+      if (insn_rs1 == insn_rs2) begin
+        rs1_data_decode = writeback_state.rd_data;
+      end
     end
   end
   // Our CLA
@@ -910,7 +829,7 @@ module DatapathPipelined (
   always_ff @(posedge clk) begin
     if (rst) begin
       memory_state <= '{
-        // inputbCLA32: 0,
+        pc: 0,
         insn: 0,
         rd_data: 0,
         rd: 0,
@@ -919,23 +838,21 @@ module DatapathPipelined (
         rs1_data: 0,
         rs2_data: 0,
         write_enable: 0,
-        alu_value: 0,
         reset: 0,
         illegal_insn: 0,
         cycle_status: CYCLE_RESET
       };
     end else begin
       memory_state <= '{
-        // inputbCLA32: inputbCLA32_mem,
+        pc: execute_state.pc,
         insn: execute_state.insn,
-        rd_data: rd_data,
+        rd_data: alu_flag1 ? alu_value : rd_data,
         rd: execute_state.insn_rd,
         rs1: execute_state.insn_rs1,
         rs2: execute_state.insn_rs2,
-        rs1_data: execute_state.rs1_data,
-        rs2_data: execute_state.rs2_data,
+        rs1_data: rs1_data_bypass,  // execute_state.rs1_data,
+        rs2_data: rs2_data_bypass, // execute_state.rs2_data,
         write_enable: write_enable,
-        alu_value: alu_value,
         reset: reset,
         illegal_insn: illegal_insn,
         cycle_status: execute_state.cycle_status
@@ -954,7 +871,7 @@ module DatapathPipelined (
       .rd_data   (memory_state.rd_data),
       .rs1_data  (memory_state.rs1_data),
       .rs2_data  (memory_state.rs2_data),
-      .alu_value  (memory_state.alu_value),
+      .alu_value  (32'b0),
       .flag  (flag),
       .flag2  (flag2),
       .disasm(m_disasm)
@@ -968,6 +885,7 @@ module DatapathPipelined (
     if (rst) begin
       writeback_state <= '{
         // inputbCLA32: 0,
+        pc: 0,
         insn: 0,
         rd_data: 0,
         rd: 0,
@@ -975,7 +893,6 @@ module DatapathPipelined (
         rs2: 0,
         rs1_data: 0,
         rs2_data: 0,
-        alu_value: 0,
         write_enable: 0,
         reset: 0,
         illegal_insn: 0,
@@ -984,6 +901,7 @@ module DatapathPipelined (
     end else begin
       writeback_state <= '{
         // inputbCLA32: memory_state.inputbCLA32,
+        pc: memory_state.pc,
         insn: memory_state.insn,
         rd_data: memory_state.rd_data,
         rd: memory_state.rd,
@@ -992,12 +910,17 @@ module DatapathPipelined (
         rs1_data: memory_state.rs1_data,
         rs2_data: memory_state.rs2_data,
         write_enable: memory_state.write_enable,
-        alu_value: memory_state.alu_value,
         reset: memory_state.reset,
         illegal_insn: memory_state.illegal_insn,
         cycle_status: memory_state.cycle_status
       };
     end
+  end
+
+  always_comb begin
+    trace_writeback_pc = writeback_state.pc;
+    trace_writeback_insn = writeback_state.insn;
+    trace_writeback_cycle_status = writeback_state.cycle_status;
   end
 
   wire [255:0] w_disasm;
@@ -1011,7 +934,7 @@ module DatapathPipelined (
       .rd_data   (writeback_state.rd_data),
       .rs1_data  (writeback_state.rs1_data),
       .rs2_data  (writeback_state.rs2_data),
-      .alu_value  (writeback_state.alu_value),
+      .alu_value  (32'b0),
       .flag  (flag),
       .flag2  (flag2),
       .disasm(w_disasm)
