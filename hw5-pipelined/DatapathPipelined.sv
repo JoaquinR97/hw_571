@@ -485,7 +485,7 @@ module DatapathPipelined (
         insn_rs2: flag_taken ? 0 : insn_rs2,
         rs2_data: flag_taken ? 0 : rs2_data_decode,
         insn_funct3: insn_funct3,
-        insn_rd: flag_taken ? 0 : insn_rd,
+        insn_rd: flag_taken ? 0 : (is_b_or_s ? 0 : insn_rd),
         insn_opcode: flag_taken ? 7'h0 : insn_opcode,
         imm_i: imm_i,
         imm_s: imm_s,
@@ -624,29 +624,27 @@ module DatapathPipelined (
     reset = 1'b0;
     illegal_insn = 1'b0;
     
-    // if (execute_state.insn_opcode) begin
-      // WX Bypass
-      if (execute_state.insn_rs1 == writeback_state.rd) begin
-        rs1_data_bypass = writeback_state.rd_data;
-        if (execute_state.insn_rs1 == 0) rs1_data_bypass = 0;
-      end  
-      
-      if (execute_state.insn_rs2 == writeback_state.rd) begin
-        rs2_data_bypass = writeback_state.rd_data;
-        if (execute_state.insn_rs2 == 0) rs2_data_bypass = 0;
-      end  
+    // WX Bypass
+    if (execute_state.insn_rs1 == writeback_state.rd) begin
+      rs1_data_bypass = writeback_state.rd_data;
+      if (execute_state.insn_rs1 == 0) rs1_data_bypass = 0;
+    end  
+    
+    if (execute_state.insn_rs2 == writeback_state.rd) begin
+      rs2_data_bypass = writeback_state.rd_data;
+      if (execute_state.insn_rs2 == 0) rs2_data_bypass = 0;
+    end  
 
-      // MX Bypass
-      if (execute_state.insn_rs1 == memory_state.rd) begin
-        rs1_data_bypass = memory_state.rd_data;
-        if (execute_state.insn_rs1 == 0) rs1_data_bypass = 0;
-      end  
-      
-      if (execute_state.insn_rs2 == memory_state.rd) begin
-        rs2_data_bypass = memory_state.rd_data;
-        if (execute_state.insn_rs2 == 0) rs2_data_bypass = 0;
-      end 
-    // end
+    // MX Bypass
+    if (execute_state.insn_rs1 == memory_state.rd) begin
+      rs1_data_bypass = memory_state.rd_data;
+      if (execute_state.insn_rs1 == 0) rs1_data_bypass = 0;
+    end  
+    
+    if (execute_state.insn_rs2 == memory_state.rd) begin
+      rs2_data_bypass = memory_state.rd_data;
+      if (execute_state.insn_rs2 == 0) rs2_data_bypass = 0;
+    end 
 
     case (execute_state.insn_opcode)
       OpLui: begin
@@ -716,6 +714,7 @@ module DatapathPipelined (
         end
 
         if (execute_state.is_sub) begin
+          inputaCLA32 = rs1_data_bypass;
           inputbCLA32 = ~rs2_data_bypass;  // two's compliment
           adder_carry_in = 1'b1;   // Set carry in to 1 for two's complement addition
           alu_flag1 = 1'b1;
@@ -760,7 +759,7 @@ module DatapathPipelined (
         rs2 = execute_state.insn_rs2;
         write_enable = 1'b0;
 
-        if ((execute_state.is_beq && (rs1_data_bypass == rs2_data_bypass)) ||
+        if ((execute_state.is_beq && (rs1_data_bypass ==        rs2_data_bypass)) ||
           (execute_state.is_bne && (rs1_data_bypass != rs2_data_bypass)) ||
           (execute_state.is_blt && $signed(rs1_data_bypass) < $signed(rs2_data_bypass)) ||
           (execute_state.is_bge && $signed(rs1_data_bypass) >= $signed(rs2_data_bypass)) ||
@@ -772,7 +771,7 @@ module DatapathPipelined (
 
           // Flag to update to NOP
           flag_taken = 1'b1;
-          end
+        end
       end
 
       OpEnviron: begin
@@ -787,7 +786,16 @@ module DatapathPipelined (
     endcase 
   end
 
+  logic is_b_or_s;
+
   always_comb begin
+    // Decoding
+    is_b_or_s = 1'b0;
+
+    if (insn_beq || insn_bne || insn_blt || insn_bge || insn_bltu || insn_bgeu || insn_sb || insn_sh || insn_sw) begin
+      is_b_or_s = 1'b1;
+    end
+
     // WD Bypass
     rs1_data_decode = rs1_data_out;
     rs2_data_decode = rs2_data_out;
