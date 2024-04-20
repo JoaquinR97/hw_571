@@ -180,6 +180,8 @@ typedef struct packed {
   logic [`REG_SIZE] effective_addr;
   logic write_enable; // Write enable signal
   // logic [`REG_SIZE] alu_value;
+  logic [`REG_SIZE] addr_to_dmem_m;
+
   logic reset; // Reset signal
   logic halt;
   logic illegal_insn; // Reset signal
@@ -261,7 +263,7 @@ module DatapathPipelined (
       f_cycle_status <= CYCLE_NO_STALL;
     end else begin
       f_cycle_status <= CYCLE_NO_STALL;
-      f_pc_current <= flag_taken ? pc_temp : (stall_flag_bf_execute ? f_pc_current : f_pc_current + 4);
+      f_pc_current <= flag_taken ? pc_temp : (stall_flag_bf_execute || stall_flag_bf_decode ? f_pc_current : f_pc_current + 4);
     end
   end
 
@@ -292,7 +294,6 @@ module DatapathPipelined (
 
   // Making temp variable to overwrite in always comb
   // This is for skipping in case of a branch
-  cycle_status_e temp_cycle_status_d;
 
   stage_decode_t decode_state;
   always_ff @(posedge clk) begin
@@ -305,9 +306,10 @@ module DatapathPipelined (
     end else begin
       begin
         decode_state <= '{
-          pc: flag_taken ? 0 : (stall_flag_bf_execute ? decode_state.pc : pc_to_imem),
-          insn: flag_taken ? 32'h00000000 : (stall_flag_bf_execute ? decode_state.insn : f_insn),
-          cycle_status: flag_taken ? CYCLE_TAKEN_BRANCH : (stall_flag_bf_execute ? decode_state.cycle_status : f_cycle_status)
+          pc: flag_taken ? 0 : (stall_flag_bf_execute || stall_flag_bf_decode ? decode_state.pc : pc_to_imem),
+          insn: flag_taken ? 32'h00000000 : (stall_flag_bf_execute || stall_flag_bf_decode ? decode_state.insn : f_insn),
+
+          cycle_status: flag_taken ? cycle_status_d :   (stall_flag_bf_execute ? decode_state.cycle_status : f_cycle_status)
         };
       end
     end
@@ -442,6 +444,19 @@ module DatapathPipelined (
 
   logic [`REG_SIZE] rs1_data_out, rs2_data_out; // Data read from the source registers
 
+  logic stall_flag_bf_decode;
+
+  always_comb begin
+  stall_flag_bf_decode = 1'b0;
+
+    if (insn_fence) begin
+      // if we have a store in memory.store
+      if (memory_state.is_sb || memory_state.is_sh || memory_state.is_sw || execute_state.is_sb || execute_state.is_sh || execute_state.is_sw) begin
+        stall_flag_bf_decode = 1'b1;
+      end
+    end    
+  end
+
   /****************/
   /* EXECUTE STAGE*/
   /****************/
@@ -482,17 +497,17 @@ module DatapathPipelined (
       }; 
     end else begin
       execute_state <= '{
-        pc: (flag_taken || stall_flag_bf_execute) ? 0 : decode_state.pc,
-        insn: (flag_taken || stall_flag_bf_execute) ? 32'h00000000 : decode_state.insn,
-        cycle_status: (flag_taken || stall_flag_bf_execute) ? CYCLE_TAKEN_BRANCH : decode_state.cycle_status,
+        pc: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : decode_state.pc,
+        insn: (flag_taken || stall_flag_bf_execute || insn_fence) ? 32'h00000000 : decode_state.insn,
+        cycle_status: insn_fence ? CYCLE_FENCEI : cycle_status_d,
         insn_funct7: insn_funct7,
-        insn_rs1: (flag_taken || stall_flag_bf_execute) ? 0 : insn_rs1,
-        rs1_data: (flag_taken || stall_flag_bf_execute) ? 0 : rs1_data_decode,
-        insn_rs2: (flag_taken || stall_flag_bf_execute) ? 0 : insn_rs2,
-        rs2_data: (flag_taken || stall_flag_bf_execute) ? 0 : rs2_data_decode,
+        insn_rs1: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : insn_rs1,
+        rs1_data: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : rs1_data_decode,
+        insn_rs2: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : insn_rs2,
+        rs2_data: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : rs2_data_decode,
         insn_funct3: insn_funct3,
-        insn_rd: (flag_taken || stall_flag_bf_execute) ? 0 : (is_b_or_s ? 0 : insn_rd),
-        insn_opcode: (flag_taken || stall_flag_bf_execute) ? 7'h0 : insn_opcode,
+        insn_rd: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : (is_b_or_s ? 0 : insn_rd),
+        insn_opcode: (flag_taken || stall_flag_bf_execute || insn_fence) ? 7'h0 : insn_opcode,
         imm_i: imm_i,
         imm_s: imm_s,
         imm_b: imm_b,
@@ -621,9 +636,13 @@ module DatapathPipelined (
 
   // Memory
   logic [`REG_SIZE] effective_addr;
+  logic [`REG_SIZE] addr_to_dmem_m;
 
-  logic is_u_or_j;
+  logic is_u_or_j_or_s;
   logic is_i;
+
+  // Setting correct flags in key stalls
+  cycle_status_e cycle_status_d;
 
   always_comb begin
     // PC Current Update
@@ -650,6 +669,9 @@ module DatapathPipelined (
     abs_a = 32'b0;
     abs_b = 32'b0;
 
+    // Setting correct flags
+    cycle_status_d = decode_state.cycle_status;
+
     // Multiplication
     multiplication = 64'b0;
     extended_rs1_data = 64'b0;
@@ -675,9 +697,10 @@ module DatapathPipelined (
 
     // Memory
     effective_addr = 32'b0;
+    addr_to_dmem_m = 32'b0;
     
     // For edge cases with memory
-    is_u_or_j = 1'b0;
+    is_u_or_j_or_s = 1'b0;
     is_i = 1'b0;
 
     // WX Bypass
@@ -727,11 +750,12 @@ module DatapathPipelined (
           rd = execute_state.insn_rd;
 
           // Save next cycle
-          rd_data = pc_temp + 4;
+          rd_data = pc_temp - 4;
           pc_temp = execute_state.pc + execute_state.imm_j_sext;
 
           // Flag to update to NOP other instructions
           flag_taken = 1'b1;
+          cycle_status_d = CYCLE_TAKEN_BRANCH;
         end
       end
 
@@ -742,8 +766,12 @@ module DatapathPipelined (
           rs1 = execute_state.insn_rs1;
 
           // Save next cycle
-          rd_data = pc_temp + 4;
+          rd_data = pc_temp - 4;
           pc_temp = (execute_state.rs1_data + execute_state.imm_i_sext) & ~32'b1;
+
+          // Flag to update to NOP other instructions
+          flag_taken = 1'b1;
+          cycle_status_d = CYCLE_TAKEN_BRANCH;
         end
       end
 
@@ -876,6 +904,7 @@ module DatapathPipelined (
 
           // Stall for one cycle 
           stall_flag_bf_execute = 1'b1;
+          cycle_status_d = CYCLE_DIV2USE;
         end
 
         if (execute_state.is_divu) begin
@@ -884,6 +913,7 @@ module DatapathPipelined (
 
           // Stall for one cycle 
           stall_flag_bf_execute = 1'b1;
+          cycle_status_d = CYCLE_DIV2USE;
         end
 
         if (execute_state.is_rem) begin
@@ -897,6 +927,7 @@ module DatapathPipelined (
 
           // Stall for one cycle 
           stall_flag_bf_execute = 1'b1;
+          cycle_status_d = CYCLE_DIV2USE;
         end
 
         if (execute_state.is_remu) begin
@@ -908,6 +939,7 @@ module DatapathPipelined (
 
             // Stall for one cycle 
             stall_flag_bf_execute = 1'b1;
+            cycle_status_d = CYCLE_DIV2USE;
           end
         end
       end
@@ -920,24 +952,30 @@ module DatapathPipelined (
         // Calculate effective address for memory access with alignement
         effective_addr = (rs1_data_bypass + $signed(execute_state.imm_i_sext)); 
 
+        // Address to dmem to then push
+        addr_to_dmem_m = effective_addr & ~32'h3; 
+
         // Now check for dependent instructions in Decode to see if there is 
         if (insn_rs1 == rd || insn_rs2 == rd) begin
 
           // Edge case for the stall below
-          if (insn_lui || insn_auipc || insn_jal) begin
-            is_u_or_j = 1'b1;
+          if (insn_lui || insn_auipc || insn_jal || insn_sw || insn_sh || insn_sb) begin
+            // s cases are handled with a bypass
+            is_u_or_j_or_s = 1'b1;
           end
 
-          if (insn_addi || insn_slti || insn_sltiu || insn_xori || insn_ori || insn_andi || insn_slli || insn_srli || insn_srai) begin
+          if (insn_addi || insn_slti || insn_sltiu || insn_xori || insn_ori || insn_andi || insn_slli || insn_srli || insn_srai || insn_ecall || insn_jalr || insn_lb || insn_lh || insn_lw || insn_lbu || insn_lhu) begin
             is_i = 1'b1;
           end
 
           // Making sure we are not stalling for u or j
-          if (!is_u_or_j) begin
+          if (!is_u_or_j_or_s) begin
             if (!is_i) begin
               stall_flag_bf_execute = 1'b1;
-            end else if (is_i && insn_rs1 != rd) begin 
+              cycle_status_d = CYCLE_LOAD2USE;
+            end else if (is_i && insn_rs1 == rd) begin 
               stall_flag_bf_execute = 1'b1;
+              cycle_status_d = CYCLE_LOAD2USE;
             end
           end
         end
@@ -968,24 +1006,13 @@ module DatapathPipelined (
 
           // Flag to update to NOP
           flag_taken = 1'b1;
+          cycle_status_d = CYCLE_TAKEN_BRANCH;
         end
       end
 
       OpEnviron: begin
         if (execute_state.is_ecall) begin
           halt_e = 1'b1;
-        end
-      end
-
-      OpMiscMem: begin
-        if (execute_state.is_fence) begin
-          // Encoding NOP as ADDI with immediate of zero (doing nothing) 
-          inputaCLA32 = 32'b0;
-          inputbCLA32 = 32'b0;
-          alu_flag1 = 1'b1;
-
-          // if we have a store in memory.store
-          if (memory_state.store)
         end
       end
 
@@ -1072,7 +1099,8 @@ module DatapathPipelined (
         is_sw: 0,
         is_div: 0,
         is_divu: 0,
-        is_rem: 0, is_remu: 0
+        is_rem: 0, is_remu: 0,
+        addr_to_dmem_m: 0
       };
     end else begin
       memory_state <= '{
@@ -1101,7 +1129,8 @@ module DatapathPipelined (
         is_sw: execute_state.is_sw,
         is_div: execute_state.is_div,
         is_divu: execute_state.is_divu,
-        is_rem: execute_state.is_rem, is_remu: execute_state.is_remu
+        is_rem: execute_state.is_rem, is_remu: execute_state.is_remu,
+        addr_to_dmem_m: addr_to_dmem_m
       };
     end
   end
@@ -1127,6 +1156,8 @@ module DatapathPipelined (
   logic [`REG_SIZE] rs1_data_memory, rs2_data_memory, rd_data_memory;
   logic [1:0] lowest_bits_memory_access;
 
+  logic [`REG_SIZE] flag3; // Reset signal
+
   always_comb begin
     rs1_data_memory = memory_state.rs1_data;
     rs2_data_memory = memory_state.rs2_data;
@@ -1141,17 +1172,25 @@ module DatapathPipelined (
     store_we_to_dmem = 4'b0;
     addr_to_dmem = 32'b0;
     
+    flag3 = 32'd0;
+
     // WM Bypassing
     if (writeback_state.rd == memory_state.rs2) begin
       rs2_data_memory = writeback_state.rd_data;
       if (memory_state.rs2 == 0) rs2_data_memory = 0;
     end
 
+    // if (writeback_state.rd == memory_state.rs1) begin
+    //   rs1_data_memory = writeback_state.rd_data;
+    //   flag3 = 32'd9;
+    //   if (memory_state.rs1 == 0) rs1_data_memory = 0;
+    // end
+
     // Loading and storing instructions
     if (memory_state.insn_opcode == OpLoad) begin
         // Memory address
         lowest_bits_memory_access = memory_state.effective_addr[1:0]; 
-        addr_to_dmem = memory_state.effective_addr & ~32'h3; 
+        addr_to_dmem = memory_state.addr_to_dmem_m; 
 
         if (memory_state.is_lb || memory_state.is_lbu) begin
           case (lowest_bits_memory_access)
