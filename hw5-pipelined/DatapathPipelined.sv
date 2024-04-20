@@ -1178,13 +1178,12 @@ module DatapathPipelined (
     if (writeback_state.rd == memory_state.rs2) begin
       rs2_data_memory = writeback_state.rd_data;
       if (memory_state.rs2 == 0) rs2_data_memory = 0;
+      
+      // if (writeback_state.rs2 == memory_state.rs1) begin
+      //   rs1_data_memory = writeback_state.rd_data;
+      //   if (memory_state.rs1 == 0) rs1_data_memory = 0;
+      // end
     end
-
-    // if (writeback_state.rd == memory_state.rs1) begin
-    //   rs1_data_memory = writeback_state.rd_data;
-    //   flag3 = 32'd9;
-    //   if (memory_state.rs1 == 0) rs1_data_memory = 0;
-    // end
 
     // Loading and storing instructions
     if (memory_state.insn_opcode == OpLoad) begin
