@@ -263,7 +263,7 @@ module DatapathPipelined (
       f_cycle_status <= CYCLE_NO_STALL;
     end else begin
       f_cycle_status <= CYCLE_NO_STALL;
-      f_pc_current <= flag_taken ? pc_temp : (stall_flag_bf_execute || stall_flag_bf_decode ? f_pc_current : f_pc_current + 4);
+      f_pc_current <= flag_taken ? pc_temp : (stall_flag_bf_execute || stall_flag_bf_decode || stall_flag_bf_memory ? f_pc_current : f_pc_current + 4);
     end
   end
 
@@ -306,10 +306,11 @@ module DatapathPipelined (
     end else begin
       begin
         decode_state <= '{
-          pc: flag_taken ? 0 : (stall_flag_bf_execute || stall_flag_bf_decode ? decode_state.pc : pc_to_imem),
-          insn: flag_taken ? 32'h00000000 : (stall_flag_bf_execute || stall_flag_bf_decode ? decode_state.insn : f_insn),
+          pc: flag_taken ? 0 : (stall_flag_bf_execute || stall_flag_bf_memory || stall_flag_bf_decode ? decode_state.pc : pc_to_imem),
+          
+          insn: flag_taken ? 32'h00000000 : (stall_flag_bf_execute || stall_flag_bf_memory || stall_flag_bf_decode ? decode_state.insn : f_insn),
 
-          cycle_status: flag_taken ? cycle_status_d :   (stall_flag_bf_execute ? decode_state.cycle_status : f_cycle_status)
+          cycle_status: flag_taken ? cycle_status_d :   (stall_flag_bf_execute || stall_flag_bf_memory ? decode_state.cycle_status : f_cycle_status)
         };
       end
     end
@@ -496,74 +497,144 @@ module DatapathPipelined (
         halt: 0
       }; 
     end else begin
+      // execute_state <= '{
+      //   pc: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : decode_state.pc,
+      //   insn: (flag_taken || stall_flag_bf_execute || insn_fence) ? 32'h00000000 : decode_state.insn,
+      //   cycle_status: insn_fence ? CYCLE_FENCEI : cycle_status_d,
+      //   insn_funct7: insn_funct7,
+      //   insn_rs1: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : insn_rs1,
+      //   rs1_data: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : rs1_data_decode,
+      //   insn_rs2: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : insn_rs2,
+      //   rs2_data: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : rs2_data_decode,
+      //   insn_funct3: insn_funct3,
+      //   insn_rd: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : (is_b_or_s ? 0 : insn_rd),
+      //   insn_opcode: (flag_taken || stall_flag_bf_execute || insn_fence) ? 7'h0 : insn_opcode,
+      //   imm_i: imm_i,
+      //   imm_s: imm_s,
+      //   imm_b: imm_b,
+      //   imm_j: imm_j,
+      //   imm_i_sext: imm_i_sext,
+      //   imm_s_sext: imm_s_sext,
+      //   imm_b_sext: imm_b_sext,
+      //   imm_j_sext: imm_j_sext,
+      //   is_lui: insn_lui,
+      //   is_auipc: insn_auipc,
+      //   is_jal: insn_jal,
+      //   is_jalr: insn_jalr,
+      //   is_beq: insn_beq,
+      //   is_bne: insn_bne,
+      //   is_blt: insn_blt,
+      //   is_bge: insn_bge,
+      //   is_bltu: insn_bltu,
+      //   is_bgeu: insn_bgeu,
+      //   is_lb: insn_lb,
+      //   is_lh: insn_lh,
+      //   is_lw: insn_lw,
+      //   is_lbu: insn_lbu,
+      //   is_lhu: insn_lhu,
+      //   is_sb: insn_sb,
+      //   is_sh: insn_sh,
+      //   is_sw: insn_sw,
+      //   is_addi: insn_addi,
+      //   is_slti: insn_slti,
+      //   is_sltiu: insn_sltiu,
+      //   is_xori: insn_xori,
+      //   is_ori: insn_ori,
+      //   is_andi: insn_andi,
+      //   is_slli: insn_slli,
+      //   is_srli: insn_srli,
+      //   is_srai: insn_srai,
+      //   is_add: insn_add,
+      //   is_sub: insn_sub,
+      //   is_sll: insn_sll,
+      //   is_slt: insn_slt,
+      //   is_sltu: insn_sltu,
+      //   is_xor: insn_xor,
+      //   is_srl: insn_srl,
+      //   is_sra: insn_sra,
+      //   is_or: insn_or,
+      //   is_and: insn_and,
+      //   is_mul: insn_mul,
+      //   is_mulh: insn_mulh,
+      //   is_mulhsu: insn_mulhsu,
+      //   is_mulhu: insn_mulhu,
+      //   is_div: insn_div,
+      //   is_divu: insn_divu,
+      //   is_rem: insn_rem,
+      //   is_remu: insn_remu,
+      //   is_ecall: insn_ecall,
+      //   is_fence: insn_fence,
+      //   halt: halt_e
+      // };
+
       execute_state <= '{
-        pc: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : decode_state.pc,
-        insn: (flag_taken || stall_flag_bf_execute || insn_fence) ? 32'h00000000 : decode_state.insn,
-        cycle_status: insn_fence ? CYCLE_FENCEI : cycle_status_d,
-        insn_funct7: insn_funct7,
-        insn_rs1: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : insn_rs1,
-        rs1_data: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : rs1_data_decode,
-        insn_rs2: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : insn_rs2,
-        rs2_data: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : rs2_data_decode,
-        insn_funct3: insn_funct3,
-        insn_rd: (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : (is_b_or_s ? 0 : insn_rd),
-        insn_opcode: (flag_taken || stall_flag_bf_execute || insn_fence) ? 7'h0 : insn_opcode,
-        imm_i: imm_i,
-        imm_s: imm_s,
-        imm_b: imm_b,
-        imm_j: imm_j,
-        imm_i_sext: imm_i_sext,
-        imm_s_sext: imm_s_sext,
-        imm_b_sext: imm_b_sext,
-        imm_j_sext: imm_j_sext,
-        is_lui: insn_lui,
-        is_auipc: insn_auipc,
-        is_jal: insn_jal,
-        is_jalr: insn_jalr,
-        is_beq: insn_beq,
-        is_bne: insn_bne,
-        is_blt: insn_blt,
-        is_bge: insn_bge,
-        is_bltu: insn_bltu,
-        is_bgeu: insn_bgeu,
-        is_lb: insn_lb,
-        is_lh: insn_lh,
-        is_lw: insn_lw,
-        is_lbu: insn_lbu,
-        is_lhu: insn_lhu,
-        is_sb: insn_sb,
-        is_sh: insn_sh,
-        is_sw: insn_sw,
-        is_addi: insn_addi,
-        is_slti: insn_slti,
-        is_sltiu: insn_sltiu,
-        is_xori: insn_xori,
-        is_ori: insn_ori,
-        is_andi: insn_andi,
-        is_slli: insn_slli,
-        is_srli: insn_srli,
-        is_srai: insn_srai,
-        is_add: insn_add,
-        is_sub: insn_sub,
-        is_sll: insn_sll,
-        is_slt: insn_slt,
-        is_sltu: insn_sltu,
-        is_xor: insn_xor,
-        is_srl: insn_srl,
-        is_sra: insn_sra,
-        is_or: insn_or,
-        is_and: insn_and,
-        is_mul: insn_mul,
-        is_mulh: insn_mulh,
-        is_mulhsu: insn_mulhsu,
-        is_mulhu: insn_mulhu,
-        is_div: insn_div,
-        is_divu: insn_divu,
-        is_rem: insn_rem,
-        is_remu: insn_remu,
-        is_ecall: insn_ecall,
-        is_fence: insn_fence,
-        halt: halt_e
+        pc: stall_flag_bf_memory ? execute_state.pc : (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : decode_state.pc,
+        insn: stall_flag_bf_memory ? execute_state.insn : (flag_taken || stall_flag_bf_execute || insn_fence) ? 32'h00000000 : decode_state.insn,
+        cycle_status: stall_flag_bf_memory ? execute_state.cycle_status : insn_fence ? CYCLE_FENCEI : (stall_flag_bf_memory ? CYCLE_LOAD2USE : cycle_status_d),
+        insn_funct7: stall_flag_bf_memory ? execute_state.insn_funct7 : insn_funct7,
+        insn_rs1: stall_flag_bf_memory ? execute_state.insn_rs1 : (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : insn_rs1,
+        rs1_data: stall_flag_bf_memory ? execute_state.rs1_data : (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : rs1_data_decode,
+        insn_rs2: stall_flag_bf_memory ? execute_state.insn_rs2 : (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : insn_rs2,
+        rs2_data: stall_flag_bf_memory ? execute_state.rs2_data : (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : rs2_data_decode,
+        insn_funct3: stall_flag_bf_memory ? execute_state.insn_funct3 : insn_funct3,
+        insn_rd: stall_flag_bf_memory ? execute_state.insn_rd : (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : (is_b_or_s ? 0 : insn_rd),
+        insn_opcode: stall_flag_bf_memory ? execute_state.insn_opcode : (flag_taken || stall_flag_bf_execute || insn_fence) ? 7'h0 : insn_opcode,
+        imm_i: stall_flag_bf_memory ? execute_state.imm_i : imm_i,
+        imm_s: stall_flag_bf_memory ? execute_state.imm_s : imm_s,
+        imm_b: stall_flag_bf_memory ? execute_state.imm_b : imm_b,
+        imm_j: stall_flag_bf_memory ? execute_state.imm_j : imm_j,
+        imm_i_sext: stall_flag_bf_memory ? execute_state.imm_i_sext : imm_i_sext,
+        imm_s_sext: stall_flag_bf_memory ? execute_state.imm_s_sext : imm_s_sext,
+        imm_b_sext: stall_flag_bf_memory ? execute_state.imm_b_sext : imm_b_sext,
+        imm_j_sext: stall_flag_bf_memory ? execute_state.imm_j_sext : imm_j_sext,
+        is_lui: stall_flag_bf_memory ? execute_state.is_lui : insn_lui,
+        is_auipc: stall_flag_bf_memory ? execute_state.is_auipc : insn_auipc,
+        is_jal: stall_flag_bf_memory ? execute_state.is_jal : insn_jal,
+        is_jalr: stall_flag_bf_memory ? execute_state.is_jalr : insn_jalr,
+        is_beq: stall_flag_bf_memory ? execute_state.is_beq : insn_beq,
+        is_bne: stall_flag_bf_memory ? execute_state.is_bne : insn_bne,
+        is_blt: stall_flag_bf_memory ? execute_state.is_blt : insn_blt,
+        is_bge: stall_flag_bf_memory ? execute_state.is_bge : insn_bge,
+        is_bltu: stall_flag_bf_memory ? execute_state.is_bltu : insn_bltu,
+        is_bgeu: stall_flag_bf_memory ? execute_state.is_bgeu : insn_bgeu,
+        is_lb: stall_flag_bf_memory ? execute_state.is_lb : insn_lb,
+        is_lh: stall_flag_bf_memory ? execute_state.is_lh : insn_lh,
+        is_lw: stall_flag_bf_memory ? execute_state.is_lw : insn_lw,
+        is_lbu: stall_flag_bf_memory ? execute_state.is_lbu : insn_lbu,
+        is_lhu: stall_flag_bf_memory ? execute_state.is_lhu : insn_lhu,
+        is_sb: stall_flag_bf_memory ? execute_state.is_sb : insn_sb,
+        is_sh: stall_flag_bf_memory ? execute_state.is_sh : insn_sh,
+        is_sw: stall_flag_bf_memory ? execute_state.is_sw : insn_sw,
+        is_addi: stall_flag_bf_memory ? execute_state.is_addi : insn_addi,
+        is_slti: stall_flag_bf_memory ? execute_state.is_slti : insn_slti,
+        is_sltiu: stall_flag_bf_memory ? execute_state.is_sltiu : insn_sltiu,
+        is_xori: stall_flag_bf_memory ? execute_state.is_xori : insn_xori,
+        is_ori: stall_flag_bf_memory ? execute_state.is_ori : insn_ori,
+        is_andi: stall_flag_bf_memory ? execute_state.is_andi : insn_andi,
+        is_slli: stall_flag_bf_memory ? execute_state.is_slli : insn_slli,
+        is_srli: stall_flag_bf_memory ? execute_state.is_srli : insn_srli,
+        is_srai: stall_flag_bf_memory ? execute_state.is_srai : insn_srai,
+        is_add: stall_flag_bf_memory ? execute_state.is_add : insn_add,
+        is_sub: stall_flag_bf_memory ? execute_state.is_sub : insn_sub,
+        is_sll: stall_flag_bf_memory ? execute_state.is_sll : insn_sll,
+        is_slt: stall_flag_bf_memory ? execute_state.is_slt : insn_slt,
+        is_sltu: stall_flag_bf_memory ? execute_state.is_sltu : insn_sltu,
+        is_xor: stall_flag_bf_memory ? execute_state.is_xor : insn_xor,
+        is_srl: stall_flag_bf_memory ? execute_state.is_srl : insn_srl,
+        is_sra: stall_flag_bf_memory ? execute_state.is_sra : insn_sra,
+        is_or: stall_flag_bf_memory ? execute_state.is_or : insn_or,
+        is_and: stall_flag_bf_memory ? execute_state.is_and : insn_and,
+        is_mul: stall_flag_bf_memory ? execute_state.is_mul : insn_mul,
+        is_mulh: stall_flag_bf_memory ? execute_state.is_mulh : insn_mulh,
+        is_mulhsu: stall_flag_bf_memory ? execute_state.is_mulhsu : insn_mulhsu,
+        is_mulhu: stall_flag_bf_memory ? execute_state.is_mulhu : insn_mulhu,
+        is_div: stall_flag_bf_memory ? execute_state.is_div : insn_div,
+        is_divu: stall_flag_bf_memory ? execute_state.is_divu : insn_divu,
+        is_rem: stall_flag_bf_memory ? execute_state.is_rem : insn_rem,
+        is_remu: stall_flag_bf_memory ? execute_state.is_remu : insn_remu,
+        is_ecall: stall_flag_bf_memory ? execute_state.is_ecall : insn_ecall,
+        is_fence: stall_flag_bf_memory ? execute_state.is_fence : insn_fence,
+        halt: stall_flag_bf_memory ? execute_state.halt : halt_e
       };
     end
   end
@@ -644,6 +715,11 @@ module DatapathPipelined (
   // Setting correct flags in key stalls
   cycle_status_e cycle_status_d;
 
+  logic stall_flag_bf_memory;
+
+  logic is_rs1;
+  logic is_not_rs1_rs2;
+
   always_comb begin
     // PC Current Update
     pc_temp = f_pc_current;
@@ -700,30 +776,55 @@ module DatapathPipelined (
     addr_to_dmem_m = 32'b0;
     
     // For edge cases with memory
+    is_rs1 = 1'b0;
+    is_not_rs1_rs2 = 1'b0;
+
     is_u_or_j_or_s = 1'b0;
     is_i = 1'b0;
 
+    if (execute_state.is_lui || execute_state.is_auipc || execute_state.is_jal) begin
+      is_not_rs1_rs2 = 1'b1;
+    end
+
+    if (execute_state.is_addi || execute_state.is_slti || execute_state.is_sltiu || execute_state.is_xori || execute_state.is_ori || execute_state.is_andi || execute_state.is_slli || execute_state.is_srli || execute_state.is_srai || execute_state.is_ecall || execute_state.is_jalr || execute_state.is_lb || execute_state.is_lh || execute_state.is_lw || execute_state.is_lbu || execute_state.is_lhu) begin
+      is_rs1 = 1'b1;
+    end
+
     // WX Bypass
-    if (execute_state.insn_rs1 == writeback_state.rd) begin
+    if (execute_state.insn_rs1 == writeback_state.rd && !is_not_rs1_rs2) begin
       rs1_data_bypass = writeback_state.rd_data;
       if (execute_state.insn_rs1 == 0) rs1_data_bypass = 0;
     end  
     
-    if (execute_state.insn_rs2 == writeback_state.rd) begin
+    if (execute_state.insn_rs2 == writeback_state.rd && !is_rs1 && !is_not_rs1_rs2) begin
       rs2_data_bypass = writeback_state.rd_data;
       if (execute_state.insn_rs2 == 0) rs2_data_bypass = 0;
     end  
 
     // MX Bypass
-    if (execute_state.insn_rs1 == memory_state.rd) begin
+    if (execute_state.insn_rs1 == memory_state.rd && !is_not_rs1_rs2) begin
       rs1_data_bypass = memory_state.rd_data;
       if (execute_state.insn_rs1 == 0) rs1_data_bypass = 0;
     end  
     
-    if (execute_state.insn_rs2 == memory_state.rd) begin
+    if (execute_state.insn_rs2 == memory_state.rd && !is_rs1 && !is_not_rs1_rs2) begin
       rs2_data_bypass = memory_state.rd_data;
       if (execute_state.insn_rs2 == 0) rs2_data_bypass = 0;
     end 
+
+    stall_flag_bf_memory = 1'b0;
+
+    // WM Bypass
+    // Do a NOP bubble instead
+    if (((execute_state.insn_rs1 == memory_state.rd && !is_not_rs1_rs2)
+      
+      || (execute_state.insn_rs2 == memory_state.rd && execute_state.insn_opcode != OpStore && !is_rs1 && !is_not_rs1_rs2)) 
+      
+      && memory_state.insn_opcode == OpLoad) begin
+      // exclude case where WM bypass will exclude store
+      stall_flag_bf_memory = 1'b1;
+    end
+
 
     case (execute_state.insn_opcode)
       OpLui: begin
@@ -750,7 +851,7 @@ module DatapathPipelined (
           rd = execute_state.insn_rd;
 
           // Save next cycle
-          rd_data = pc_temp - 4;
+          rd_data = execute_state.pc + 4;
           pc_temp = execute_state.pc + execute_state.imm_j_sext;
 
           // Flag to update to NOP other instructions
@@ -766,8 +867,8 @@ module DatapathPipelined (
           rs1 = execute_state.insn_rs1;
 
           // Save next cycle
-          rd_data = pc_temp - 4;
-          pc_temp = (execute_state.rs1_data + execute_state.imm_i_sext) & ~32'b1;
+          rd_data = execute_state.pc + 4;
+          pc_temp = (rs1_data_bypass + execute_state.imm_i_sext) & ~32'b1;
 
           // Flag to update to NOP other instructions
           flag_taken = 1'b1;
@@ -1103,34 +1204,65 @@ module DatapathPipelined (
         addr_to_dmem_m: 0
       };
     end else begin
+      // memory_state <= '{
+      //   pc: execute_state.pc,
+      //   insn: execute_state.insn,
+      //   rd_data: alu_flag1 ? alu_value : rd_data,
+      //   rd: execute_state.insn_rd,
+      //   rs1: execute_state.insn_rs1,
+      //   rs2: execute_state.insn_rs2,
+      //   rs1_data: rs1_data_bypass,
+      //   rs2_data: rs2_data_bypass,
+      //   effective_addr: effective_addr,
+      //   write_enable: write_enable,
+      //   reset: reset,
+      //   illegal_insn: illegal_insn,
+      //   cycle_status: execute_state.cycle_status,
+      //   halt: halt_e,
+      //   insn_opcode: execute_state.insn_opcode,
+      //   is_lb: execute_state.is_lb,
+      //   is_lh: execute_state.is_lh,
+      //   is_lw: execute_state.is_lw,
+      //   is_lbu: execute_state.is_lbu,
+      //   is_lhu: execute_state.is_lhu,
+      //   is_sb: execute_state.is_sb,
+      //   is_sh: execute_state.is_sh,
+      //   is_sw: execute_state.is_sw,
+      //   is_div: execute_state.is_div,
+      //   is_divu: execute_state.is_divu,
+      //   is_rem: execute_state.is_rem, is_remu: execute_state.is_remu,
+      //   addr_to_dmem_m: addr_to_dmem_m
+      // };
+
       memory_state <= '{
-        pc: execute_state.pc,
-        insn: execute_state.insn,
-        rd_data: alu_flag1 ? alu_value : rd_data,
-        rd: execute_state.insn_rd,
-        rs1: execute_state.insn_rs1,
-        rs2: execute_state.insn_rs2,
-        rs1_data: rs1_data_bypass,
-        rs2_data: rs2_data_bypass,
-        effective_addr: effective_addr,
-        write_enable: write_enable,
-        reset: reset,
-        illegal_insn: illegal_insn,
-        cycle_status: execute_state.cycle_status,
-        halt: halt_e,
-        insn_opcode: execute_state.insn_opcode,
-        is_lb: execute_state.is_lb,
-        is_lh: execute_state.is_lh,
-        is_lw: execute_state.is_lw,
-        is_lbu: execute_state.is_lbu,
-        is_lhu: execute_state.is_lhu,
-        is_sb: execute_state.is_sb,
-        is_sh: execute_state.is_sh,
-        is_sw: execute_state.is_sw,
-        is_div: execute_state.is_div,
-        is_divu: execute_state.is_divu,
-        is_rem: execute_state.is_rem, is_remu: execute_state.is_remu,
-        addr_to_dmem_m: addr_to_dmem_m
+        pc: stall_flag_bf_memory ? 0 : execute_state.pc,
+        insn: stall_flag_bf_memory ? 0 : execute_state.insn,
+        rd_data: stall_flag_bf_memory ? 0 : (alu_flag1 ? alu_value : rd_data),
+        rd: stall_flag_bf_memory ? 0 : execute_state.insn_rd,
+        rs1: stall_flag_bf_memory ? 0 : execute_state.insn_rs1,
+        rs2: stall_flag_bf_memory ? 0 : execute_state.insn_rs2,
+        rs1_data: stall_flag_bf_memory ? 0 : rs1_data_bypass,
+        rs2_data: stall_flag_bf_memory ? 0 : rs2_data_bypass,
+        effective_addr: stall_flag_bf_memory ? 0 : effective_addr,
+        write_enable: stall_flag_bf_memory ? 0 : write_enable,
+        reset: stall_flag_bf_memory ? 0 : reset,
+        illegal_insn: stall_flag_bf_memory ? 0 : illegal_insn,
+        cycle_status: stall_flag_bf_memory ? CYCLE_RESET : execute_state.cycle_status,
+        halt: stall_flag_bf_memory ? 0 : halt_e,
+        insn_opcode: stall_flag_bf_memory ? 0 : execute_state.insn_opcode,
+        is_lb: stall_flag_bf_memory ? 0 : execute_state.is_lb,
+        is_lh: stall_flag_bf_memory ? 0 : execute_state.is_lh,
+        is_lw: stall_flag_bf_memory ? 0 : execute_state.is_lw,
+        is_lbu: stall_flag_bf_memory ? 0 : execute_state.is_lbu,
+        is_lhu: stall_flag_bf_memory ? 0 : execute_state.is_lhu,
+        is_sb: stall_flag_bf_memory ? 0 : execute_state.is_sb,
+        is_sh: stall_flag_bf_memory ? 0 : execute_state.is_sh,
+        is_sw: stall_flag_bf_memory ? 0 : execute_state.is_sw,
+        is_div: stall_flag_bf_memory ? 0 : execute_state.is_div,
+        is_divu: stall_flag_bf_memory ? 0 : execute_state.is_divu,
+        is_rem: stall_flag_bf_memory ? 0 : execute_state.is_rem,
+        is_remu: stall_flag_bf_memory ? 0 : execute_state.is_remu,
+        addr_to_dmem_m: stall_flag_bf_memory ? 0 : addr_to_dmem_m
       };
     end
   end
@@ -1178,11 +1310,6 @@ module DatapathPipelined (
     if (writeback_state.rd == memory_state.rs2) begin
       rs2_data_memory = writeback_state.rd_data;
       if (memory_state.rs2 == 0) rs2_data_memory = 0;
-      
-      // if (writeback_state.rs2 == memory_state.rs1) begin
-      //   rs1_data_memory = writeback_state.rd_data;
-      //   if (memory_state.rs1 == 0) rs1_data_memory = 0;
-      // end
     end
 
     // Loading and storing instructions
@@ -1298,7 +1425,6 @@ module DatapathPipelined (
       };
     end else begin
       writeback_state <= '{
-        // inputbCLA32: memory_state.inputbCLA32,
         pc: memory_state.pc,
         insn: memory_state.insn,
         rd_data: rd_data_memory,
@@ -1313,6 +1439,22 @@ module DatapathPipelined (
         cycle_status: memory_state.cycle_status,
         halt: memory_state.halt
       };
+
+      // writeback_state <= '{
+      //   pc: stall_flag_bf_memory ? 0 : memory_state.pc,
+      //   insn: stall_flag_bf_memory ? 32'h00000013 : memory_state.insn,  // NOP instruction typically has opcode for addi x0,x0,0
+      //   rd_data: stall_flag_bf_memory ? 0 : rd_data_memory,
+      //   rd: stall_flag_bf_memory ? 0 : memory_state.rd,
+      //   rs1: stall_flag_bf_memory ? 0 : memory_state.rs1,
+      //   rs2: stall_flag_bf_memory ? 0 : memory_state.rs2,
+      //   rs1_data: stall_flag_bf_memory ? 0 : rs1_data_memory,
+      //   rs2_data: stall_flag_bf_memory ? 0 : rs2_data_memory,
+      //   write_enable: stall_flag_bf_memory ? 0 : memory_state.write_enable,
+      //   reset: stall_flag_bf_memory ? 0 : memory_state.reset,
+      //   illegal_insn: stall_flag_bf_memory ? 0 : memory_state.illegal_insn,
+      //   cycle_status: stall_flag_bf_memory ? 0 : memory_state.cycle_status,
+      //   halt: stall_flag_bf_memory ? 0 : memory_state.halt
+      // };
     end
   end
 
