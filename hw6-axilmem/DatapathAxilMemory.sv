@@ -52,7 +52,26 @@ module RegFile (
     input logic rst
 );
   // TODO: copy your RegFile code here
+  localparam int NumRegs = 32;
+  logic [`REG_SIZE] regs[NumRegs];
 
+  // Assuming regs[0] should always read as 0
+  assign rs1_data = (rs1 == 0) ? 32'd0 : regs[rs1];
+  assign rs2_data = (rs2 == 0) ? 32'd0 : regs[rs2];
+
+  always_ff @(posedge clk) begin
+    if (rst) begin
+        for (int i = 0; i < NumRegs; i++) begin
+            regs[i] <= 32'd0;
+        end
+    end else begin
+      if (we && rd != 0) begin
+        regs[rd] <= rd_data;
+      end
+
+      regs[0] <= 0;
+    end
+  end
 endmodule
 
 /** NB: ARESETn is active-low, i.e., reset when this input is ZERO */
@@ -102,7 +121,7 @@ endinterface
 
 module MemoryAxiLite #(
     parameter int NUM_WORDS  = 32,
-    parameter int ADDR_WIDTH = 32,
+    // parameter int ADDR_WIDTH = 32,
     parameter int DATA_WIDTH = 32
 ) (
     axi_clkrst_if axi,
@@ -133,21 +152,33 @@ module MemoryAxiLite #(
   end
 `endif
 
-  // TODO: changes will be needed throughout this module
-
   always_ff @(posedge axi.ACLK) begin
-    if (!axi.ARESETn) begin
-      // start out ready to accept incoming reads
-      insn.ARREADY <= 1;
-      data.ARREADY <= 1;
-      // start out ready to accept an incoming write
-      data.AWREADY <= 1;
-      data.WREADY <= 1;
-    end else begin
+      if (!axi.ARESETn) begin
+          // Initialize control signals upon reset
+          insn.ARREADY <= 1;
+          insn.RVALID <= 1;
+          data.ARREADY <= 1;
+          data.RVALID <= 1;
 
-    end
+          data.AWREADY <= 1;
+          data.WREADY <= 1;
+          data.BVALID <= 1;
+      end else begin
+          // Read
+          if (insn.ARVALID) begin
+              insn.RDATA <= mem_array[insn.ARADDR[AddrMsb:AddrLsb]];
+          end
+          if (data.ARVALID) begin
+              data.RDATA <= mem_array[data.ARADDR[AddrMsb:AddrLsb]];
+          end
+
+          // Write
+          if (data.AWVALID && data.WVALID) begin
+              mem_array[data.AWADDR[AddrMsb:AddrLsb]] <= data.WDATA;
+              data.BRESP <= ResponseOkay;
+          end
+      end
   end
-
 endmodule
 
 /** This is used for testing MemoryAxiLite in simulation, since Verilator doesn't allow
