@@ -162,33 +162,57 @@ module MemoryAxiLite #(
 `endif
 
   always_ff @(posedge axi.ACLK) begin
-      if (!axi.ARESETn) begin
-          // Initialize control signals upon reset
-          insn.ARREADY <= 1;
-          insn.RVALID <= 1;
-          data.ARREADY <= 1;
-          data.RVALID <= 1;
+    if (!axi.ARESETn) begin
+      // Initialize control signals upon reset
+      insn.ARREADY <= 1;
+      insn.RVALID <= 1;
 
-          data.AWREADY <= 1;
-          data.WREADY <= 1;
-          data.BVALID <= 1;
+      data.ARREADY <= 1;
+      data.RVALID <= 1;
+      
+      data.AWREADY <= 1;
+      data.WREADY <= 1;
+      data.BVALID <= 1;
+    end else begin
+      // Non reset symbol
+
+      // Read
+      if (insn.ARVALID) begin
+        insn.RDATA <= mem_array[insn.ARADDR[AddrMsb:AddrLsb]];
+        insn.RRESP  <= ResponseOkay;
+        insn.RVALID <= 1'b1;  // Update the RVALID signal upon read
       end else begin
-          // Read
-          if (insn.ARVALID) begin
-              insn.RDATA <= mem_array[insn.ARADDR[AddrMsb:AddrLsb]];
-              
-          end
-          if (data.ARVALID) begin
-              data.RDATA <= mem_array[data.ARADDR[AddrMsb:AddrLsb]];
-          end
-
-          // Write
-          if (data.AWVALID && data.WVALID) begin
-              mem_array[data.AWADDR[AddrMsb:AddrLsb]] <= data.WDATA;
-              data.BRESP <= ResponseOkay;
-          end
+        // Clear the read outputs if no valid read
+        insn.RDATA  <= 32'b0;
+        insn.RVALID <= 1'b0;
+        insn.RRESP  <= ResponseOkay;
       end
+
+      if (data.ARVALID && data.ARREADY) begin
+        data.RDATA <= mem_array[data.ARADDR[AddrMsb:AddrLsb]];
+        data.RRESP  <= ResponseOkay;
+        data.RVALID <= 1'b1;  // Update the RVALID signal upon read
+      end else if (data.AWVALID && data.WVALID && data.AWREADY && data.WREADY) begin
+        // Write, handling byte enable for partial updates
+        if (data.WSTRB[0]) mem_array[data.AWADDR[AddrMsb:AddrLsb]][7:0]   <= data.WDATA[7:0];
+        if (data.WSTRB[1]) mem_array[data.AWADDR[AddrMsb:AddrLsb]][15:8]  <= data.WDATA[15:8];
+        if (data.WSTRB[2]) mem_array[data.AWADDR[AddrMsb:AddrLsb]][23:16] <= data.WDATA[23:16];
+        if (data.WSTRB[3]) mem_array[data.AWADDR[AddrMsb:AddrLsb]][31:24] <= data.WDATA[31:24];
+
+        data.BRESP  <= ResponseOkay;
+        data.BVALID <= 1'b1;  // Confirm write operation
+      end else begin
+        // Clear write and read outputs if no valid operation
+        data.BVALID <= 1'b0;
+        data.RVALID <= 1'b0;
+        data.RDATA  <= 32'b0;
+        data.RRESP  <= ResponseOkay;
+        data.BRESP  <= ResponseOkay;
+      end
+    end
   end
+
+
 endmodule
 
 /** This is used for testing MemoryAxiLite in simulation, since Verilator doesn't allow
@@ -413,6 +437,9 @@ typedef struct packed {
   logic halt;
   logic illegal_insn; // Reset signal
   cycle_status_e cycle_status;
+  logic [`OPCODE_SIZE] insn_opcode;
+  logic is_lb, is_lh, is_lw, is_lbu, is_lhu;
+  logic [`REG_SIZE] effective_addr;
 } stage_writeback_t;
 
 module DatapathAxilMemory (
@@ -477,9 +504,13 @@ module DatapathAxilMemory (
       f_cycle_status <= CYCLE_NO_STALL;
 
       f_pc_current <= flag_taken ? pc_temp : (stall_flag_bf_execute || stall_flag_bf_decode || stall_flag_bf_memory ? f_pc_current : f_pc_current + 4);
-
-      imem.ARADDR <= flag_taken ? pc_temp : (stall_flag_bf_execute || stall_flag_bf_decode || stall_flag_bf_memory ? f_pc_current : f_pc_current + 4);
     end
+  end
+
+  always_comb begin
+    imem.ARVALID = 1'b1;
+    imem.RREADY = 1'b1;
+    imem.ARADDR = f_pc_current;
   end
 
   // Here's how to disassemble an insn into a string you can view in GtkWave.
@@ -510,6 +541,17 @@ module DatapathAxilMemory (
   // Making temp variable to overwrite in always comb
   // This is for skipping in case of a branch
 
+
+  always_comb begin
+    // Read the RDATA from the f_insn
+    f_insn = imem.RDATA;
+
+    // IF A BRANCH, make sure to check
+    if (decode_state.cycle_status == CYCLE_TAKEN_BRANCH) begin
+      f_insn = 32'd0;
+    end
+  end
+
   stage_decode_t decode_state;
   always_ff @(posedge clk) begin
     if (rst) begin
@@ -521,8 +563,8 @@ module DatapathAxilMemory (
     end else begin
       begin
         decode_state <= '{
-          pc: flag_taken ? 0 : (stall_flag_bf_execute || stall_flag_bf_memory || stall_flag_bf_decode ? decode_state.pc : imem.ARADDR),
-          
+          pc: flag_taken ? 0 : (stall_flag_bf_execute || stall_flag_bf_memory || stall_flag_bf_decode ? decode_state.pc : f_pc_current),
+
           insn: flag_taken ? 32'h00000000 : (stall_flag_bf_execute || stall_flag_bf_memory || stall_flag_bf_decode ? decode_state.insn : f_insn),
 
           cycle_status: flag_taken ? cycle_status_d :   (stall_flag_bf_execute || stall_flag_bf_memory ? decode_state.cycle_status : f_cycle_status)
@@ -534,7 +576,7 @@ module DatapathAxilMemory (
   Disasm #(
       .PREFIX("D")
   ) disasm_1decode (
-      .insn  (decode_state.insn),
+      .insn  (f_insn),
       .rd   (5'b0),
       .rs1  (5'b0),
       .rs2  (5'b0),
@@ -559,13 +601,13 @@ module DatapathAxilMemory (
   wire [`OPCODE_SIZE] insn_opcode;
 
   // split R-type instruction - see section 2.2 of RiscV spec
-  assign {insn_funct7, insn_rs2, insn_rs1, insn_funct3, insn_rd, insn_opcode} = decode_state.insn;
+  assign {insn_funct7, insn_rs2, insn_rs1, insn_funct3, insn_rd, insn_opcode} = f_insn;
 
   // setup for I, S, B & J type instructions
   // I - short immediates and loads
   wire [11:0] imm_i;
-  assign imm_i = decode_state.insn[31:20];
-  wire [ 4:0] imm_shamt = decode_state.insn[24:20];
+  assign imm_i = f_insn[31:20];
+  wire [ 4:0] imm_shamt = f_insn[24:20];
 
   // S - stores
   wire [11:0] imm_s;
@@ -577,7 +619,7 @@ module DatapathAxilMemory (
 
   // J - unconditional jumps
   wire [20:0] imm_j;
-  assign {imm_j[20], imm_j[10:1], imm_j[11], imm_j[19:12], imm_j[0]} = {decode_state.insn[31:12], 1'b0};
+  assign {imm_j[20], imm_j[10:1], imm_j[11], imm_j[19:12], imm_j[0]} = {f_insn[31:12], 1'b0};
 
   wire [`REG_SIZE] imm_i_sext = {{20{imm_i[11]}}, imm_i[11:0]};
   wire [`REG_SIZE] imm_s_sext = {{20{imm_s[11]}}, imm_s[11:0]};
@@ -604,55 +646,55 @@ module DatapathAxilMemory (
   wire insn_jal = insn_opcode == OpJal;
   wire insn_jalr = insn_opcode == OpJalr;
 
-  wire insn_beq = insn_opcode == OpBranch && decode_state.insn[14:12] == 3'b000;
-  wire insn_bne = insn_opcode == OpBranch && decode_state.insn[14:12] == 3'b001;
-  wire insn_blt = insn_opcode == OpBranch && decode_state.insn[14:12] == 3'b100;
-  wire insn_bge = insn_opcode == OpBranch && decode_state.insn[14:12] == 3'b101;
-  wire insn_bltu = insn_opcode == OpBranch && decode_state.insn[14:12] == 3'b110;
-  wire insn_bgeu = insn_opcode == OpBranch && decode_state.insn[14:12] == 3'b111;
+  wire insn_beq = insn_opcode == OpBranch && f_insn[14:12] == 3'b000;
+  wire insn_bne = insn_opcode == OpBranch && f_insn[14:12] == 3'b001;
+  wire insn_blt = insn_opcode == OpBranch && f_insn[14:12] == 3'b100;
+  wire insn_bge = insn_opcode == OpBranch && f_insn[14:12] == 3'b101;
+  wire insn_bltu = insn_opcode == OpBranch && f_insn[14:12] == 3'b110;
+  wire insn_bgeu = insn_opcode == OpBranch && f_insn[14:12] == 3'b111;
 
-  wire insn_lb = insn_opcode == OpLoad && decode_state.insn[14:12] == 3'b000;
-  wire insn_lh = insn_opcode == OpLoad && decode_state.insn[14:12] == 3'b001;
-  wire insn_lw = insn_opcode == OpLoad && decode_state.insn[14:12] == 3'b010;
-  wire insn_lbu = insn_opcode == OpLoad && decode_state.insn[14:12] == 3'b100;
-  wire insn_lhu = insn_opcode == OpLoad && decode_state.insn[14:12] == 3'b101;
+  wire insn_lb = insn_opcode == OpLoad && f_insn[14:12] == 3'b000;
+  wire insn_lh = insn_opcode == OpLoad && f_insn[14:12] == 3'b001;
+  wire insn_lw = insn_opcode == OpLoad && f_insn[14:12] == 3'b010;
+  wire insn_lbu = insn_opcode == OpLoad && f_insn[14:12] == 3'b100;
+  wire insn_lhu = insn_opcode == OpLoad && f_insn[14:12] == 3'b101;
 
-  wire insn_sb = insn_opcode == OpStore && decode_state.insn[14:12] == 3'b000;
-  wire insn_sh = insn_opcode == OpStore && decode_state.insn[14:12] == 3'b001;
-  wire insn_sw = insn_opcode == OpStore && decode_state.insn[14:12] == 3'b010;
+  wire insn_sb = insn_opcode == OpStore && f_insn[14:12] == 3'b000;
+  wire insn_sh = insn_opcode == OpStore && f_insn[14:12] == 3'b001;
+  wire insn_sw = insn_opcode == OpStore && f_insn[14:12] == 3'b010;
 
-  wire insn_addi = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b000;
-  wire insn_slti = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b010;
-  wire insn_sltiu = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b011;
-  wire insn_xori = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b100;
-  wire insn_ori = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b110;
-  wire insn_andi = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b111;
+  wire insn_addi = insn_opcode == OpRegImm && f_insn[14:12] == 3'b000;
+  wire insn_slti = insn_opcode == OpRegImm && f_insn[14:12] == 3'b010;
+  wire insn_sltiu = insn_opcode == OpRegImm && f_insn[14:12] == 3'b011;
+  wire insn_xori = insn_opcode == OpRegImm && f_insn[14:12] == 3'b100;
+  wire insn_ori = insn_opcode == OpRegImm && f_insn[14:12] == 3'b110;
+  wire insn_andi = insn_opcode == OpRegImm && f_insn[14:12] == 3'b111;
 
-  wire insn_slli = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b001 && decode_state.insn[31:25] == 7'd0;
-  wire insn_srli = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b101 && decode_state.insn[31:25] == 7'd0;
-  wire insn_srai = insn_opcode == OpRegImm && decode_state.insn[14:12] == 3'b101 && decode_state.insn[31:25] == 7'b0100000;
+  wire insn_slli = insn_opcode == OpRegImm && f_insn[14:12] == 3'b001 && f_insn[31:25] == 7'd0;
+  wire insn_srli = insn_opcode == OpRegImm && f_insn[14:12] == 3'b101 && f_insn[31:25] == 7'd0;
+  wire insn_srai = insn_opcode == OpRegImm && f_insn[14:12] == 3'b101 && f_insn[31:25] == 7'b0100000;
 
-  wire insn_add = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b000 && decode_state.insn[31:25] == 7'd0;
-  wire insn_sub  = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b000 && decode_state.insn[31:25] == 7'b0100000;
-  wire insn_sll = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b001 && decode_state.insn[31:25] == 7'd0;
-  wire insn_slt = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b010 && decode_state.insn[31:25] == 7'd0;
-  wire insn_sltu = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b011 && decode_state.insn[31:25] == 7'd0;
-  wire insn_xor = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b100 && decode_state.insn[31:25] == 7'd0;
-  wire insn_srl = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b101 && decode_state.insn[31:25] == 7'd0;
-  wire insn_sra  = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b101 && decode_state.insn[31:25] == 7'b0100000;
-  wire insn_or = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b110 && decode_state.insn[31:25] == 7'd0;
-  wire insn_and = insn_opcode == OpRegReg && decode_state.insn[14:12] == 3'b111 && decode_state.insn[31:25] == 7'd0;
+  wire insn_add = insn_opcode == OpRegReg && f_insn[14:12] == 3'b000 && f_insn[31:25] == 7'd0;
+  wire insn_sub  = insn_opcode == OpRegReg && f_insn[14:12] == 3'b000 && f_insn[31:25] == 7'b0100000;
+  wire insn_sll = insn_opcode == OpRegReg && f_insn[14:12] == 3'b001 && f_insn[31:25] == 7'd0;
+  wire insn_slt = insn_opcode == OpRegReg && f_insn[14:12] == 3'b010 && f_insn[31:25] == 7'd0;
+  wire insn_sltu = insn_opcode == OpRegReg && f_insn[14:12] == 3'b011 && f_insn[31:25] == 7'd0;
+  wire insn_xor = insn_opcode == OpRegReg && f_insn[14:12] == 3'b100 && f_insn[31:25] == 7'd0;
+  wire insn_srl = insn_opcode == OpRegReg && f_insn[14:12] == 3'b101 && f_insn[31:25] == 7'd0;
+  wire insn_sra  = insn_opcode == OpRegReg && f_insn[14:12] == 3'b101 && f_insn[31:25] == 7'b0100000;
+  wire insn_or = insn_opcode == OpRegReg && f_insn[14:12] == 3'b110 && f_insn[31:25] == 7'd0;
+  wire insn_and = insn_opcode == OpRegReg && f_insn[14:12] == 3'b111 && f_insn[31:25] == 7'd0;
 
-  wire insn_mul    = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b000;
-  wire insn_mulh   = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b001;
-  wire insn_mulhsu = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b010;
-  wire insn_mulhu  = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b011;
-  wire insn_div    = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b100;
-  wire insn_divu   = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b101;
-  wire insn_rem    = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b110;
-  wire insn_remu   = insn_opcode == OpRegReg && decode_state.insn[31:25] == 7'd1 && decode_state.insn[14:12] == 3'b111;
+  wire insn_mul    = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b000;
+  wire insn_mulh   = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b001;
+  wire insn_mulhsu = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b010;
+  wire insn_mulhu  = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b011;
+  wire insn_div    = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b100;
+  wire insn_divu   = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b101;
+  wire insn_rem    = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b110;
+  wire insn_remu   = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b111;
 
-  wire insn_ecall = insn_opcode == OpEnviron && decode_state.insn[31:7] == 25'd0;
+  wire insn_ecall = insn_opcode == OpEnviron && f_insn[31:7] == 25'd0;
   wire insn_fence = insn_opcode == OpMiscMem;
 
   // Reading from registers
@@ -714,7 +756,7 @@ module DatapathAxilMemory (
     end else begin
       execute_state <= '{
         pc: stall_flag_bf_memory ? execute_state.pc : (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : decode_state.pc,
-        insn: stall_flag_bf_memory ? execute_state.insn : (flag_taken || stall_flag_bf_execute || insn_fence) ? 32'h00000000 : decode_state.insn,
+        insn: stall_flag_bf_memory ? execute_state.insn : (flag_taken || stall_flag_bf_execute || insn_fence) ? 32'h00000000 : f_insn,
         cycle_status: stall_flag_bf_memory ? execute_state.cycle_status : insn_fence ? CYCLE_FENCEI : (stall_flag_bf_memory ? CYCLE_LOAD2USE : cycle_status_d),
         insn_funct7: stall_flag_bf_memory ? execute_state.insn_funct7 : insn_funct7,
         insn_rs1: stall_flag_bf_memory ? execute_state.insn_rs1 : (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : insn_rs1,
@@ -870,7 +912,6 @@ module DatapathAxilMemory (
     pc_temp = f_pc_current;
 
     // Set f instruction (pushed to decode)
-    f_insn = imem.RDATA;
 
     rd_data = 32'b0;
     alu_value = cla_sum;
@@ -1302,7 +1343,7 @@ module DatapathAxilMemory (
   );
 
   /****************/
-  /* MEMORY STAGE*/
+  /* MEMORY STAGE */
   /****************/
   stage_memory_t memory_state;
   always_ff @(posedge clk) begin
@@ -1406,6 +1447,7 @@ module DatapathAxilMemory (
     lowest_bits_memory_access = 2'b0;
     // store_data_to_dmem = 32'b0;
     dmem.WSTRB = 4'b0;
+    dmem.WDATA = 32'b0;
     dmem.AWADDR = 32'b0;
     
     flag3 = 32'd0;
@@ -1419,32 +1461,7 @@ module DatapathAxilMemory (
     // Loading and storing instructions
     if (memory_state.insn_opcode == OpLoad) begin
         // Memory address
-        lowest_bits_memory_access = memory_state.effective_addr[1:0]; 
         dmem.AWADDR = memory_state.addr_to_dmem_m; 
-
-        if (memory_state.is_lb || memory_state.is_lbu) begin
-          case (lowest_bits_memory_access)
-            2'b00: rd_data_memory = memory_state.is_lb ? {{24{dmem.RDATA[7]}}, dmem.RDATA[7:0]} : {{24{1'b0}}, dmem.RDATA[7:0]};
-            
-            2'b01: rd_data_memory = memory_state.is_lb ? {{24{dmem.RDATA[15]}}, dmem.RDATA[15:8]} : {{24{1'b0}}, dmem.RDATA[15:8]};
-            
-            2'b10: rd_data_memory = memory_state.is_lb ? {{24{dmem.RDATA[23]}}, dmem.RDATA[23:16]} : {{24{1'b0}}, dmem.RDATA[23:16]};
-            
-            2'b11: rd_data_memory = memory_state.is_lb ? {{24{dmem.RDATA[31]}}, dmem.RDATA[31:24]} : {{24{1'b0}}, dmem.RDATA[31:24]};
-          endcase
-        end
-
-        if (memory_state.is_lh || memory_state.is_lhu) begin
-          case (lowest_bits_memory_access[1])
-            1'b0: rd_data_memory = memory_state.is_lh ? {{16{dmem.RDATA[15]}}, dmem.RDATA[15:0]} : {{16{1'b0}}, dmem.RDATA[15:0]};
-            1'b1: rd_data_memory = memory_state.is_lh ? {{16{dmem.RDATA[31]}}, dmem.RDATA[31:16]} : {{16{1'b0}}, dmem.RDATA[31:16]};
-          endcase
-        end
-
-        if (memory_state.is_lw) begin
-          rd_data_memory = dmem.RDATA;
-        end
-
     end else if (memory_state.insn_opcode == OpStore) begin
         lowest_bits_memory_access = memory_state.effective_addr[1:0]; 
 
@@ -1453,6 +1470,7 @@ module DatapathAxilMemory (
           dmem.WSTRB = 4'b0001 << lowest_bits_memory_access;
           dmem.AWADDR = memory_state.effective_addr & ~32'h3;
         end
+
         if (memory_state.is_sh) begin
           if (lowest_bits_memory_access[1] == 1) begin
             dmem.WDATA = rs2_data_memory << 16;
@@ -1466,6 +1484,7 @@ module DatapathAxilMemory (
           
           dmem.AWADDR = memory_state.effective_addr & ~32'h3;
         end
+
         if (memory_state.is_sw) begin
           dmem.WDATA = rs2_data_memory;
           dmem.WSTRB = 4'b1111;
@@ -1512,7 +1531,6 @@ module DatapathAxilMemory (
   always_ff @(posedge clk) begin
     if (rst) begin
       writeback_state <= '{
-        // inputbCLA32: 0,
         pc: 0,
         insn: 0,
         rd_data: 0,
@@ -1525,7 +1543,14 @@ module DatapathAxilMemory (
         reset: 0,
         illegal_insn: 0,
         cycle_status: CYCLE_RESET,
-        halt: 0
+        halt: 0,
+        insn_opcode: 0,
+        effective_addr: 0,
+        is_lb: 0,
+        is_lbu: 0,
+        is_lh: 0,
+        is_lhu: 0,
+        is_lw: 0
       };
     end else begin
       writeback_state <= '{
@@ -1541,8 +1566,52 @@ module DatapathAxilMemory (
         reset: memory_state.reset,
         illegal_insn: memory_state.illegal_insn,
         cycle_status: memory_state.cycle_status,
-        halt: memory_state.halt
+        halt: memory_state.halt,
+        insn_opcode: memory_state.insn_opcode,
+        effective_addr: memory_state.effective_addr,
+        is_lb: memory_state.is_lb,
+        is_lbu: memory_state.is_lbu,
+        is_lh: memory_state.is_lh,
+        is_lhu: memory_state.is_lhu,
+        is_lw: memory_state.is_lw
       };
+    end
+  end
+
+  logic [1:0] lowest_bits_memory_access_writeback;
+  logic [`REG_SIZE] rd_data_writeback;
+
+  always_comb begin
+    lowest_bits_memory_access_writeback = 2'b0;
+    rd_data_writeback = writeback_state.rd_data;
+
+    // Loading and storing instructions
+    if (writeback_state.insn_opcode == OpLoad) begin
+      // Memory address
+      lowest_bits_memory_access_writeback = writeback_state.effective_addr[1:0]; 
+
+      if (writeback_state.is_lb || writeback_state.is_lbu) begin
+        case (lowest_bits_memory_access_writeback)
+          2'b00: rd_data_writeback = writeback_state.is_lb ? {{24{dmem.RDATA[7]}}, dmem.RDATA[7:0]} : {{24{1'b0}}, dmem.RDATA[7:0]};
+          
+          2'b01: rd_data_writeback = writeback_state.is_lb ? {{24{dmem.RDATA[15]}}, dmem.RDATA[15:8]} : {{24{1'b0}}, dmem.RDATA[15:8]};
+          
+          2'b10: rd_data_writeback = writeback_state.is_lb ? {{24{dmem.RDATA[23]}}, dmem.RDATA[23:16]} : {{24{1'b0}}, dmem.RDATA[23:16]};
+          
+          2'b11: rd_data_writeback = writeback_state.is_lb ? {{24{dmem.RDATA[31]}}, dmem.RDATA[31:24]} : {{24{1'b0}}, dmem.RDATA[31:24]};
+        endcase
+      end
+
+      if (writeback_state.is_lh || writeback_state.is_lhu) begin
+        case (lowest_bits_memory_access_writeback[1])
+          1'b0: rd_data_writeback = writeback_state.is_lh ? {{16{dmem.RDATA[15]}}, dmem.RDATA[15:0]} : {{16{1'b0}}, dmem.RDATA[15:0]};
+          1'b1: rd_data_writeback = writeback_state.is_lh ? {{16{dmem.RDATA[31]}}, dmem.RDATA[31:16]} : {{16{1'b0}}, dmem.RDATA[31:16]};
+        endcase
+      end
+
+      if (writeback_state.is_lw) begin
+        rd_data_writeback = dmem.RDATA;
+      end
     end
   end
 
@@ -1559,7 +1628,7 @@ module DatapathAxilMemory (
       .rd   (writeback_state.rd),
       .rs1  (writeback_state.rs1),
       .rs2  (writeback_state.rs2),
-      .rd_data   (writeback_state.rd_data),
+      .rd_data   (rd_data_writeback),
       .rs1_data  (writeback_state.rs1_data),
       .rs2_data  (writeback_state.rs2_data),
       .alu_value  (32'b0),
