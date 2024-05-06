@@ -163,55 +163,46 @@ module MemoryAxiLite #(
 
   always_ff @(posedge axi.ACLK) begin
     if (!axi.ARESETn) begin
-      // Initialize control signals upon reset
-      insn.ARREADY <= 1;
-      insn.RVALID <= 1;
-
-      data.ARREADY <= 1;
-      data.RVALID <= 1;
+      // Reset
+      insn.RVALID  <= 1'b0;
+      insn.RDATA   <= 32'b0;
+      insn.BVALID  <= 1'b0;
       
-      data.AWREADY <= 1;
-      data.WREADY <= 1;
-      data.BVALID <= 1;
+      insn.ARREADY <= 1'b1;
+      insn.WREADY  <= 1'b1;
+
+      insn.RRESP   <= ResponseOkay;
+      insn.BRESP   <= ResponseOkay;
     end else begin
       // Non reset symbol
 
       // Read
       if (insn.ARVALID) begin
         insn.RDATA <= mem_array[insn.ARADDR[AddrMsb:AddrLsb]];
-        insn.RRESP  <= ResponseOkay;
-        insn.RVALID <= 1'b1;  // Update the RVALID signal upon read
+        insn.RVALID <= 1'b1; 
       end else begin
         // Clear the read outputs if no valid read
         insn.RDATA  <= 32'b0;
-        insn.RVALID <= 1'b0;
-        insn.RRESP  <= ResponseOkay;
       end
 
-      if (data.ARVALID && data.ARREADY) begin
+      if (data.ARVALID) begin
         data.RDATA <= mem_array[data.ARADDR[AddrMsb:AddrLsb]];
-        data.RRESP  <= ResponseOkay;
-        data.RVALID <= 1'b1;  // Update the RVALID signal upon read
-      end else if (data.AWVALID && data.WVALID && data.AWREADY && data.WREADY) begin
+        data.RVALID <= 1'b1; 
+      end else if (data.WVALID) begin
         // Write, handling byte enable for partial updates
         if (data.WSTRB[0]) mem_array[data.AWADDR[AddrMsb:AddrLsb]][7:0]   <= data.WDATA[7:0];
         if (data.WSTRB[1]) mem_array[data.AWADDR[AddrMsb:AddrLsb]][15:8]  <= data.WDATA[15:8];
         if (data.WSTRB[2]) mem_array[data.AWADDR[AddrMsb:AddrLsb]][23:16] <= data.WDATA[23:16];
         if (data.WSTRB[3]) mem_array[data.AWADDR[AddrMsb:AddrLsb]][31:24] <= data.WDATA[31:24];
 
-        data.BRESP  <= ResponseOkay;
-        data.BVALID <= 1'b1;  // Confirm write operation
+        data.BVALID <= 1'b1;
       end else begin
-        // Clear write and read outputs if no valid operation
         data.BVALID <= 1'b0;
         data.RVALID <= 1'b0;
         data.RDATA  <= 32'b0;
-        data.RRESP  <= ResponseOkay;
-        data.BRESP  <= ResponseOkay;
       end
     end
   end
-
 
 endmodule
 
@@ -541,14 +532,15 @@ module DatapathAxilMemory (
   // Making temp variable to overwrite in always comb
   // This is for skipping in case of a branch
 
-
+  logic [`REG_SIZE] d_instruction;
+  
   always_comb begin
-    // Read the RDATA from the f_insn
-    f_insn = imem.RDATA;
+    d_instruction = imem.RDATA;
 
-    // IF A BRANCH, make sure to check
-    if (decode_state.cycle_status == CYCLE_TAKEN_BRANCH) begin
-      f_insn = 32'd0;
+    if (execute_state.cycle_status == CYCLE_LOAD2USE) begin
+      d_instruction = decode_state.insn;
+    end else if (decode_state.cycle_status == CYCLE_TAKEN_BRANCH) begin
+      d_instruction = 0;
     end
   end
 
@@ -565,18 +557,19 @@ module DatapathAxilMemory (
         decode_state <= '{
           pc: flag_taken ? 0 : (stall_flag_bf_execute || stall_flag_bf_memory || stall_flag_bf_decode ? decode_state.pc : f_pc_current),
 
-          insn: flag_taken ? 32'h00000000 : (stall_flag_bf_execute || stall_flag_bf_memory || stall_flag_bf_decode ? decode_state.insn : f_insn),
+          insn: flag_taken ? 32'h00000000 : (stall_flag_bf_execute || stall_flag_bf_memory || stall_flag_bf_decode ? d_instruction : 0),
 
           cycle_status: flag_taken ? cycle_status_d :   (stall_flag_bf_execute || stall_flag_bf_memory ? decode_state.cycle_status : f_cycle_status)
         };
       end
     end
   end
+
   wire [255:0] d_disasm;
   Disasm #(
       .PREFIX("D")
   ) disasm_1decode (
-      .insn  (f_insn),
+      .insn  (d_instruction),
       .rd   (5'b0),
       .rs1  (5'b0),
       .rs2  (5'b0),
@@ -601,13 +594,13 @@ module DatapathAxilMemory (
   wire [`OPCODE_SIZE] insn_opcode;
 
   // split R-type instruction - see section 2.2 of RiscV spec
-  assign {insn_funct7, insn_rs2, insn_rs1, insn_funct3, insn_rd, insn_opcode} = f_insn;
+  assign {insn_funct7, insn_rs2, insn_rs1, insn_funct3, insn_rd, insn_opcode} = d_instruction;
 
   // setup for I, S, B & J type instructions
   // I - short immediates and loads
   wire [11:0] imm_i;
-  assign imm_i = f_insn[31:20];
-  wire [ 4:0] imm_shamt = f_insn[24:20];
+  assign imm_i = d_instruction[31:20];
+  wire [ 4:0] imm_shamt = d_instruction[24:20];
 
   // S - stores
   wire [11:0] imm_s;
@@ -619,7 +612,7 @@ module DatapathAxilMemory (
 
   // J - unconditional jumps
   wire [20:0] imm_j;
-  assign {imm_j[20], imm_j[10:1], imm_j[11], imm_j[19:12], imm_j[0]} = {f_insn[31:12], 1'b0};
+  assign {imm_j[20], imm_j[10:1], imm_j[11], imm_j[19:12], imm_j[0]} = {d_instruction[31:12], 1'b0};
 
   wire [`REG_SIZE] imm_i_sext = {{20{imm_i[11]}}, imm_i[11:0]};
   wire [`REG_SIZE] imm_s_sext = {{20{imm_s[11]}}, imm_s[11:0]};
@@ -646,55 +639,55 @@ module DatapathAxilMemory (
   wire insn_jal = insn_opcode == OpJal;
   wire insn_jalr = insn_opcode == OpJalr;
 
-  wire insn_beq = insn_opcode == OpBranch && f_insn[14:12] == 3'b000;
-  wire insn_bne = insn_opcode == OpBranch && f_insn[14:12] == 3'b001;
-  wire insn_blt = insn_opcode == OpBranch && f_insn[14:12] == 3'b100;
-  wire insn_bge = insn_opcode == OpBranch && f_insn[14:12] == 3'b101;
-  wire insn_bltu = insn_opcode == OpBranch && f_insn[14:12] == 3'b110;
-  wire insn_bgeu = insn_opcode == OpBranch && f_insn[14:12] == 3'b111;
+  wire insn_beq = insn_opcode == OpBranch && d_instruction[14:12] == 3'b000;
+  wire insn_bne = insn_opcode == OpBranch && d_instruction[14:12] == 3'b001;
+  wire insn_blt = insn_opcode == OpBranch && d_instruction[14:12] == 3'b100;
+  wire insn_bge = insn_opcode == OpBranch && d_instruction[14:12] == 3'b101;
+  wire insn_bltu = insn_opcode == OpBranch && d_instruction[14:12] == 3'b110;
+  wire insn_bgeu = insn_opcode == OpBranch && d_instruction[14:12] == 3'b111;
 
-  wire insn_lb = insn_opcode == OpLoad && f_insn[14:12] == 3'b000;
-  wire insn_lh = insn_opcode == OpLoad && f_insn[14:12] == 3'b001;
-  wire insn_lw = insn_opcode == OpLoad && f_insn[14:12] == 3'b010;
-  wire insn_lbu = insn_opcode == OpLoad && f_insn[14:12] == 3'b100;
-  wire insn_lhu = insn_opcode == OpLoad && f_insn[14:12] == 3'b101;
+  wire insn_lb = insn_opcode == OpLoad && d_instruction[14:12] == 3'b000;
+  wire insn_lh = insn_opcode == OpLoad && d_instruction[14:12] == 3'b001;
+  wire insn_lw = insn_opcode == OpLoad && d_instruction[14:12] == 3'b010;
+  wire insn_lbu = insn_opcode == OpLoad && d_instruction[14:12] == 3'b100;
+  wire insn_lhu = insn_opcode == OpLoad && d_instruction[14:12] == 3'b101;
 
-  wire insn_sb = insn_opcode == OpStore && f_insn[14:12] == 3'b000;
-  wire insn_sh = insn_opcode == OpStore && f_insn[14:12] == 3'b001;
-  wire insn_sw = insn_opcode == OpStore && f_insn[14:12] == 3'b010;
+  wire insn_sb = insn_opcode == OpStore && d_instruction[14:12] == 3'b000;
+  wire insn_sh = insn_opcode == OpStore && d_instruction[14:12] == 3'b001;
+  wire insn_sw = insn_opcode == OpStore && d_instruction[14:12] == 3'b010;
 
-  wire insn_addi = insn_opcode == OpRegImm && f_insn[14:12] == 3'b000;
-  wire insn_slti = insn_opcode == OpRegImm && f_insn[14:12] == 3'b010;
-  wire insn_sltiu = insn_opcode == OpRegImm && f_insn[14:12] == 3'b011;
-  wire insn_xori = insn_opcode == OpRegImm && f_insn[14:12] == 3'b100;
-  wire insn_ori = insn_opcode == OpRegImm && f_insn[14:12] == 3'b110;
-  wire insn_andi = insn_opcode == OpRegImm && f_insn[14:12] == 3'b111;
+  wire insn_addi = insn_opcode == OpRegImm && d_instruction[14:12] == 3'b000;
+  wire insn_slti = insn_opcode == OpRegImm && d_instruction[14:12] == 3'b010;
+  wire insn_sltiu = insn_opcode == OpRegImm && d_instruction[14:12] == 3'b011;
+  wire insn_xori = insn_opcode == OpRegImm && d_instruction[14:12] == 3'b100;
+  wire insn_ori = insn_opcode == OpRegImm && d_instruction[14:12] == 3'b110;
+  wire insn_andi = insn_opcode == OpRegImm && d_instruction[14:12] == 3'b111;
 
-  wire insn_slli = insn_opcode == OpRegImm && f_insn[14:12] == 3'b001 && f_insn[31:25] == 7'd0;
-  wire insn_srli = insn_opcode == OpRegImm && f_insn[14:12] == 3'b101 && f_insn[31:25] == 7'd0;
-  wire insn_srai = insn_opcode == OpRegImm && f_insn[14:12] == 3'b101 && f_insn[31:25] == 7'b0100000;
+  wire insn_slli = insn_opcode == OpRegImm && d_instruction[14:12] == 3'b001 && d_instruction[31:25] == 7'd0;
+  wire insn_srli = insn_opcode == OpRegImm && d_instruction[14:12] == 3'b101 && d_instruction[31:25] == 7'd0;
+  wire insn_srai = insn_opcode == OpRegImm && d_instruction[14:12] == 3'b101 && d_instruction[31:25] == 7'b0100000;
 
-  wire insn_add = insn_opcode == OpRegReg && f_insn[14:12] == 3'b000 && f_insn[31:25] == 7'd0;
-  wire insn_sub  = insn_opcode == OpRegReg && f_insn[14:12] == 3'b000 && f_insn[31:25] == 7'b0100000;
-  wire insn_sll = insn_opcode == OpRegReg && f_insn[14:12] == 3'b001 && f_insn[31:25] == 7'd0;
-  wire insn_slt = insn_opcode == OpRegReg && f_insn[14:12] == 3'b010 && f_insn[31:25] == 7'd0;
-  wire insn_sltu = insn_opcode == OpRegReg && f_insn[14:12] == 3'b011 && f_insn[31:25] == 7'd0;
-  wire insn_xor = insn_opcode == OpRegReg && f_insn[14:12] == 3'b100 && f_insn[31:25] == 7'd0;
-  wire insn_srl = insn_opcode == OpRegReg && f_insn[14:12] == 3'b101 && f_insn[31:25] == 7'd0;
-  wire insn_sra  = insn_opcode == OpRegReg && f_insn[14:12] == 3'b101 && f_insn[31:25] == 7'b0100000;
-  wire insn_or = insn_opcode == OpRegReg && f_insn[14:12] == 3'b110 && f_insn[31:25] == 7'd0;
-  wire insn_and = insn_opcode == OpRegReg && f_insn[14:12] == 3'b111 && f_insn[31:25] == 7'd0;
+  wire insn_add = insn_opcode == OpRegReg && d_instruction[14:12] == 3'b000 && d_instruction[31:25] == 7'd0;
+  wire insn_sub  = insn_opcode == OpRegReg && d_instruction[14:12] == 3'b000 && d_instruction[31:25] == 7'b0100000;
+  wire insn_sll = insn_opcode == OpRegReg && d_instruction[14:12] == 3'b001 && d_instruction[31:25] == 7'd0;
+  wire insn_slt = insn_opcode == OpRegReg && d_instruction[14:12] == 3'b010 && d_instruction[31:25] == 7'd0;
+  wire insn_sltu = insn_opcode == OpRegReg && d_instruction[14:12] == 3'b011 && d_instruction[31:25] == 7'd0;
+  wire insn_xor = insn_opcode == OpRegReg && d_instruction[14:12] == 3'b100 && d_instruction[31:25] == 7'd0;
+  wire insn_srl = insn_opcode == OpRegReg && d_instruction[14:12] == 3'b101 && d_instruction[31:25] == 7'd0;
+  wire insn_sra  = insn_opcode == OpRegReg && d_instruction[14:12] == 3'b101 && d_instruction[31:25] == 7'b0100000;
+  wire insn_or = insn_opcode == OpRegReg && d_instruction[14:12] == 3'b110 && d_instruction[31:25] == 7'd0;
+  wire insn_and = insn_opcode == OpRegReg && d_instruction[14:12] == 3'b111 && d_instruction[31:25] == 7'd0;
 
-  wire insn_mul    = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b000;
-  wire insn_mulh   = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b001;
-  wire insn_mulhsu = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b010;
-  wire insn_mulhu  = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b011;
-  wire insn_div    = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b100;
-  wire insn_divu   = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b101;
-  wire insn_rem    = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b110;
-  wire insn_remu   = insn_opcode == OpRegReg && f_insn[31:25] == 7'd1 && f_insn[14:12] == 3'b111;
+  wire insn_mul    = insn_opcode == OpRegReg && d_instruction[31:25] == 7'd1 && d_instruction[14:12] == 3'b000;
+  wire insn_mulh   = insn_opcode == OpRegReg && d_instruction[31:25] == 7'd1 && d_instruction[14:12] == 3'b001;
+  wire insn_mulhsu = insn_opcode == OpRegReg && d_instruction[31:25] == 7'd1 && d_instruction[14:12] == 3'b010;
+  wire insn_mulhu  = insn_opcode == OpRegReg && d_instruction[31:25] == 7'd1 && d_instruction[14:12] == 3'b011;
+  wire insn_div    = insn_opcode == OpRegReg && d_instruction[31:25] == 7'd1 && d_instruction[14:12] == 3'b100;
+  wire insn_divu   = insn_opcode == OpRegReg && d_instruction[31:25] == 7'd1 && d_instruction[14:12] == 3'b101;
+  wire insn_rem    = insn_opcode == OpRegReg && d_instruction[31:25] == 7'd1 && d_instruction[14:12] == 3'b110;
+  wire insn_remu   = insn_opcode == OpRegReg && d_instruction[31:25] == 7'd1 && d_instruction[14:12] == 3'b111;
 
-  wire insn_ecall = insn_opcode == OpEnviron && f_insn[31:7] == 25'd0;
+  wire insn_ecall = insn_opcode == OpEnviron && d_instruction[31:7] == 25'd0;
   wire insn_fence = insn_opcode == OpMiscMem;
 
   // Reading from registers
@@ -756,7 +749,7 @@ module DatapathAxilMemory (
     end else begin
       execute_state <= '{
         pc: stall_flag_bf_memory ? execute_state.pc : (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : decode_state.pc,
-        insn: stall_flag_bf_memory ? execute_state.insn : (flag_taken || stall_flag_bf_execute || insn_fence) ? 32'h00000000 : f_insn,
+        insn: stall_flag_bf_memory ? execute_state.insn : (flag_taken || stall_flag_bf_execute || insn_fence) ? 32'h00000000 : d_instruction,
         cycle_status: stall_flag_bf_memory ? execute_state.cycle_status : insn_fence ? CYCLE_FENCEI : (stall_flag_bf_memory ? CYCLE_LOAD2USE : cycle_status_d),
         insn_funct7: stall_flag_bf_memory ? execute_state.insn_funct7 : insn_funct7,
         insn_rs1: stall_flag_bf_memory ? execute_state.insn_rs1 : (flag_taken || stall_flag_bf_execute || insn_fence) ? 0 : insn_rs1,
@@ -978,12 +971,12 @@ module DatapathAxilMemory (
 
     // WX Bypass
     if (execute_state.insn_rs1 == writeback_state.rd && !is_not_rs1_rs2) begin
-      rs1_data_bypass = writeback_state.rd_data;
+      rs1_data_bypass = rd_data_writeback;
       if (execute_state.insn_rs1 == 0) rs1_data_bypass = 0;
     end  
     
     if (execute_state.insn_rs2 == writeback_state.rd && !is_rs1 && !is_not_rs1_rs2) begin
-      rs2_data_bypass = writeback_state.rd_data;
+      rs2_data_bypass = rd_data_writeback;
       if (execute_state.insn_rs2 == 0) rs2_data_bypass = 0;
     end  
 
@@ -1324,12 +1317,12 @@ module DatapathAxilMemory (
     rs2_data_decode = rs2_data_out;
 
     if (writeback_state.rd == insn_rs1) begin
-      rs1_data_decode = writeback_state.rd_data;
+      rs1_data_decode = rd_data_writeback;
       if (insn_rs1 == 0) rs1_data_decode = 0;
     end 
     
     if (writeback_state.rd == insn_rs2) begin
-      rs2_data_decode = writeback_state.rd_data;
+      rs2_data_decode = rd_data_writeback;
       if (insn_rs2 == 0) rs2_data_decode = 0;
     end
   end
@@ -1412,6 +1405,20 @@ module DatapathAxilMemory (
     end
   end
 
+  always_comb begin
+    dmem.ARVALID = 1'b1;
+    if (memory_state.write_enable == 0) begin
+      dmem.ARVALID = 1'b0;
+    end
+
+    dmem.WVALID = 1'b0;
+    if (memory_state.insn_opcode == OpStore) begin
+      dmem.WVALID = 1'b1;
+    end
+
+    dmem.RREADY = 1'b1;
+  end
+
   wire [255:0] m_disasm;
   Disasm #(
       .PREFIX("M")
@@ -1454,7 +1461,7 @@ module DatapathAxilMemory (
 
     // WM Bypassing
     if (writeback_state.rd == memory_state.rs2) begin
-      rs2_data_memory = writeback_state.rd_data;
+      rs2_data_memory = rd_data_writeback;
       if (memory_state.rs2 == 0) rs2_data_memory = 0;
     end
 
@@ -1640,7 +1647,7 @@ module DatapathAxilMemory (
   // Register file to output to writeback and read into rs1
   RegFile rf (
     .rd(writeback_state.rd),
-    .rd_data(writeback_state.rd_data),
+    .rd_data(rd_data_writeback),
     .rs1(insn_rs1),
     .rs1_data(rs1_data_out),
     .rs2(insn_rs2),
