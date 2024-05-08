@@ -173,6 +173,18 @@ module MemoryAxiLite #(
 
       insn.RRESP   <= ResponseOkay;
       insn.BRESP   <= ResponseOkay;
+
+      // Same reset now for data
+      data.RVALID  <= 1'b0;
+      data.RDATA   <= 32'b0;
+      data.BVALID  <= 1'b0;
+      
+      data.ARREADY <= 1'b1;
+      data.WREADY  <= 1'b1;
+      data.AWREADY  <= 1'b1;
+
+      data.RRESP   <= ResponseOkay;
+      data.BRESP   <= ResponseOkay;
     end else begin
       // Non reset symbol
 
@@ -533,11 +545,22 @@ module DatapathAxilMemory (
   // This is for skipping in case of a branch
 
   logic [`REG_SIZE] d_instruction;
-  
+  logic stall_flag_bf_decode;
+
   always_comb begin
     d_instruction = imem.RDATA;
+    flag = 32'd0;
 
-    if (execute_state.cycle_status == CYCLE_LOAD2USE) begin
+    stall_flag_bf_decode = 1'b0;
+    if (execute_state.is_fence || d_instruction[6:0] == OpMiscMem) begin
+      // if we have a store in memory.store
+      if (memory_state.is_sb || memory_state.is_sh || memory_state.is_sw || execute_state.is_sb || execute_state.is_sh || execute_state.is_sw) begin
+        stall_flag_bf_decode = 1'b1;
+      end
+    end    
+
+    if (execute_state.cycle_status == CYCLE_LOAD2USE || execute_state.cycle_status == CYCLE_DIV2USE || (execute_state.is_fence && stall_flag_bf_decode)) begin
+      flag = 32'd1;
       d_instruction = decode_state.insn;
     end else if (decode_state.cycle_status == CYCLE_TAKEN_BRANCH) begin
       d_instruction = 0;
@@ -557,7 +580,7 @@ module DatapathAxilMemory (
         decode_state <= '{
           pc: flag_taken ? 0 : (stall_flag_bf_execute || stall_flag_bf_memory || stall_flag_bf_decode ? decode_state.pc : f_pc_current),
 
-          insn: flag_taken ? 32'h00000000 : (stall_flag_bf_execute || stall_flag_bf_memory || stall_flag_bf_decode ? d_instruction : 0),
+          insn: (flag_taken ? 32'h00000000 : (stall_flag_bf_execute || stall_flag_bf_memory || stall_flag_bf_decode ? d_instruction : 0)),
 
           cycle_status: flag_taken ? cycle_status_d :   (stall_flag_bf_execute || stall_flag_bf_memory ? decode_state.cycle_status : f_cycle_status)
         };
@@ -694,19 +717,6 @@ module DatapathAxilMemory (
   logic [`REG_SIZE] rs1_data_decode, rs2_data_decode; // Data read from the source registers (in case of overwrite)
 
   logic [`REG_SIZE] rs1_data_out, rs2_data_out; // Data read from the source registers
-
-  logic stall_flag_bf_decode;
-
-  always_comb begin
-  stall_flag_bf_decode = 1'b0;
-
-    if (insn_fence) begin
-      // if we have a store in memory.store
-      if (memory_state.is_sb || memory_state.is_sh || memory_state.is_sw || execute_state.is_sb || execute_state.is_sh || execute_state.is_sw) begin
-        stall_flag_bf_decode = 1'b1;
-      end
-    end    
-  end
 
   /****************/
   /* EXECUTE STAGE*/
@@ -912,7 +922,6 @@ module DatapathAxilMemory (
     rd = 5'b0; // Default to an invalid register address
     rs1 = 5'b0;
     rs2 = 5'b0;
-    flag = 32'd1;
     flag2 = 32'd5;
 
     halt_e = 1'b0;
@@ -1096,7 +1105,6 @@ module DatapathAxilMemory (
 
         if (execute_state.is_srai) begin
           rd_data = $signed(rs1_data_bypass) >>> execute_state.imm_i[4:0];
-          flag = $signed(rs1_data_bypass) >>> execute_state.imm_i[4:0];
         end
       end
 
@@ -1456,6 +1464,7 @@ module DatapathAxilMemory (
     dmem.WSTRB = 4'b0;
     dmem.WDATA = 32'b0;
     dmem.AWADDR = 32'b0;
+    dmem.ARADDR = 32'b0;
     
     flag3 = 32'd0;
 
@@ -1468,7 +1477,7 @@ module DatapathAxilMemory (
     // Loading and storing instructions
     if (memory_state.insn_opcode == OpLoad) begin
         // Memory address
-        dmem.AWADDR = memory_state.addr_to_dmem_m; 
+        dmem.ARADDR = memory_state.addr_to_dmem_m; 
     end else if (memory_state.insn_opcode == OpStore) begin
         lowest_bits_memory_access = memory_state.effective_addr[1:0]; 
 
