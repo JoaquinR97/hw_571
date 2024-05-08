@@ -34,7 +34,6 @@ The memory supports two full AXIL interfaces, for both instruction and data memo
 
 Building `MemoryAxiLite` is the most complex part of this assignment. Our implementation is about 250 lines of code (with a sub-module for reads).
 
-
 ## Step 2: fetch from MemoryAxiLite
 
 Once your `MemoryAxiLite` is working, we recommend copying over all of your HW5 pipeline code (including `RegFile`, structs used for pipeline registers, etc.) and starting on the pipeline integration. You should begin by changing instruction fetch to interact with your `MemoryAxiLite` module instead of the old `MemorySingleCycle`, but continuing to use `MemorySingleCycle` for the data memory, as shown in our template code for `DatapathAxilMemory`. Note that you will also need to update `RiscvProcessor` accordingly to reflect your current `DatapathAxilMemory` interface.
